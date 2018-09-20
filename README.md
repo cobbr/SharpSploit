@@ -18,7 +18,7 @@ For an easier to read, high-level quick reference and summary of SharpSploit fun
 
 I owe a ton of credit to a lot of people. Nearly none of `SharpSploit` is truly original work. `SharpSploit` ports many modules written in PowerShell by others, utilizes techniques discovered by others, and borrows ideas and code from other C# projects as well. With that being said, I'd like to thank the following people for contributing to the project (whether they know they did or not :)):
 
-* Justin Bui ([@youslydawg](https://twitter.com/youslydawg)) - For contributing the `SharpSploit.Enumeration.Host.ProcessDump()` function.
+* Justin Bui ([@youslydawg](https://twitter.com/youslydawg)) - For contributing the `SharpSploit.Enumeration.Host.CreateProcessDump()` function.
 * Matt Graeber ([@mattifestation](https://twitter.com/mattifestation)), Will Schroeder ([@harmj0y](https://twitter.com/harmj0y)), and Ruben ([@FuzzySec](https://twitter.com/fuzzysec)) - For their work on [PowerSploit](https://github.com/PowerShellMafia/PowerSploit).
 * Will Schroeder ([@harmj0y](https://twitter.com/harmj0y)) - For the [PowerView](https://github.com/PowerShellMafia/PowerSploit/blob/dev/Recon/PowerView.ps1) project.
 * Alexander Leary ([@0xbadjuju](https://twitter.com/0xbadjuju)) - For the [Tokenvator](https://github.com/0xbadjuju/Tokenvator) project.
