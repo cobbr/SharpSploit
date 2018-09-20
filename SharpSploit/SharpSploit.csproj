@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net40;net35</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>C:\Users\cobbr\Documents\Visual Studio 2017\Projects\bitbucket\SharpSploit\SharpSploit\SharpSploit.xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net35' ">
+    <Reference Include="mscorlib, version=2.0.0.0">
+      <HintPath>.\References\net35\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management">
+      <HintPath>.\References\net35\System.Management.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management.Automation">
+      <HintPath>.\References\net35\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.DirectoryServices">
+      <HintPath>.\References\net35\System.DirectoryServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IdentityModel">
+      <HintPath>.\References\net35\System.IdentityModel.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net40' ">
+    <Reference Include="mscorlib, version=4.0.0.0">
+      <HintPath>.\References\net40\mscorlib.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management">
+      <HintPath>.\References\net40\System.Management.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Management.Automation">
+      <HintPath>.\References\net40\System.Management.Automation.dll</HintPath>
+    </Reference>
+    <Reference Include="System.DirectoryServices">
+      <HintPath>.\References\net40\System.DirectoryServices.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IdentityModel">
+      <HintPath>.\References\net40\System.IdentityModel.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>
