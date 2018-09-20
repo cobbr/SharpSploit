@@ -12,7 +12,7 @@ You'll find some details and motivations for the SharpSploit project in this [in
 
 The complete SharpSploit API docfx documentation is available [here](https://sharpsploit.cobbr.io/api/).
 
-For an easier to read, high-level quick reference and summary of SharpSploit functionality, refer to the [SharpSploit - Quick Command Reference](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit%20-%20Quick%20Command%20Reference.md).
+For an easier to read, high-level quick reference and summary of SharpSploit functionality, refer to the [SharpSploit - Quick Command Reference](https://github.com/cobbr/SharpSploit/blob/master/SharpSploit/SharpSploit%20-%20Quick%20Command%20Reference.md).
 
 ### Credits
 
