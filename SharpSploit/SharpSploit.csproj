@@ -6,7 +6,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>C:\Users\cobbr\Documents\Visual Studio 2017\Projects\bitbucket\SharpSploit\SharpSploit\SharpSploit.xml</DocumentationFile>
+    <DocumentationFile>.\SharpSploit.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 

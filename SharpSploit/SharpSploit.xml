@@ -69,12 +69,23 @@
         </member>
         <member name="M:SharpSploit.Credentials.Mimikatz.DCSync(System.String,System.String,System.String)">
             <summary>
-            Performs a "DCSync" attack to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
+            Loads the Mimikatz PE with `PE.Load()` and executes the "dcsync" module to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
             </summary>
             <param name="user">Username to retrieve NTLM hash for. "All" for all domain users.</param>
             <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
             <param name="DC">Optionally specify a specific Domain Controller to target for the dcsync.</param>
             <returns>The NTLM hash of the target user(s).</returns>
+        </member>
+        <member name="M:SharpSploit.Credentials.Mimikatz.PassTheHash(System.String,System.String,System.String,System.String)">
+            <summary>
+            Loads the Mimikatz PE with `PE.Load()` and executes the "pth" module to start a new process
+            as a user using an NTLM password hash for authentication.
+            </summary>
+            <param name="user">Username to authenticate as.</param>
+            <param name="NTLM">NTLM hash to authenticate the user.</param>
+            <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
+            <param name="run">The command to execute as the specified user.</param>
+            <returns></returns>
         </member>
         <member name="T:SharpSploit.Credentials.Tokens">
             <summary>
@@ -135,7 +146,8 @@
             appropriate processes will be tried.</param>
             <returns>True if UAC bypass succeeeds, false otherwise.</returns>
             <remarks>
-            Credit for the UAC bypass token duplication technique goes to James Forshaw (@tiraniddo)
+            Credit for the UAC bypass token duplication technique goes to James Forshaw (@tiraniddo).
+            Credit for the PowerShell implementation of this bypass goes to Matt Nelson (@enigma0x3).
             </remarks>
         </member>
         <member name="M:SharpSploit.Credentials.Tokens.RunAs``1(System.String,System.String,System.String,System.Func{``0},SharpSploit.Execution.Win32.Advapi32.LOGON_TYPE)">
@@ -195,25 +207,6 @@
             Domain is adapted from Will Schroeder's (@harmj0y) PowerView (Found
             at https://github.com/PowerShellMafia/PowerSploit/blob/dev/Recon/PowerView.ps1)
             </remarks>
-        </member>
-        <member name="M:SharpSploit.Enumeration.Domain.Kerberoast(System.Collections.Generic.IEnumerable{System.String},System.String,System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.UACEnum},System.Boolean)">
-            <summary>
-            Gets a list of `SPNTicket`s for specified (or all) users with a SPN set in the current Domain.
-            </summary>
-            <param name="Identities">Username to Kerberoast of a user with an SPN set.</param>
-            <param name="LDAPFilter">Optional LDAP filter when searching for users with an SPN set.</param>
-            <param name="UACFilter">Optional filter to parse the userAccountControl DomainObject property.</param>
-            <param name="FindOne">If true, will only find a single SPNTicket for the first user found with an SPN set.</param>
-            <returns>List of SPNTickets</returns>
-        </member>
-        <member name="M:SharpSploit.Enumeration.Domain.Kerberoast(System.String,System.String,System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.UACEnum})">
-            <summary>
-            Gets a list of `SPNTicket`s for specified (or all) users with a SPN set in the current Domain.
-            </summary>
-            <param name="Identity">Optional list of users to Kerberoast. If null, all users with an SPN set will be used.</param>
-            <param name="LDAPFilter">Optional LDAP filter when searching for users with an SPN set.</param>
-            <param name="UACFilter">Optional filter to parse the userAccountControl DomainObject property.</param>
-            <returns>List of SPNTickets</returns>
         </member>
         <member name="T:SharpSploit.Enumeration.Domain.DomainSearcher">
             <summary>
@@ -342,19 +335,38 @@
             <param name="FindOne">Optionally find only the first matching DomainObject.</param>
             <returns>List of matching computer DomainObjects</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Domain.GetDomainSPNTickets(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject})">
+        <member name="M:SharpSploit.Enumeration.Domain.DomainSearcher.GetDomainSPNTickets(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject})">
             <summary>
             Gets `SPNTicket`s for specified `DomainObject`s.
             </summary>
             <param name="DomainObjects">List of DomainObjects with an SPN set.</param>
             <returns>List of SPNTickets for the specified DomainObjects</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Domain.GetDomainSPNTicket(SharpSploit.Enumeration.Domain.DomainObject)">
+        <member name="M:SharpSploit.Enumeration.Domain.DomainSearcher.GetDomainSPNTicket(SharpSploit.Enumeration.Domain.DomainObject)">
             <summary>
             Get `SPNTicket` for specified `DomainObject`.
             </summary>
             <param name="DomainObject">DomainObject with an SPN set.</param>
             <returns>SPNTicker for the specified DomainObject</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Domain.DomainSearcher.Kerberoast(System.Collections.Generic.IEnumerable{System.String},System.String,System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.UACEnum},System.Boolean)">
+            <summary>
+            Gets a list of `SPNTicket`s for specified (or all) users with a SPN set in the current Domain.
+            </summary>
+            <param name="Identities">Username to Kerberoast of a user with an SPN set.</param>
+            <param name="LDAPFilter">Optional LDAP filter when searching for users with an SPN set.</param>
+            <param name="UACFilter">Optional filter to parse the userAccountControl DomainObject property.</param>
+            <param name="FindOne">If true, will only find a single SPNTicket for the first user found with an SPN set.</param>
+            <returns>List of SPNTickets</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Domain.DomainSearcher.Kerberoast(System.String,System.String,System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.UACEnum})">
+            <summary>
+            Gets a list of `SPNTicket`s for specified (or all) users with a SPN set in the current Domain.
+            </summary>
+            <param name="Identity">Optional list of users to Kerberoast. If null, all users with an SPN set will be used.</param>
+            <param name="LDAPFilter">Optional LDAP filter when searching for users with an SPN set.</param>
+            <param name="UACFilter">Optional filter to parse the userAccountControl DomainObject property.</param>
+            <returns>List of SPNTickets</returns>
         </member>
         <member name="T:SharpSploit.Enumeration.Domain.Credential">
             <summary>
@@ -560,7 +572,7 @@
             </summary>
             <returns>List of ProcessResults.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.ProcessDump(System.Int32,System.String,System.String)">
+        <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.Int32,System.String,System.String)">
             <summary>
             Generates a minidump that represents the memory of a running process. Useful for offline Mimikatz
             if dumping the LSASS process. (Requires Admin)
@@ -572,7 +584,7 @@
             Authored by Justin Bui (@youslydawg).
             </remarks>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.ProcessDump(System.String,System.String,System.String)">
+        <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.String,System.String,System.String)">
             <summary>
             Generates a minidump that represents the memory of a running process. Useful for offline Mimikatz
             if dumping the LSASS process. (Requires Admin)
@@ -584,7 +596,7 @@
             Authored by Justin Bui (@youslydawg).
             </remarks>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.ProcessDump(System.Diagnostics.Process,System.String,System.String)">
+        <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.Diagnostics.Process,System.String,System.String)">
             <summary>
             Generates a minidump that represents the memory of a running process. Useful for offline Mimikatz
             if dumping the LSASS process. (Requires Admin)
@@ -625,6 +637,38 @@
             Changes the current directory by appending a specified string to the current working directory.
             </summary>
             <param name="AppendDirectory">String to append to the current directory.</param>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.RegistryRead(System.String)">
+            <summary>
+            Reads a value stored in registry.
+            </summary>
+            <param name="RegPath">The full path to the registry value to be read.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.RegistryRead(System.String,System.String)">
+            <summary>
+            Reads a value stored in registry.
+            </summary>
+            <param name="RegKey">The RegistryKey to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.RegistryWrite(System.String,System.Object)">
+            <summary>
+            Writes a value in the registry.
+            </summary>
+            <param name="RegPath">The full path to the registry value to be written to.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.RegistryWrite(System.String,System.String,System.Object)">
+            <summary>
+            Writes a value in the registry.
+            </summary>
+            <param name="RegKey">The RegistryKey to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns></returns>
         </member>
         <member name="T:SharpSploit.Enumeration.Host.ProcessResult">
             <summary>
@@ -745,6 +789,13 @@
             <param name="AssemblyBytes">The .NET assembly byte array.</param>
             <returns>Loaded assembly.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.Assembly.Load(System.String)">
+            <summary>
+            Loads a specified .NET assembly byte array.
+            </summary>
+            <param name="EncodedAssembly">The base64-encoded .NET assembly byte array.</param>
+            <returns>Loaded assembly.</returns>
+        </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
             PE is a library for loading PEs in memory. It currently only work for the Mimikatz PE, not for arbitrary PEs.
@@ -824,6 +875,19 @@
             <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
             <returns>Output of the ShellCommand.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.ShellCode">
+            <summary>
+            ShellCode includes a method for executing shellcode.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.ShellCode.ShellCodeExecute(System.Byte[])">
+            <summary>
+            Executes a specified ShellCode byte array by copying it to pinned memory, modifying the memory
+            permissions with VirtualProtect(), and executing with a .NET delegate.
+            </summary>
+            <param name="ShellCode">ShellCode byte array to execute.</param>
+            <returns>Boolean. True if execution succeeds, false otherwise.</returns>
         </member>
         <member name="T:SharpSploit.Execution.Win32">
             <summary>
