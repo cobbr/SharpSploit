@@ -789,12 +789,12 @@ namespace SharpSploit.Enumeration
             {
                 string output = "";
                 if (this.samaccountname != null && this.samaccountname.Trim() != "") { output += "samaccountname: " + this.samaccountname + Environment.NewLine; }
-                if (this.samaccounttype != null && this.samaccounttype.ToString().Trim() != "") { output += "samaccounttype: " + this.samaccounttype + Environment.NewLine; }
+                if (this.samaccounttype.ToString().Trim() != "") { output += "samaccounttype: " + this.samaccounttype + Environment.NewLine; }
                 if (this.distinguishedname != null && this.distinguishedname.Trim() != "") { output += "distinguishedname: " + this.distinguishedname + Environment.NewLine; }
                 if (this.cn != null && this.cn.Trim() != "") { output += "cn: " + this.cn + Environment.NewLine; }
                 if (this.objectsid != null && this.objectsid.Trim() != "") { output += "objectsid: " + this.objectsid + Environment.NewLine; }
                 if (this.sidhistory != null && String.Join(", ", this.sidhistory).Trim() != "") { output += "sidhistory: " + (this.sidhistory == null ? "" : String.Join(", ", this.sidhistory)) + Environment.NewLine; }
-                if (this.grouptype != null && this.grouptype.ToString().Trim() != "") { output += "grouptype: " + this.grouptype + Environment.NewLine; }
+                if (this.grouptype.ToString().Trim() != "") { output += "grouptype: " + this.grouptype + Environment.NewLine; }
                 if (this.Owner != null && this.Owner.ToString().Trim() != "") { output += "Owner: " + this.Owner + Environment.NewLine; }
                 if (this.Group != null && this.Group.ToString().Trim() != "") { output += "Group: " + this.Group + Environment.NewLine; }
                 if (this.DiscretionaryAcl != null && this.DiscretionaryAcl.ToString().Trim() != "") { output += "DiscretionaryAcl: " + this.DiscretionaryAcl + Environment.NewLine; }
@@ -805,7 +805,7 @@ namespace SharpSploit.Enumeration
                 if (this.description != null && this.description.Trim() != "") { output += "description: " + this.description + Environment.NewLine; }
                 if (this.memberof != null && this.memberof.Trim() != "") { output += "memberof: " + this.memberof + Environment.NewLine; }
                 if (this.logoncount != null && this.logoncount.Trim() != "") { output += "logoncount: " + this.logoncount + Environment.NewLine; }
-                if (this.useraccountcontrol != null && this.useraccountcontrol.ToString().Trim() != "") { output += "useraccountcontrol: " + this.useraccountcontrol + Environment.NewLine; }
+                if (this.useraccountcontrol.ToString().Trim() != "") { output += "useraccountcontrol: " + this.useraccountcontrol + Environment.NewLine; }
                 if (this.badpwdcount != null && this.badpwdcount.Trim() != "") { output += "badpwdcount: " + this.badpwdcount + Environment.NewLine; }
                 if (this.badpasswordtime != null && this.badpasswordtime.ToString().Trim() != "") { output += "badpasswordtime: " + this.badpasswordtime + Environment.NewLine; }
                 if (this.pwdlastset != null && this.pwdlastset.ToString().Trim() != "") { output += "pwdlastset: " + this.pwdlastset + Environment.NewLine; }

@@ -931,6 +931,43 @@
             SharpSploitResultProperty represents a property that is a member of a SharpSploitResult's ResultProperties.
             </summary>
         </member>
+        <member name="T:SharpSploit.LateralMovement.DCOM">
+            <summary>
+            DCOM is a class for executing DCOM lateral movement techniques.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.DCOM.DCOMExecute(System.String,System.String,System.String,System.String,SharpSploit.LateralMovement.DCOM.DCOMMethod)">
+            <summary>
+            Execute a process on a remote system using various DCOM methods.
+            </summary>
+            <param name="ComputerName">ComputerName of remote system to execute process.</param>
+            <param name="Command">Command to execute on remote system.</param>
+            <param name="Parameters"></param>
+            <param name="Directory"></param>
+            <param name="Method">DCOM execution method to use. Defaults to MMC20.Application.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credit for the DCOM lateral movement techniques goes to Matt Nelson (@enigma0x3). This is
+            a port of Steve Borosh (rvrshell)'s Invoke-DCOM implementation available
+            here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.DCOM.DCOMExecute(System.Collections.Generic.List{System.String},System.String,System.String,System.String,SharpSploit.LateralMovement.DCOM.DCOMMethod)">
+            <summary>
+            Execute a process on a remote system using various DCOM methods.
+            </summary>
+            <param name="ComputerNames">ComputerNames of remote systems to execute process.</param>
+            <param name="Command">Command to execute on remote system.</param>
+            <param name="Parameters"></param>
+            <param name="Directory"></param>
+            <param name="Method">DCOM execution method to use. Defaults to MMC20.Application.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credit for the DCOM lateral movement techniques goes to Matt Nelson (@enigma0x3). This is
+            a port of Steve Borosh (rvrshell)'s Invoke-DCOM implementation available
+            here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Misc.CountdownEvent">
             <summary>
             CountdownEvent is used for counting Asynchronous operations
