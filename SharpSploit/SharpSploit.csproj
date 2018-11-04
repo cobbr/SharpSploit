@@ -6,7 +6,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>.\SharpSploit.xml</DocumentationFile>
+    <DocumentationFile>C:\Users\cobbr\Documents\Visual Studio 2017\Projects\bitbucket\SharpSploit\SharpSploit\SharpSploit.xml</DocumentationFile>
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
@@ -48,5 +48,12 @@
     <Reference Include="System.IdentityModel">
       <HintPath>.\References\net40\System.IdentityModel.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- <EmbeddedResource Include="Resources\powerkatz_x86.dll" /> -->
+    <!-- <EmbeddedResource Include="Resources\powerkatz_x64.dll" /> -->
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

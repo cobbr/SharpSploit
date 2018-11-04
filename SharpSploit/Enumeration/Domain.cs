@@ -25,7 +25,7 @@ namespace SharpSploit.Enumeration
     /// Domain is adapted from Will Schroeder's (@harmj0y) PowerView (Found
     /// at https://github.com/PowerShellMafia/PowerSploit/blob/dev/Recon/PowerView.ps1)
     /// </remarks>
-    public static class Domain
+    public class Domain
     {
         /// <summary>
         /// DomainSearcher is a LDAP searcher class for domain enumeration.

@@ -17,10 +17,11 @@ namespace SharpSploit.Execution
 
         /// <summary>
         /// Executes a specified ShellCode byte array by copying it to pinned memory, modifying the memory
-        /// permissions with VirtualProtect(), and executing with a .NET delegate.
+        /// permissions with VirtualProtect(), and executing using a delegate.
         /// </summary>
         /// <param name="ShellCode">ShellCode byte array to execute.</param>
         /// <returns>Boolean. True if execution succeeds, false otherwise.</returns>
+        /// <remarks>Based upon code written by Matt Nelson (@enigma0x3) and Matt Graeber (@mattifestation).</remarks>
         public static bool ShellCodeExecute(byte[] ShellCode)
         {
             try

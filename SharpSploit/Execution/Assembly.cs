@@ -12,7 +12,7 @@ namespace SharpSploit.Execution
     /// <summary>
     /// Assembly is a library for loading .NET assemblies and executing methods contained within them.
     /// </summary>
-    public static class Assembly
+    public class Assembly
     {
         /// <summary>
         /// Loads a specified .NET assembly byte array and executes a specified method within a

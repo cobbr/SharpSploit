@@ -13,7 +13,7 @@ namespace SharpSploit.Execution
     /// <summary>
     /// Shell is a library for executing shell commands.
     /// </summary>
-    public static class Shell
+    public class Shell
     {
         /// <summary>
         /// Executes specified PowerShell code using System.Management.Automation.dll and bypasses

@@ -17,7 +17,7 @@ namespace SharpSploit.Enumeration
     /// <summary>
     /// Network is a library for network enumeration such as identifying live systems and open ports.
     /// </summary>
-    public static class Network
+    public class Network
     {
         /// <summary>
         /// Conducts a port scan of a specified ComputerName and port and reports if the port is open.

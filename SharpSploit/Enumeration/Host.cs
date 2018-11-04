@@ -15,7 +15,7 @@ namespace SharpSploit.Enumeration
     /// <summary>
     /// Host is a library for local host enumeration.
     /// </summary>
-    public static class Host
+    public class Host
     {
         /// <summary>
         /// Gets a list of running processes on the system.

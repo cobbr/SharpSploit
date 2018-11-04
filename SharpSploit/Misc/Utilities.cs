@@ -4,11 +4,43 @@
 
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Reflection;
 
 namespace SharpSploit.Misc
 {
-    public class Utilities
+    public static class Utilities
     {
+        private static string[] manifestResources = Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+        public static byte[] GetEmbeddedResourceBytes(string resourceName)
+        {
+            string resourceFullName = manifestResources.FirstOrDefault(N => N.Contains(resourceName + ".comp"));
+            if (resourceFullName != null)
+            {
+                return Decompress(Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullName).ReadFully());
+            }
+            else if ((resourceFullName = manifestResources.FirstOrDefault(N => N.Contains(resourceName))) != null)
+            {
+                return Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceFullName).ReadFully();
+            }
+            return null;
+        }
+
+        public static byte[] ReadFully(this Stream input)
+        {
+            byte[] buffer = new byte[16 * 1024];
+            using (MemoryStream ms = new MemoryStream())
+            {
+                int read;
+                while((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
+        }
+
         public static byte[] Compress(byte[] Bytes)
         {
             byte[] compressedBytes;

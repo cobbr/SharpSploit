@@ -12,7 +12,7 @@ namespace SharpSploit.LateralMovement
     /// <summary>
     /// DCOM is a class for executing DCOM lateral movement techniques.
     /// </summary>
-    public static class DCOM
+    public class DCOM
     {
         /// <summary>
         /// Execute a process on a remote system using various DCOM methods.
