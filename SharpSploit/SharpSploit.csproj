@@ -50,8 +50,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <!-- <EmbeddedResource Include="Resources\powerkatz_x86.dll" /> -->
-    <!-- <EmbeddedResource Include="Resources\powerkatz_x64.dll" /> -->
+    <EmbeddedResource Include="Resources\powerkatz_x86.dll" />
+    <EmbeddedResource Include="Resources\powerkatz_x64.dll" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
