@@ -760,6 +760,13 @@
             Assembly is a library for loading .NET assemblies and executing methods contained within them.
             </summary>
         </member>
+        <member name="M:SharpSploit.Execution.Assembly.AssemblyExecute(System.Byte[],System.Object[])">
+            <summary>
+            Loads a specified .NET assembly byte array and executes the EntryPoint.
+            </summary>
+            <param name="AssemblyBytes">The .NET assembly byte array.</param>
+            <param name="Args">The arguments to pass to the assembly's EntryPoint.</param>
+        </member>
         <member name="M:SharpSploit.Execution.Assembly.AssemblyExecute(System.Byte[],System.String,System.String,System.Object[])">
             <summary>
             Loads a specified .NET assembly byte array and executes a specified method within a
@@ -781,6 +788,13 @@
             <param name="MethodName">The name of the method to execute.</param>
             <param name="Parameters">The parameters to pass to the method.</param>
             <returns>GenericObjectResult of the method.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Assembly.AssemblyExecute(System.String,System.Object[])">
+            <summary>
+            Loads a specified base64-encoded .NET assembly and executes the EntryPoint.
+            </summary>
+            <param name="EncodedAssembly">The base64-encoded .NET assembly byte array.</param>
+            <param name="Args">The arguments to pass to the assembly's EntryPoint.</param>
         </member>
         <member name="M:SharpSploit.Execution.Assembly.Load(System.Byte[])">
             <summary>
