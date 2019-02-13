@@ -1002,5 +1002,26 @@
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
         </member>
+        <member name="T:SharpSploit.Misc.PrivExchange">
+            <summary>
+            ExchangePRiv is a class which leverage the privexchange misconfiguration.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Misc.PrivExchange.PushNotification(System.String,System.String,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Logs in on EWS to subscribe to push notifications, which will make Exchange to connect back to the attacker and authenticate as system.
+            </summary>
+            <param name="targetHost">Set the IP of the target Exchange server.</param>
+            <param name="attackerHost">Set the attacker's IP.</param>
+            <param name="attackerPort">Set the attacker's port</param>
+            <param name="attackerPage">Set the atacker's page</param>
+            <param name="SSL">Enable SSL.</param>
+            <param name="exchangeVersion">Set exchange version, default is 2016.</param>
+            <param name="exchangePort">Set exchange's target port.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credits to @_dirkjan for the discovery of this attack and to @g0ldenGunSec for his powershell implementation which I relied on.
+            </remarks>
+        </member>
     </members>
 </doc>
