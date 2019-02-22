@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Author: Dennis Panagiotopoulos (@den_n1s)
+// Project: SharpSploit (https://github.com/cobbr/SharpSploit)
+// License: BSD 3-Clause
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
