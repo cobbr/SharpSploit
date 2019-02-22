@@ -1023,5 +1023,20 @@
             Credits to @_dirkjan for the discovery of this attack and to @g0ldenGunSec for his powershell implementation which I relied on.
             </remarks>
         </member>
+        <member name="T:SharpSploit.Persistence.ComHijacking">
+            <summary>
+            ComHijacking is a class that can be used in order to achieve peristence on a host. 
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.ComHijacking.Persist(System.String,System.String)">
+            <summary>
+            It utilises CLSID key abandonment and points InProvServer32 key to a malicious payload. 
+            </summary>
+            <remarks>
+            Shoutout to @FuzzySec for his Powershell implementation of this technique
+            </remarks>
+            <param name="CLSID">Missing CLSID to abuse.</param>
+            <param name="Path">Path to the malicious payload</param>
+        </member>
     </members>
 </doc>
