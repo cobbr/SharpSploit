@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Management;
 using System.Diagnostics;
 using System.Collections.Generic;
 using Microsoft.Win32;
@@ -23,12 +24,16 @@ namespace SharpSploit.Enumeration
         /// <returns>List of ProcessResults.</returns>
         public static SharpSploitResultList<ProcessResult> GetProcessList()
         {
-			Process[] processes = Process.GetProcesses();
+            Process[] processes = Process.GetProcesses();
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
-			foreach (Process process in processes)
-			{
-                results.Add(new ProcessResult(process.Id, 0, process.ProcessName));
-			}
+            foreach (Process process in processes)
+            {
+                var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {0}", process.Id));
+		var pidresult = search.Get().GetEnumerator();
+                pidresult.MoveNext();
+                var parentId = (uint)pidresult.Current["ParentProcessId"];
+                results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName));
+            }
             return results;
         }
 
@@ -156,13 +161,13 @@ namespace SharpSploit.Enumeration
 		}
 
         /// <summary>
-        /// Changes the current directory by appending a specified string to the current working directory.
+        /// Changes the current working directory.
         /// </summary>
-        /// <param name="AppendDirectory">String to append to the current directory.</param>
-        public static void ChangeCurrentDirectory(string AppendDirectory)
-		{
-			Directory.SetCurrentDirectory(GetCurrentDirectory() + "\\" + AppendDirectory);
-		}
+        /// <param name="DirectoryName">Relative or absolute path to new working directory.</param>
+        public static void ChangeCurrentDirectory(string DirectoryName)
+        {
+            Directory.SetCurrentDirectory(DirectoryName);
+        }
 
         /// <summary>
         /// Reads a value stored in registry.
