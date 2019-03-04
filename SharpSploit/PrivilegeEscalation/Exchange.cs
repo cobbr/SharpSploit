@@ -32,7 +32,9 @@ namespace SharpSploit.PrivilegeEscalation
             /// <summary>Exchange 2013</summary>
             Exchange2013,
             /// <summary>Exchange 2013 SP1</summary>
-            Exchange2013_SP1
+            Exchange2013_SP1,
+            /// <summary>Exchange 2016</summary>
+            Exchange2016
         }
 
         /// <summary>
