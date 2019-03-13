@@ -1016,5 +1016,57 @@
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
         </member>
+        <member name="T:SharpSploit.Persistence.COM">
+            <summary>
+            COM is a class for abusing the Microsoft Component Object Model to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.COM.HijackCLSID(System.String,System.String)">
+            <summary>
+            Hijacks a CLSID key to execute a payload. 
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credit to Ruben Boonen (@FuzzySec) for his PowerShell implementation of this technique.
+            </remarks>
+            <param name="CLSID">Missing CLSID to abuse.</param>
+            <param name="ExecutablePath">Path to the executable payload.</param>
+        </member>
+        <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
+            <summary>
+            Exchange is a class for abusing Microsoft Exchange for privilege escalation.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion">
+            <summary>
+            Enum for varions versions of Microsoft Exchange
+            </summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2007">
+            <summary>Exchange 2007</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2007_SP1">
+            <summary>Exchange 2007 SP1</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2010">
+            <summary>Exchange 2010</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2010_SP1">
+            <summary>Exchange 2010 SP1</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2010_SP2">
+            <summary>Exchange 2010 SP2</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2013">
+            <summary>Exchange 2013</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2013_SP1">
+            <summary>Exchange 2013 SP1</summary>
+        </member>
+        <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2016">
+            <summary>Exchange 2016</summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SharpSploit.PrivilegeEscalation.Exchange.PrivExchangePushNotification(System.String,System.String,SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion)" -->
     </members>
 </doc>
