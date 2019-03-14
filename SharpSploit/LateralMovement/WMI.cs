@@ -22,11 +22,14 @@ namespace SharpSploit.LateralMovement
         /// <param name="Username">Username to authenticate as to the remote system.</param>
         /// <param name="Password">Password to authenticate the user.</param>
         /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
-        public static bool WMIExecute(string ComputerName, string Command, string Username, string Password)
+        public static bool WMIExecute(string ComputerName, string Command, string Username = "", string Password = "")
         {
             ConnectionOptions options = new ConnectionOptions();
-            options.Username = Username;
-            options.Password = Password;
+            if ((Username != null && Username != "") && Password != null)
+            {
+                options.Username = Username;
+                options.Password = Password;
+            }
 
             ManagementScope scope = new ManagementScope(String.Format("\\\\{0}\\root\\cimv2", ComputerName), options);
 

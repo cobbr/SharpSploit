@@ -634,9 +634,9 @@
         </member>
         <member name="M:SharpSploit.Enumeration.Host.ChangeCurrentDirectory(System.String)">
             <summary>
-            Changes the current directory by appending a specified string to the current working directory.
+            Changes the current working directory.
             </summary>
-            <param name="AppendDirectory">String to append to the current directory.</param>
+            <param name="DirectoryName">Relative or absolute path to new working directory.</param>
         </member>
         <member name="M:SharpSploit.Enumeration.Host.RegistryRead(System.String)">
             <summary>
