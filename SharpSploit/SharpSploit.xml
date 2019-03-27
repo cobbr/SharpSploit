@@ -1067,6 +1067,19 @@
         <member name="F:SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion.Exchange2016">
             <summary>Exchange 2016</summary>
         </member>
-        <!-- Badly formed XML comment ignored for member "M:SharpSploit.PrivilegeEscalation.Exchange.PrivExchangePushNotification(System.String,System.String,SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion)" -->
+        <member name="M:SharpSploit.PrivilegeEscalation.Exchange.PrivExchangePushNotification(System.String,System.String,SharpSploit.PrivilegeEscalation.Exchange.ExchangeVersion)">
+            <summary>
+            Performs the "PrivExchange" attack to abuse Exchange EWS to subscribe to push notifications to relay the Exchange authentication.
+            This attack relies on the use of a relay constructed outside of SharpSploit.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="EWSUri">The URI of the Exchange EWS instance to perform the relay against. For example: http(s)://<![CDATA[<]]>hostname<![CDATA[>]]>:<![CDATA[<]]>port<![CDATA[>]]>/EWS/Exchange.asmx.</param>
+            <param name="RelayUri">Set the attacker's IP.</param>
+            <param name="ExchangeVersion">Microsoft Exchange version. Defaults to Exchange2010.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credits to Dirk-jan Molemma (@_dirkjan) for the discovery of this attack and Dave Cossa (@G0ldenGunSec) for his PowerShell implementation.
+            </remarks>
+        </member>
     </members>
 </doc>

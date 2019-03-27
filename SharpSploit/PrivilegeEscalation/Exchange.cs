@@ -42,7 +42,7 @@ namespace SharpSploit.PrivilegeEscalation
         /// This attack relies on the use of a relay constructed outside of SharpSploit.
         /// </summary>
         /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
-        /// <param name="EWSUri">The URI of the Exchange EWS instance to perform the relay against. For example: http(s)://<hostname>:<port>/EWS/Exchange.asmx.</param>
+        /// <param name="EWSUri">The URI of the Exchange EWS instance to perform the relay against. For example: http(s)://<![CDATA[<]]>hostname<![CDATA[>]]>:<![CDATA[<]]>port<![CDATA[>]]>/EWS/Exchange.asmx.</param>
         /// <param name="RelayUri">Set the attacker's IP.</param>
         /// <param name="ExchangeVersion">Microsoft Exchange version. Defaults to Exchange2010.</param>
         /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
