@@ -886,6 +886,17 @@
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
             <returns>Ouput of the ShellCommand.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.Shell.ShellCmdExecute(System.String,System.String,System.String,System.String)">
+            <summary>
+            Executes a specified Shell command using cmd.exe, optionally with an alternative username and password.
+            Equates to `ShellExecute("cmd.exe /c " + ShellCommand)`.
+            </summary>
+            <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
+            <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+            <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+            <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+            <returns>Ouput of the ShellCommand.</returns>
+        </member>
         <member name="M:SharpSploit.Execution.Shell.ShellExecuteWithPath(System.String,System.String,System.String,System.String,System.String)">
             <summary>
             Executes a specified Shell command from a specified directory, optionally with an alternative username and password.

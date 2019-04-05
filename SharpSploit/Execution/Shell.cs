@@ -78,6 +78,20 @@ namespace SharpSploit.Execution
         }
 
         /// <summary>
+        /// Executes a specified Shell command using cmd.exe, optionally with an alternative username and password.
+        /// Equates to `ShellExecute("cmd.exe /c " + ShellCommand)`.
+        /// </summary>
+        /// <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
+        /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+        /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+        /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+        /// <returns>Ouput of the ShellCommand.</returns>
+        public static string ShellCmdExecute(string ShellCommand, string Username = "", string Domain = "", string Password = "")
+        {
+            return ShellExecute("cmd.exe /c " + ShellCommand, Username, Domain, Password);
+        }
+
+        /// <summary>
         /// Executes a specified Shell command from a specified directory, optionally with an alternative username and password.
         /// </summary>
         /// <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
@@ -127,7 +141,7 @@ namespace SharpSploit.Execution
             shellProcess.BeginErrorReadLine();
             shellProcess.WaitForExit();
 
-            return output.ToString();
+            return output.ToString().TrimEnd();
         }
     }
 }
