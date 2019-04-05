@@ -29,7 +29,7 @@ namespace SharpSploit.Enumeration
             foreach (Process process in processes)
             {
                 var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {0}", process.Id));
-		var pidresult = search.Get().GetEnumerator();
+		        var pidresult = search.Get().GetEnumerator();
                 pidresult.MoveNext();
                 var parentId = (uint)pidresult.Current["ParentProcessId"];
                 results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName));
@@ -148,17 +148,27 @@ namespace SharpSploit.Enumeration
         /// <returns>List of FileSystemEntryResults.</returns>
 		public static SharpSploitResultList<FileSystemEntryResult> GetDirectoryListing()
 		{
+            return GetDirectoryListing(GetCurrentDirectory());
+		}
+
+        /// <summary>
+        /// Gets a directory listing of a directory.
+        /// </summary>
+        /// <param name="Path">The path of the directory to get a listing of.</param>
+        /// <returns>List of FileSystemEntryResults.</returns>
+		public static SharpSploitResultList<FileSystemEntryResult> GetDirectoryListing(string Path)
+        {
             SharpSploitResultList<FileSystemEntryResult> results = new SharpSploitResultList<FileSystemEntryResult>();
-			foreach (string dir in Directory.GetDirectories(GetCurrentDirectory()))
-			{
+            foreach (string dir in Directory.GetDirectories(Path))
+            {
                 results.Add(new FileSystemEntryResult(dir));
-			}
-            foreach (string file in Directory.GetFiles(GetCurrentDirectory()))
+            }
+            foreach (string file in Directory.GetFiles(Path))
             {
                 results.Add(new FileSystemEntryResult(file));
             }
             return results;
-		}
+        }
 
         /// <summary>
         /// Changes the current working directory.

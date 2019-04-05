@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 ### Added
+- Added GetDirectoryListing of a specific path
 - Added stderr to output of ShellExecute functions
+
+### Fixed
+- Fixed XML warning, removed angle brackets in comment
 
 ## [v1.3] - 2019-03-03
 ### Fixed
