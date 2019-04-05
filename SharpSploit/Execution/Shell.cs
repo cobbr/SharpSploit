@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
 using System.Management.Automation;
+using System.Text;
 
 namespace SharpSploit.Execution
 {
@@ -114,12 +115,19 @@ namespace SharpSploit.Execution
             shellProcess.StartInfo.UseShellExecute = false;
             shellProcess.StartInfo.CreateNoWindow = true;
             shellProcess.StartInfo.RedirectStandardOutput = true;
+            shellProcess.StartInfo.RedirectStandardError = true;
+
+            var output = new StringBuilder();
+            shellProcess.OutputDataReceived += (sender, args) => { output.AppendLine(args.Data); };
+            shellProcess.ErrorDataReceived += (sender, args) => { output.AppendLine(args.Data); };
+
             shellProcess.Start();
 
-            string output = shellProcess.StandardOutput.ReadToEnd();
+            shellProcess.BeginOutputReadLine();
+            shellProcess.BeginErrorReadLine();
             shellProcess.WaitForExit();
 
-            return output;
+            return output.ToString();
         }
     }
 }
