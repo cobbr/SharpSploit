@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added GetDirectoryListing of a specific path
 - Added stderr to output of ShellExecute functions
 - Added ShellCmdExecute function
+- Added registry class with improved read/write functions
+- Added remote registry functions
 
 ### Changed
 - Updated mimikatz binaries

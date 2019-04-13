@@ -7,7 +7,6 @@ using System.IO;
 using System.Management;
 using System.Diagnostics;
 using System.Collections.Generic;
-using Microsoft.Win32;
 
 using SharpSploit.Generic;
 
@@ -177,78 +176,6 @@ namespace SharpSploit.Enumeration
         public static void ChangeCurrentDirectory(string DirectoryName)
         {
             Directory.SetCurrentDirectory(DirectoryName);
-        }
-
-        /// <summary>
-        /// Reads a value stored in registry.
-        /// </summary>
-        /// <param name="RegPath">The full path to the registry value to be read.</param>
-        /// <returns></returns>
-        public static string RegistryRead(string RegPath)
-        {
-            var split = RegPath.Split(Path.DirectorySeparatorChar);
-            string valueName = split[split.Length - 1];
-            string keyName = RegPath.Substring(0, RegPath.IndexOf(valueName));
-            return RegistryRead(keyName, valueName);
-        }
-
-        /// <summary>
-        /// Reads a value stored in registry.
-        /// </summary>
-        /// <param name="RegKey">The RegistryKey to read from.</param>
-        /// <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
-        /// <returns></returns>
-        public static string RegistryRead(string RegKey, string RegValue)
-        {
-            try
-            {
-                object reg = Registry.GetValue(RegKey, RegValue, null);
-                if (reg == null)
-                {
-                    return null;
-                }
-                return reg.ToString();
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Registry read exception: " + e.Message);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Writes a value in the registry.
-        /// </summary>
-        /// <param name="RegPath">The full path to the registry value to be written to.</param>
-        /// <param name="Value">The value to write to the registry key.</param>
-        /// <returns></returns>
-        public static bool RegistryWrite(string RegPath, object Value)
-        {
-            var split = RegPath.Split(Path.DirectorySeparatorChar);
-            string valueName = split[split.Length - 1];
-            string keyName = RegPath.Substring(0, RegPath.IndexOf(valueName));
-            return RegistryWrite(keyName, valueName, Value);
-        }
-
-        /// <summary>
-        /// Writes a value in the registry.
-        /// </summary>
-        /// <param name="RegKey">The RegistryKey to read from.</param>
-        /// <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
-        /// <param name="Value">The value to write to the registry key.</param>
-        /// <returns></returns>
-        public static bool RegistryWrite(string RegKey, string RegValue, object Value)
-        {
-            try
-            {
-                Registry.SetValue(RegKey, RegValue, Value);
-                return true;
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine("Registry write exception: " + e.Message);
-                return false;
-            }
         }
 
         /// <summary>
