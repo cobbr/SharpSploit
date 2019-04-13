@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated mimikatz binaries
 - Changed mimikatz function to load in new thread, free input/output pointers
+- Updated registry tests
 
 ### Fixed
 - Fixed XML warning, removed angle brackets in comment
