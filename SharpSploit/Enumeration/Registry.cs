@@ -7,8 +7,6 @@ using System.IO;
 using System.Linq;
 using Win = Microsoft.Win32;
 
-using SharpSploit.Generic;
-
 namespace SharpSploit.Enumeration
 {
     /// <summary>
