@@ -703,38 +703,6 @@
             </summary>
             <param name="DirectoryName">Relative or absolute path to new working directory.</param>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.RegistryRead(System.String)">
-            <summary>
-            Reads a value stored in registry.
-            </summary>
-            <param name="RegPath">The full path to the registry value to be read.</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Enumeration.Host.RegistryRead(System.String,System.String)">
-            <summary>
-            Reads a value stored in registry.
-            </summary>
-            <param name="RegKey">The RegistryKey to read from.</param>
-            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Enumeration.Host.RegistryWrite(System.String,System.Object)">
-            <summary>
-            Writes a value in the registry.
-            </summary>
-            <param name="RegPath">The full path to the registry value to be written to.</param>
-            <param name="Value">The value to write to the registry key.</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Enumeration.Host.RegistryWrite(System.String,System.String,System.Object)">
-            <summary>
-            Writes a value in the registry.
-            </summary>
-            <param name="RegKey">The RegistryKey to read from.</param>
-            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
-            <param name="Value">The value to write to the registry key.</param>
-            <returns></returns>
-        </member>
         <member name="T:SharpSploit.Enumeration.Host.ProcessResult">
             <summary>
             ProcessResult represents a running process, used with the GetProcessList() function.
@@ -819,6 +787,176 @@
             <summary>
             PortScanResult represent the result of a port scan, used with the PortScan() functions.
             </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Registry">
+            <summary>
+            Host is a library for local host enumeration.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRegistryKey(System.String)">
+            <summary>
+            Gets the value of a RegistryKey.
+            </summary>
+            <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
+            <returns>The value of a RegistryKey, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRegistryKey(System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRegistryKey(System.String,System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="RegHive">The RegistryHive to read from.</param>
+            <param name="RegKey">The RegistryKey, including the hive, to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="RegHive">The RegistryHive to read from.</param>
+            <param name="RegKey">The RegistryKey in the RegsitryHive to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String)">
+            <summary>
+            Gets a value stored in a RegistryKey.
+            </summary>
+            <param name="RegHiveKey">The RegistryKey to set.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>Content of the value of the RegistryKey, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
+            <param name="RegValue">The name of the RegistryKey to set.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="RegHive">The RegistryHive to set within.</param>
+            <param name="RegKey">The RegistryKey to set, including the hive.</param>
+            <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="RegHive">The RegistryHive to set within.</param>
+            <param name="RegKey">The RegistryKey to set, including the hive.</param>
+            <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="RegHiveKey">The RegistryKey to set.</param>
+            <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,System.String)">
+            <summary>
+            Gets the value of a RegistryKey.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
+            <returns>The value of a RegistryKey, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,System.String,System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHive">The RegistryHive to read from.</param>
+            <param name="RegKey">The RegistryKey, including the hive, to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String)">
+            <summary>
+            Gets the entries of a RegistryKey or value of a RegistryKey.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHive">The RegistryHive to read from.</param>
+            <param name="RegKey">The RegistryKey in the RegsitryHive to read from.</param>
+            <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
+            <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
+            <param name="RegValue">The name of the RegistryKey to set.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHive">The RegistryHive to set within.</param>
+            <param name="RegKey">The RegistryKey to set, including the hive.</param>
+            <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+            <summary>
+            Sets a value in the registry.
+            </summary>
+            <param name="Hostname">Remote hostname to connect to for remote registry.</param>
+            <param name="RegHive">The RegistryHive to set within.</param>
+            <param name="RegKey">The RegistryKey to set, including the hive.</param>
+            <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
+            <param name="Value">The value to write to the registry key.</param>
+            <returns>True if succeeded, false otherwise.</returns>
         </member>
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>

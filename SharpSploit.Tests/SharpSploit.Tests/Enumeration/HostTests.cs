@@ -124,25 +124,5 @@ namespace SharpSploit.Tests.Enumeration
             SharpSploitResultList<Host.FileSystemEntryResult> results2 = Host.GetDirectoryListing();
             Assert.AreEqual(results1.FormatList(), results2.FormatList());
         }
-
-        [TestMethod]
-        public void TestReadRegistry()
-        {
-            string path = Host.RegistryRead("HKEY_CURRENT_USER\\Environment\\Path");
-            Assert.IsTrue(path.Length > 2);
-        }
-
-        [TestMethod]
-        public void TestWriteRegistry()
-        {
-            string path = Host.RegistryRead("HKEY_CURRENT_USER\\Environment\\Path");
-            Assert.IsTrue(path.Length > 2);
-            bool t = Host.RegistryWrite("HKEY_CURRENT_USER\\Environment\\Path", "");
-            Assert.IsTrue(t);
-            Assert.AreEqual("", Host.RegistryRead("HKEY_CURRENT_USER\\Environment\\Path"));
-            Host.RegistryWrite("HKEY_CURRENT_USER\\Environment\\Path", path);
-            string path2 = Host.RegistryRead("HKEY_CURRENT_USER\\Environment\\Path");
-            Assert.AreEqual(path, path2);
-        }
     }
 }
