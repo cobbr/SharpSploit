@@ -1189,6 +1189,28 @@
             <param name="CLSID">Missing CLSID to abuse.</param>
             <param name="ExecutablePath">Path to the executable payload.</param>
         </member>
+        <member name="T:SharpSploit.Persistence.WMI">
+            <summary>
+            WMI is a class for abusing WMI Event Subscriptions to establish peristence. Requires elevation.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.WMI.InstallWMIPersistence(System.String,SharpSploit.Persistence.WMI.EventFilter,SharpSploit.Persistence.WMI.EventConsumer,System.String,System.String,SharpSploit.Persistence.WMI.ScriptingEngine)">
+            <summary>
+            Creates a WMI Event, Consumer and Binding to execuate a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credit to Andrew Luke (@sw4mp_f0x) for PowerLurk and
+            Dominic Chell (@domchell) for Persistence Part 3 – WMI Event Subscription.
+            </remarks>
+            <param name="EventName">An arbitrary name to be assigned to the new WMI Event.</param>
+            <param name="EventFilter">Specifies the event trigger to use. The options are ProcessStart.</param>
+            <param name="EventConsumer">Specifies the action to carry out. The options are CommandLine (OS Command) and ActiveScript (JScript or VBScript).</param>
+            <param name="ProcessName">Specifies the process name when the ProcessStart trigger is selected. Defaults to notepad.exe.</param>
+            <param name="ScriptingEngine">Specifies the scripting engine when the ActiveScript consumer is selected. Defaults to VBScript.</param>
+            <param name="Payload">Specifies the CommandLine or ActiveScript payload to run.</param>
+        </member>
         <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
             <summary>
             Exchange is a class for abusing Microsoft Exchange for privilege escalation.
