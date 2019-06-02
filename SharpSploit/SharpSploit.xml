@@ -1189,6 +1189,20 @@
             <param name="CLSID">Missing CLSID to abuse.</param>
             <param name="ExecutablePath">Path to the executable payload.</param>
         </member>
+        <member name="T:SharpSploit.Persistence.Startup">
+            <summary>
+            Startup is a class for abusing the Windows Startup folder to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Startup.InstallStartup(System.String,System.String)">
+            <summary>
+            Writes a payload into the current users startup folder.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <param name="FileName">Defaults to "startup.bat"</param>
+            <param name="Payload">The payload to run.</param>
+        </member>
         <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
             <summary>
             Exchange is a class for abusing Microsoft Exchange for privilege escalation.
