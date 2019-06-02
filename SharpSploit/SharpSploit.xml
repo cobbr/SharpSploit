@@ -1172,6 +1172,21 @@
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
         </member>
+        <member name="T:SharpSploit.Persistence.Autorun">
+            <summary>
+            Autorun is a class for abusing the Windows Registry to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Autorun.InstallAutorun(System.String,SharpSploit.Persistence.Autorun.Hive,System.String)">
+            <summary>
+            Creates an autorun value in HKCU or HKLM to execuate a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <param name="Name">Name for the registy value. Defaults to "Updater".</param>
+            <param name="Value">The registry value.</param>
+            <param name="TargetHive">The target hive. HKCU or HKLM.</param>
+        </member>
         <member name="T:SharpSploit.Persistence.COM">
             <summary>
             COM is a class for abusing the Microsoft Component Object Model to establish peristence.
