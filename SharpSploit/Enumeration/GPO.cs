@@ -3,164 +3,151 @@
 // License: BSD 3-Clause
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.IO;
 using System.Text;
-using System.DirectoryServices.ActiveDirectory;
+using System.Collections.Generic;
 using System.DirectoryServices;
 using System.DirectoryServices.Protocols;
-using System.IO;
+using System.DirectoryServices.ActiveDirectory;
 
 namespace SharpSploit.Enumeration
 {
     /// <summary>
-    /// GPORemoteAccessPolicies is a class which Checks GPO for settings which deal with remote access policies relevant to lateral movement
-    /// (e.g., "EnableLUA" and "LocalAccountTokenFilterPolicy").
+    /// GPO is a library for GPO enumeration.
     /// </summary>
-    public class GPORemoteAccessPolicies
+    public class GPO
     {
         /// <summary>
-        /// Check if EnableLUA is disabled
-        /// </summary>
-        /// <param name="GptTmplPath">The path of the GptTmpl.inf file</param>
-        /// <returns></returns>
-        public static bool CheckEnableLUA(string GptTmplPath)
-        {
-            bool enableLUA = false;
-
-            if (File.Exists(GptTmplPath))
-            {
-                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
-                {
-                    string EnableLUAConfiguration = @"MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,0";
-                    if (line.Equals(EnableLUAConfiguration))
-                    {
-                        enableLUA = true;
-                    }
-                }
-            }
-            return enableLUA;
-        }
-
-        /// <summary>
-        /// Check if FilterAdministratorToken is disabled
-        /// </summary>
-        /// <param name="GptTmplPath">The path of the GptTmpl.inf file</param>
-        /// <returns></returns>
-        public static bool CheckFilterAdministratorToken(string GptTmplPath)
-        {
-            bool FilterAdministratorToken = false;
-
-            if (File.Exists(GptTmplPath))
-            {
-                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
-                {
-                    string FilterAdministratorTokenConfiguration = @"MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,0";
-                    if (line.Equals(FilterAdministratorTokenConfiguration))
-                    {
-                        FilterAdministratorToken = true;
-                    }
-                }
-            }
-            return FilterAdministratorToken;
-        }
-
-        /// <summary>
-        /// Check the value of the LocalAccountTokenFilterPolicy 
-        /// </summary>
-        /// <param name="RegistryXMLpath">The path of the Registry.xml file</param>
-        /// <returns></returns>
-        public static bool CheckLocalAccountTokenFilterPolicy(string RegistryXMLpath)
-        {
-            bool LocalAccountTokenFilterPolicy = false;
-
-            if (File.Exists(RegistryXMLpath))
-            {
-                foreach (string line in File.ReadAllLines(RegistryXMLpath, Encoding.UTF8))
-                {
-                    string LocalAccountTokenFilterPolicyConfiguration = "name=\"LocalAccountTokenFilterPolicy\" type=\"REG_DWORD\" value=\"00000001\"";
-                    if (line.Contains(LocalAccountTokenFilterPolicyConfiguration))
-                    {
-                        LocalAccountTokenFilterPolicy = true;
-                    }
-                }
-            }
-            return LocalAccountTokenFilterPolicy;
-        }
-
-        /// <summary>
-        /// Check if Administrators are not allowed to perform network authentication
-        /// </summary>
-        /// <param name="GptTmplPath">The path of the GptTmpl.inf file</param>
-        /// <returns></returns>
-        public static bool CheckSeDenyNetworkLogonRight(string GptTmplPath)
-        {
-            bool SeDenyNetworkLogonRight = false;
-
-            if (File.Exists(GptTmplPath))
-            {
-                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
-                {
-                    string SeDenyNetworkLogonRightConfiguration = @"SeDenyNetworkLogonRight = *S-1-5-32-544";
-                    if (line.Contains(SeDenyNetworkLogonRightConfiguration))
-                    {
-                        SeDenyNetworkLogonRight = true;
-                    }
-                }
-            }
-
-            return SeDenyNetworkLogonRight;
-        }
-
-        /// <summary>
-        /// Check if Administrators are not allowed to perform remote interactive authentication
-        /// </summary>
-        /// <param name="GptTmplPath">The path of the GptTmpl.inf file</param>
-        /// <returns></returns>
-        public static bool CheckSeDenyRemoteInteractiveLogonRight(string GptTmplPath)
-        {
-            bool SeDenyRemoteInteractiveLogonRight = false;
-
-            if (File.Exists(GptTmplPath))
-            {
-                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
-                {
-                    string SeDenyRemoteInteractiveLogonRightConfiguration = @"SeDenyRemoteInteractiveLogonRight = *S-1-5-32-544";
-                    if (line.Contains(SeDenyRemoteInteractiveLogonRightConfiguration))
-                    {
-                        SeDenyRemoteInteractiveLogonRight = true;
-                    }
-                }
-            }
-            return SeDenyRemoteInteractiveLogonRight;
-        }
-
-        /// <summary>
-        /// Checks GPO for settings which deal with remote access policies relevant to lateral movement (e.g., "EnableLUA" and "LocalAccountTokenFilterPolicy").
-        /// The OUs to which these GPOs are applied are then identified, and then the computer objects from each are retrieved.Note that this only retrieves computer
-        /// objects who have had the relevent registry keys set through group policy.
+        /// Gets the value of EnableLUA from a GptTmpl.inf file.
         /// </summary>
         /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
-        /// <param name="domain">pecifies the domain to use for the query, defaults to the current domain.</param>
-        /// <param name="domainController">Specifies an Active Directory server (domain controller) to bind to.</param>
-        /// <param name="searchScope">Specifies the scope to search under, Base/OneLevel/Subtree (default of Subtree).</param>
-        /// <param name="searchBase">The LDAP source to search through, e.g. /OU=Workstations,DC=domain,DC=local. Useful for OU queries.</param>
-        /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
+        /// <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+        /// <returns>True if EnableLUA is enabled, false otherwise.</returns>
+        public static bool GetEnableLua(string GptTmplPath)
+        {
+            if (File.Exists(GptTmplPath))
+            {
+                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
+                {
+                    if (line.Equals(@"MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA=4,0", StringComparison.CurrentCulture))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the value of FilterAdministratorToken from a GptTmpl.inf file.
+        /// </summary>
+        /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
+        /// <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+        /// <returns>True if FilterAdministratorToken is enabled, false otherwise.</returns>
+        public static bool GetFilterAdministratorToken(string GptTmplPath)
+        {
+            if (File.Exists(GptTmplPath))
+            {
+                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
+                {
+                    if (line.Equals(@"MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\FilterAdministratorToken=4,0", StringComparison.CurrentCulture))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the value of LocalAccountTokenFilterPolicy from a Registry.xml file.
+        /// </summary>
+        /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
+        /// <param name="RegistryXMLPath">Path to the Registry.xml file.</param>
+        /// <returns>True if LocalAccountTokenFilterPolicy is enabled, false otherwise.</returns>
+        public static bool GetLocalAccountTokenFilterPolicy(string RegistryXMLPath)
+        {
+            if (File.Exists(RegistryXMLPath))
+            {
+                foreach (string line in File.ReadAllLines(RegistryXMLPath, Encoding.UTF8))
+                {
+                    if (line.Contains("name=\"LocalAccountTokenFilterPolicy\" type=\"REG_DWORD\" value=\"00000001\""))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the value of SeDenyNetworkLogonRight from a GptTmpl.inf file,
+        /// which determines if Administrators are allowed to perform network authentication.
+        /// </summary>
+        /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
+        /// <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+        /// <returns>True if SeDenyNetworkLogonRight is enabled, false otherwise.</returns>
+        public static bool GetSeDenyNetworkLogonRight(string GptTmplPath)
+        {
+            if (File.Exists(GptTmplPath))
+            {
+                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
+                {
+                    if (line.Contains(@"SeDenyNetworkLogonRight = *S-1-5-32-544"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the value of SeDenyRemoteInteractiveLogonRight from a GptTmpl.inf file,
+        /// which determines if Administrators are allowed to perform remote interactive authentication.
+        /// </summary>
+        /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
+        /// <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+        /// <returns>True if SeDenyRemoteInteractiveLogonRight is enabled, false otherwise.</returns>
+        public static bool GetSeDenyRemoteInteractiveLogonRight(string GptTmplPath)
+        {
+            if (File.Exists(GptTmplPath))
+            {
+                foreach (string line in File.ReadAllLines(GptTmplPath, Encoding.UTF8))
+                {
+                    if (line.Contains(@"SeDenyRemoteInteractiveLogonRight = *S-1-5-32-544"))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Gets domain computer objects for which remote access policies are applied via GPO.
+        /// </summary>
+        /// <author>Dennis Panagiotopoulos (@den_n1s)</author>
+        /// <param name="Domain">pecifies the domain to use for the query, defaults to the current domain.</param>
+        /// <param name="DomainController">Specifies an Active Directory server (domain controller) to bind to.</param>
+        /// <param name="SearchScope">Specifies the scope to search under, Base/OneLevel/Subtree (default of Subtree).</param>
+        /// <param name="SearchBase">The LDAP source to search through, e.g. /OU=Workstations,DC=domain,DC=local. Useful for OU queries.</param>
+        /// <returns>True if execution succeeds, false otherwise.</returns>
         /// <remarks>
-        /// Credits to Jon Cave (@joncave) and William Knowles (@william_knows)for their PowerShell implementation.
+        /// Credits to Jon Cave (@joncave) and William Knowles (@william_knows) for their PowerShell implementation.
         /// https://labs.mwrinfosecurity.com/blog/enumerating-remote-access-policies-through-gpo/
         /// </remarks>
-        public static bool EnumerateRemoteAccessPolicies(string domain, string domainController, string searchScope, string searchBase)
+        public static bool GetRemoteAccessPolicies(string Domain, string DomainController, string SearchScope, string SearchBase)
         {
 
-            if(string.IsNullOrEmpty(searchScope))
+            if(string.IsNullOrEmpty(SearchScope))
             {
-                searchScope = "SubTree";
+                SearchScope = "SubTree";
             }
 
-            if(string.IsNullOrEmpty(searchBase))
+            if(string.IsNullOrEmpty(SearchBase))
             {
-                searchBase = "";
+                SearchBase = "";
             }
 
             var listEnableLUA = new List<string>();
@@ -176,42 +163,42 @@ namespace SharpSploit.Enumeration
  
             //discover current domain            
             System.DirectoryServices.ActiveDirectory.Domain current_domain = null;
-            if (string.IsNullOrEmpty(domain))
+            if (string.IsNullOrEmpty(Domain))
             {
                 try
                 {
                     current_domain = System.DirectoryServices.ActiveDirectory.Domain.GetCurrentDomain();
-                    domain = current_domain.Name;
+                    Domain = current_domain.Name;
                 }
                 catch
                 {
-                    Console.WriteLine("[!] Cannot enumerate domain.\n");
+                    Console.Error.WriteLine("[!] Cannot enumerate domain.\n");
                     return false;
                 }
             }
             else
             {
-                DirectoryContext domainContext = new DirectoryContext(DirectoryContextType.Domain, domain);
+                DirectoryContext domainContext = new DirectoryContext(DirectoryContextType.Domain, Domain);
                 try
                 {
                     current_domain = System.DirectoryServices.ActiveDirectory.Domain.GetDomain(domainContext);
                 }
                 catch
                 {
-                    Console.WriteLine("[!] The specified domain does not exist or cannot be contacted.\n");
+                    Console.Error.WriteLine("[!] The specified domain does not exist or cannot be contacted.\n");
                     return false;
                 }
 
             }
 
             //retrieve domain controller
-            if (string.IsNullOrEmpty(domainController))
+            if (string.IsNullOrEmpty(DomainController))
             {
-                domainController = current_domain.FindDomainController().Name;
+                DomainController = current_domain.FindDomainController().Name;
             }
             else
             {
-                var ldapId = new LdapDirectoryIdentifier(domainController);
+                var ldapId = new LdapDirectoryIdentifier(DomainController);
                 using (var testConnection = new LdapConnection(ldapId))
                 {
                     try
@@ -220,29 +207,29 @@ namespace SharpSploit.Enumeration
                     }
                     catch
                     {
-                        Console.WriteLine("[!] The specified domain controller cannot be contacted.\n");
+                        Console.Error.WriteLine("[!] The specified domain controller cannot be contacted.\n");
                         return false;
                     }
                 }
             }
 
-            domain = domain.ToLower();
+            Domain = Domain.ToLower();
 
             String[] DC_array = null;
             String distinguished_name = null;
             distinguished_name = "CN=Policies,CN=System";
-            DC_array = domain.Split('.');
+            DC_array = Domain.Split('.');
 
             foreach (String DC in DC_array)
             {
                 distinguished_name += ",DC=" + DC;
             }
 
-            System.DirectoryServices.Protocols.LdapDirectoryIdentifier identifier = new System.DirectoryServices.Protocols.LdapDirectoryIdentifier(domainController, 389);
-            System.DirectoryServices.Protocols.LdapConnection connection = null;
+            LdapDirectoryIdentifier identifier = new LdapDirectoryIdentifier(DomainController, 389);
+            LdapConnection connection = null;
 
             //make the connection to the domain controller
-            connection = new System.DirectoryServices.Protocols.LdapConnection(identifier);
+            connection = new LdapConnection(identifier);
             connection.SessionOptions.Sealing = true;
             connection.SessionOptions.Signing = true;
             try
@@ -251,52 +238,52 @@ namespace SharpSploit.Enumeration
             }
             catch
             {
-                Console.WriteLine("Domain controller cannot be contacted.\n");
+                Console.Error.WriteLine("Domain controller cannot be contacted.\n");
                 return false;
             }
 
             SearchRequest requestGUID = null;
-            if (string.Equals(searchScope, "SubTree"))
+            if (string.Equals(SearchScope, "SubTree"))
             {
-                requestGUID = new System.DirectoryServices.Protocols.SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.Subtree, null);
+                requestGUID = new SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.Subtree, null);
             }
-            else if (string.Equals(searchScope, "OneLevel"))
+            else if (string.Equals(SearchScope, "OneLevel"))
             {
-                requestGUID = new System.DirectoryServices.Protocols.SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.OneLevel, null);
+                requestGUID = new SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.OneLevel, null);
             }
-            else if (string.Equals(searchScope, "Base"))
+            else if (string.Equals(SearchScope, "Base"))
             {
-                requestGUID = new System.DirectoryServices.Protocols.SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.Base, null);
+                requestGUID = new SearchRequest(distinguished_name, "cn=*", System.DirectoryServices.Protocols.SearchScope.Base, null);
             }
 
             SearchResponse responseGUID = null;
             try
             {
-                responseGUID = (System.DirectoryServices.Protocols.SearchResponse)connection.SendRequest(requestGUID);
+                responseGUID = (SearchResponse)connection.SendRequest(requestGUID);
             }
             catch
             {
-                Console.WriteLine("Search scope is not valid.\n");
+                Console.Error.WriteLine("Search scope is not valid.\n");
                 return false;
             }
 
-            if (!string.IsNullOrEmpty(searchBase))
+            if (!string.IsNullOrEmpty(SearchBase))
             {
-                string adPath = "LDAP://" + domain + searchBase;
+                string adPath = "LDAP://" + Domain + SearchBase;
                 if (!DirectoryEntry.Exists(adPath))
                 {
-                    Console.WriteLine("[!] Search base is not valid.\n");
+                    Console.Error.WriteLine("[!] Search base is not valid.\n");
                     return false;
                 }
             }
 
-            foreach (System.DirectoryServices.Protocols.SearchResultEntry entry in responseGUID.Entries)
+            foreach (SearchResultEntry entry in responseGUID.Entries)
             {
                 try
                 {
-                    var requestAttributes = new System.DirectoryServices.Protocols.SearchRequest(distinguished_name, "cn=" + entry.Attributes["cn"][0].ToString(), System.DirectoryServices.Protocols.SearchScope.OneLevel, null);
-                    var responseAttributes = (System.DirectoryServices.Protocols.SearchResponse)connection.SendRequest(requestAttributes);
-                    foreach (System.DirectoryServices.Protocols.SearchResultEntry attribute in responseAttributes.Entries)
+                    var requestAttributes = new SearchRequest(distinguished_name, "cn=" + entry.Attributes["cn"][0].ToString(), System.DirectoryServices.Protocols.SearchScope.OneLevel, null);
+                    var responseAttributes = (SearchResponse)connection.SendRequest(requestAttributes);
+                    foreach (SearchResultEntry attribute in responseAttributes.Entries)
                     {
                         try
                         {
@@ -306,14 +293,14 @@ namespace SharpSploit.Enumeration
 
                             string uncPathGptTmpl = gpcfilesyspath + @"\Machine\Microsoft\Windows NT\SecEdit\GptTmpl.inf";
 
-                            bool enableLUA = CheckEnableLUA(uncPathGptTmpl);
+                            bool enableLUA = GetEnableLua(uncPathGptTmpl);
 
                             if (enableLUA)
                             {
                                 listEnableLUA.Add(name);
                             }
 
-                            bool FilterAdministratorToken = CheckFilterAdministratorToken(uncPathGptTmpl);
+                            bool FilterAdministratorToken = GetFilterAdministratorToken(uncPathGptTmpl);
 
                             if (FilterAdministratorToken)
                             {
@@ -322,21 +309,21 @@ namespace SharpSploit.Enumeration
 
                             string uncPathRegistryXML = gpcfilesyspath + @"\MACHINE\Preferences\Registry\Registry.xml";
 
-                            bool LocalAccountTokenFilterPolicy = CheckLocalAccountTokenFilterPolicy(uncPathRegistryXML);
+                            bool LocalAccountTokenFilterPolicy = GetLocalAccountTokenFilterPolicy(uncPathRegistryXML);
 
                             if (LocalAccountTokenFilterPolicy)
                             {
                                 listLocalAccountTokenFilterPolicy.Add(name);
                             }
 
-                            bool SeDenyNetworkLogonRight = CheckSeDenyNetworkLogonRight(uncPathGptTmpl);
+                            bool SeDenyNetworkLogonRight = GetSeDenyNetworkLogonRight(uncPathGptTmpl);
 
                             if (SeDenyNetworkLogonRight)
                             {
                                 listSeDenyNetworkLogonRight.Add(name);
                             }
 
-                            bool SeDenyRemoteInteractiveLogonRight = CheckSeDenyRemoteInteractiveLogonRight(uncPathGptTmpl);
+                            bool SeDenyRemoteInteractiveLogonRight = GetSeDenyRemoteInteractiveLogonRight(uncPathGptTmpl);
 
                             if (SeDenyRemoteInteractiveLogonRight)
                             {
@@ -346,36 +333,34 @@ namespace SharpSploit.Enumeration
                         }
                         catch
                         {
-                            Console.WriteLine("[!] It was not possible to retrieve the displayname, name and gpcfilesypath\n");
+                            Console.Error.WriteLine("[!] It was not possible to retrieve the displayname, name and gpcfilesypath\n");
                             return false;
                         }
                     }
                 }
                 catch
                 {
-                    Console.WriteLine("[!] It was not possible to retrieve GPO Policies\n");
+                    Console.Error.WriteLine("[!] It was not possible to retrieve GPO Policies\n");
                     return false;
                 }
             }
 
-            Console.Write("\n[+] EnableLUA: \t\t\t\t");
+            Console.Write("[+] EnableLUA: \t\t\t\t");
             foreach (var guid in listEnableLUA)
             {
                 DirectoryEntry startingPoint = null;
                 string filterGPLink = "(&(objectCategory=organizationalUnit)(gplink=*" + guid + "*))";
-
-                if (string.IsNullOrEmpty(searchBase))
+                if (string.IsNullOrEmpty(SearchBase))
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain);
                 }
                 else
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain + searchBase);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain + SearchBase);
                 }
 
                 DirectorySearcher searcher = new DirectorySearcher(startingPoint);
                 searcher.Filter = filterGPLink;
-
                 foreach (SearchResult OU in searcher.FindAll())
                 {
                     DirectoryEntry startingPoint1 = new DirectoryEntry(OU.Path);
@@ -392,25 +377,23 @@ namespace SharpSploit.Enumeration
                     }
                 }
             }
-
-            Console.Write("\n[+] FilterAdministratorToken: \t\t");
+            Console.WriteLine();
+            Console.Write("[+] FilterAdministratorToken: \t\t");
             foreach (var guid in listFilterAdministratorToken)
             {
                 DirectoryEntry startingPoint = null;
                 string filterGPLink = "(&(objectCategory=organizationalUnit)(gplink=*" + guid + "*))";
-
-                if (string.IsNullOrEmpty(searchBase))
+                if (string.IsNullOrEmpty(SearchBase))
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain);
                 }
                 else
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain + searchBase);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain + SearchBase);
                 }
 
                 DirectorySearcher searcher = new DirectorySearcher(startingPoint);
                 searcher.Filter = filterGPLink;
-
                 foreach (SearchResult OU in searcher.FindAll())
                 {
                     DirectoryEntry startingPoint1 = new DirectoryEntry(OU.Path);
@@ -428,26 +411,23 @@ namespace SharpSploit.Enumeration
 
                 }
             }
-            Console.Write("\n");
-
+            Console.WriteLine();
             Console.Write("[+] LocalAccountTokenFilterPolicy: \t");
             foreach (var guid in listLocalAccountTokenFilterPolicy)
             {
                 DirectoryEntry startingPoint = null;
                 string filterGPLink = "(&(objectCategory=organizationalUnit)(gplink=*" + guid + "*))";
-
-                if (string.IsNullOrEmpty(searchBase))
+                if (string.IsNullOrEmpty(SearchBase))
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain);
                 }
                 else
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain + searchBase);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain + SearchBase);
                 }
 
                 DirectorySearcher searcher = new DirectorySearcher(startingPoint);
                 searcher.Filter = filterGPLink;
-
                 foreach (SearchResult OU in searcher.FindAll())
                 {
                     DirectoryEntry startingPoint1 = new DirectoryEntry(OU.Path);
@@ -465,26 +445,23 @@ namespace SharpSploit.Enumeration
 
                 }
             }
-            Console.Write("\n");
-
+            Console.WriteLine();
             Console.Write("[+] SeDenyNetworkLogonRight: \t\t");
             foreach (var guid in listSeDenyNetworkLogonRight)
             {
                 DirectoryEntry startingPoint = null;
                 string filterGPLink = "(&(objectCategory=organizationalUnit)(gplink=*" + guid + "*))";
-
-                if (string.IsNullOrEmpty(searchBase))
+                if (string.IsNullOrEmpty(SearchBase))
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain);
                 }
                 else
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain + searchBase);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain + SearchBase);
                 }
 
                 DirectorySearcher searcher = new DirectorySearcher(startingPoint);
                 searcher.Filter = filterGPLink;
-
                 foreach (SearchResult OU in searcher.FindAll())
                 {
                     DirectoryEntry startingPoint1 = new DirectoryEntry(OU.Path);
@@ -499,29 +476,25 @@ namespace SharpSploit.Enumeration
                         }
                         computerPolicySeDenyNetworkLogonRight.Add(computer.Properties["dNSHostName"].Value.ToString());
                     }
-
                 }
             }
-            Console.Write("\n");
-
+            Console.WriteLine();
             Console.Write("[+] SeDenyRemoteInteractiveLogonRight: \t");
             foreach (var guid in listSeDenyRemoteInteractiveLogonRight)
             {
                 DirectoryEntry startingPoint = null;
                 string filterGPLink = "(&(objectCategory=organizationalUnit)(gplink=*" + guid + "*))";
-
-                if (string.IsNullOrEmpty(searchBase))
+                if (string.IsNullOrEmpty(SearchBase))
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain);
                 }
                 else
                 {
-                    startingPoint = new DirectoryEntry("LDAP://" + domain + searchBase);
+                    startingPoint = new DirectoryEntry("LDAP://" + Domain + SearchBase);
                 }
 
                 DirectorySearcher searcher = new DirectorySearcher(startingPoint);
                 searcher.Filter = filterGPLink;
-
                 foreach (SearchResult OU in searcher.FindAll())
                 {
                     DirectoryEntry startingPoint1 = new DirectoryEntry(OU.Path);
@@ -538,8 +511,8 @@ namespace SharpSploit.Enumeration
                     }
                 }
             }
-            Console.Write("\n");
-            Console.WriteLine("[-] Enumeration finished\n");
+            Console.WriteLine();
+            Console.WriteLine("[-] Enumeration finished");
             return true;
         }
     }
