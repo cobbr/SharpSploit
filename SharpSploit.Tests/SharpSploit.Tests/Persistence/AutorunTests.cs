@@ -3,10 +3,10 @@
 // License: BSD 3-Clause
 
 using System;
-using System.Linq;
-using Microsoft.Win32;
+using Win = Microsoft.Win32;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using SharpSploit.Enumeration;
 using SharpSploit.Persistence;
 
 namespace SharpSploit.Tests.Persistence
@@ -18,20 +18,22 @@ namespace SharpSploit.Tests.Persistence
         public void InstallHKCUAutorun()
         {
             string cmd = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(@"New-Item -Path C:\Temp\hkcu.txt -ItemType File"));
-            Autorun.InstallAutorun($@"C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe -nop -w hidden -enc {cmd}", Autorun.Hive.HKCU);
+            string valueExpected = $@"C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe -nop -w hidden -enc {cmd}";
+            Autorun.InstallAutorun(Win.RegistryHive.CurrentUser, valueExpected);
 
-            RegistryKey key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", false);
-            Assert.IsTrue(key.GetValueNames().Contains("Updater"));
+            string result = Registry.GetRegistryKey(Win.RegistryHive.CurrentUser, @"Software\Microsoft\Windows\CurrentVersion\Run", "Updater");
+            Assert.IsTrue(result.Contains(valueExpected));
         }
 
         [TestMethod]
         public void InstallHKLMAutorun()
         {
-            string cmd = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(@"New-Item -Path C:\Temp\hklm.txt -ItemType File"));
-            Autorun.InstallAutorun($@"C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe -nop -w hidden -enc {cmd}", Autorun.Hive.HKLM);
+            string cmd = Convert.ToBase64String(System.Text.Encoding.Unicode.GetBytes(@"New-Item -Path C:\Temp\hkcu.txt -ItemType File"));
+            string valueExpected = $@"C:\Windows\System32\WindowsPowershell\v1.0\powershell.exe -nop -w hidden -enc {cmd}";
+            Autorun.InstallAutorun(Win.RegistryHive.LocalMachine, valueExpected);
 
-            RegistryKey key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", false);
-            Assert.IsTrue(key.GetValueNames().Contains("Updater"));
+            string result = Registry.GetRegistryKey(Win.RegistryHive.LocalMachine, @"Software\Microsoft\Windows\CurrentVersion\Run", "Updater");
+            Assert.IsTrue(result.Contains(valueExpected));
         }
     }
 }

