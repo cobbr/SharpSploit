@@ -1196,12 +1196,12 @@
         </member>
         <member name="M:SharpSploit.Persistence.Startup.InstallStartup(System.String,System.String)">
             <summary>
-            Writes a payload into the current users startup folder.
+            Installs a payload into the current users startup folder.
             </summary>
             <author>Daniel Duggan (@_RastaMouse)</author>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
-            <param name="FileName">Defaults to "startup.bat"</param>
-            <param name="Payload">The payload to run.</param>
+            <param name="Payload">Payload to write to a file.</param>
+            <param name="FileName">Name of the file to write. Defaults to "startup.bat"</param>
+            <returns>True if execution succeeds, false otherwise.</returns>
         </member>
         <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
             <summary>
