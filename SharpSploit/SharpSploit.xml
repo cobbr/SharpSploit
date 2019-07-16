@@ -1189,6 +1189,20 @@
             <param name="CLSID">Missing CLSID to abuse.</param>
             <param name="ExecutablePath">Path to the executable payload.</param>
         </member>
+        <member name="T:SharpSploit.Persistence.Startup">
+            <summary>
+            Startup is a class for abusing the Windows Startup folder to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Startup.InstallStartup(System.String,System.String)">
+            <summary>
+            Installs a payload into the current users startup folder.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Payload">Payload to write to a file.</param>
+            <param name="FileName">Name of the file to write. Defaults to "startup.bat"</param>
+            <returns>True if execution succeeds, false otherwise.</returns>
+        </member>
         <member name="T:SharpSploit.Persistence.WMI">
             <summary>
             WMI is a class for abusing WMI Event Subscriptions to establish peristence. Requires elevation.
