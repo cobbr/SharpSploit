@@ -11,11 +11,9 @@ using SharpSploit.Persistence;
 
 namespace SharpSploit.Tests.Persistence
 {
-
     [TestClass]
     public class WMITests
     {
-
         private static Process StartNotepad()
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
