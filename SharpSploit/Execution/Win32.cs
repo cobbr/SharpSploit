@@ -205,11 +205,11 @@ namespace SharpSploit.Execution
                 PROCESS_VM_WRITE = 0x0020,
                 SYNCHRONIZE = 0x00100000
             }
-    }
+        }
 
         public static class Netapi32
         {
-            [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct LOCALGROUP_USERS_INFO_0
             {
                 [MarshalAs(UnmanagedType.LPWStr)] internal string name;
@@ -1038,7 +1038,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-            #pragma warning disable 0618
+#pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1054,7 +1054,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-            #pragma warning restore 0618
+#pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {
@@ -1172,22 +1172,22 @@ namespace SharpSploit.Execution
             //NTSTATUS: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
             [DllImport("ntdll.dll")]
             public static extern IntPtr NtCreateThreadEx(
-                out IntPtr threadHandle, 
-                WinNT.ACCESS_MASK desiredAccess, 
-                IntPtr objectAttributes, 
-                IntPtr processHandle, 
-                IntPtr startAddress, 
-                IntPtr parameter, 
-                NT_CREATION_FLAGS creationFlags, 
-                int stackZeroBits, 
-                int sizeOfStack, 
-                int maximumStackSize, 
+                out IntPtr threadHandle,
+                WinNT.ACCESS_MASK desiredAccess,
+                IntPtr objectAttributes,
+                IntPtr processHandle,
+                IntPtr startAddress,
+                IntPtr parameter,
+                NT_CREATION_FLAGS creationFlags,
+                int stackZeroBits,
+                int sizeOfStack,
+                int maximumStackSize,
                 IntPtr attributeList
             );
 
             //Undocumented. Not the same as normal thread creation flags.
             //https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
-            public enum NT_CREATION_FLAGS: ulong
+            public enum NT_CREATION_FLAGS : ulong
             {
                 CREATE_SUSPENDED = 0x00000001,
                 SKIP_THREAD_ATTACH = 0x00000002,
