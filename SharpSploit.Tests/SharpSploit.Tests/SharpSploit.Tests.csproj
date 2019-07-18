@@ -63,6 +63,8 @@
     <Compile Include="Execution\ShellTests.cs" />
     <Compile Include="LateralMovement\DCOMTests.cs" />
     <Compile Include="LateralMovement\WMITests.cs" />
+    <Compile Include="Persistence\StartupTests.cs" />
+    <Compile Include="Persistence\WMITests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
