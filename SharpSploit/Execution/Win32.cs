@@ -1035,7 +1035,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-#pragma warning disable 0618
+            #pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1051,7 +1051,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-#pragma warning restore 0618
+            #pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {
