@@ -202,11 +202,11 @@ namespace SharpSploit.Execution
                 PROCESS_VM_WRITE = 0x0020,
                 SYNCHRONIZE = 0x00100000
             }
-    }
+        }
 
         public static class Netapi32
         {
-            [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct LOCALGROUP_USERS_INFO_0
             {
                 [MarshalAs(UnmanagedType.LPWStr)] internal string name;
@@ -1132,6 +1132,67 @@ namespace SharpSploit.Execution
                 ref WinNT._TOKEN_MANDATORY_LABEL TokenInformation,
                 Int32 TokenInformationLength
             );
+
+            [DllImport("ntdll.dll", SetLastError = true)]
+            public static extern uint NtCreateSection(
+                ref IntPtr SectionHandle,
+                uint DesiredAccess,
+                IntPtr ObjectAttributes,
+                ref ulong MaximumSize,
+                uint SectionPageProtection,
+                uint AllocationAttributes,
+                IntPtr FileHandle
+            );
+
+            [DllImport("ntdll.dll", SetLastError = true)]
+            public static extern uint NtMapViewOfSection(
+                IntPtr SectionHandle,
+                IntPtr ProcessHandle,
+                ref IntPtr BaseAddress,
+                IntPtr ZeroBits,
+                IntPtr CommitSize,
+                IntPtr SectionOffset,
+                ref uint ViewSize,
+                uint InheritDisposition,
+                uint AllocationType,
+                uint Win32Protect
+            );
+
+            [DllImport("ntdll.dll", SetLastError = true)]
+            public static extern UIntPtr NtUnmapViewOfSection(
+                IntPtr hProc,
+                IntPtr baseAddr
+            );
+
+            //Undocumented. Created by Microsoft to be a universal, cross-session solution for remote thread creation.
+            //Returns NTSTATUS, a VERY BROAD set of error codes that is too large to define here.
+            //NTSTATUS: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+            [DllImport("ntdll.dll")]
+            public static extern IntPtr NtCreateThreadEx(
+                out IntPtr threadHandle,
+                WinNT.ACCESS_MASK desiredAccess,
+                IntPtr objectAttributes,
+                IntPtr processHandle,
+                IntPtr startAddress,
+                IntPtr parameter,
+                NT_CREATION_FLAGS creationFlags,
+                int stackZeroBits,
+                int sizeOfStack,
+                int maximumStackSize,
+                IntPtr attributeList
+            );
+
+            //Undocumented. Not the same as normal thread creation flags.
+            //https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            public enum NT_CREATION_FLAGS : ulong
+            {
+                CREATE_SUSPENDED = 0x00000001,
+                SKIP_THREAD_ATTACH = 0x00000002,
+                HIDE_FROM_DEBUGGER = 0x00000004,
+                HAS_SECURITY_DESCRIPTOR = 0x00000010,
+                ACCESS_CHECK_IN_TARGET = 0x00000020,
+                INITIAL_THREAD = 0x00000080
+            }
         }
     }
 }
