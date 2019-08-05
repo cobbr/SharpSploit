@@ -1017,6 +1017,84 @@
             <param name="EncodedAssembly">The base64-encoded .NET assembly byte array.</param>
             <returns>Loaded assembly.</returns>
         </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Generic">
+            <summary>
+            Generic is class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
+            P/Invoke signatures, imports, and IAT entries by loading modules and invoking their functions at runtime.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.DynamicAPIInvoke(System.String,System.String,System.Type,System.Object[]@)">
+            <summary>
+            Dynamically invoke an arbitrary function from a DLL, providing its name, function prototype, and arguments.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="DLLName">Name of the DLL.</param>
+            <param name="FunctionName">Name of the function.</param>
+            <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+            <param name="Parameters">Parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke(System.IntPtr,System.Type,System.Object[]@)">
+            <summary>
+            Dynamically invokes an arbitrary function from a pointer. Useful for manually mapped modules or loading/invoking unmanaged code from memory.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="FunctionPointer">A pointer to the unmanaged function.</param>
+            <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+            <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL on disk.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="DLLName">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <param name="FunctionName">Name of the exported procedure.</param>
+            <returns>IntPtr handle to the function.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
+            <summary>
+            Contains function prototypes and wrapper functions for dynamically invoking NT API Calls.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Native.DELEGATES">
+             <summary>
+             Holds delegates for API calls in the NT Layer.
+             Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
+             </summary>
+             <example>
+             
+             //These delegates may also be used directly.
+            
+             //Get a pointer to the NtCreateThreadEx function.
+             IntPtr pFunction = Execution.DynamicInvoke.Generic.GetLibraryAddress(@"ntdll.dll", "NtCreateThreadEx");
+             
+             //Create an instance of a NtCreateThreadEx delegate from our function pointer.
+             DELEGATES.NtCreateThreadEx createThread = (NATIVE_DELEGATES.NtCreateThreadEx)Marshal.GetDelegateForFunctionPointer(
+                pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
+            
+             //Invoke NtCreateThreadEx using the delegate
+             createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
+                 procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
+             
+             </example>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Win32">
+            <summary>
+            Contains function prototypes and wrapper functions for dynamically invoking Win32 API Calls.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Win32.OpenProcess(SharpSploit.Execution.Win32.Kernel32.ProcessAccessFlags,System.Boolean,System.UInt32)">
+            <summary>
+            Uses DynamicInvocation to call the OpenProcess Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="dwDesiredAccess"></param>
+            <param name="bInheritHandle"></param>
+            <param name="dwProcessId"></param>
+            <returns></returns>
+        </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
             PE is a library for loading PEs in memory. It currently only work for the Mimikatz PE, not for arbitrary PEs.
@@ -1129,6 +1207,35 @@
             <remarks>
             A majority of this library is adapted from signatures found at www.pinvoke.net.
             </remarks>
+        </member>
+        <member name="M:SharpSploit.Execution.Win32.NtDll.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
+            for remote thread creation.
+            </summary>
+            <param name="threadHandle"></param>
+            <param name="desiredAccess"></param>
+            <param name="objectAttributes"></param>
+            <param name="processHandle"></param>
+            <param name="startAddress"></param>
+            <param name="parameter"></param>
+            <param name="creationFlags"></param>
+            <param name="stackZeroBits"></param>
+            <param name="sizeOfStack"></param>
+            <param name="maximumStackSize"></param>
+            <param name="attributeList"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS">
+            <summary>
+            NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Win32.NtDll.NTSTATUS">
+            <summary>
+            NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+            https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
+            </summary>
         </member>
         <member name="T:SharpSploit.Generic.GenericObjectResult">
             <summary>
