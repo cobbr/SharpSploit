@@ -9,7 +9,6 @@ using MW32 = Microsoft.Win32;
 
 namespace SharpSploit.Execution
 {
-
     /// <summary>
     /// Win32 is a library of PInvoke signatures for Win32 API functions.
     /// </summary>
@@ -1167,7 +1166,22 @@ namespace SharpSploit.Execution
                 IntPtr baseAddr
             );
 
-            //Undocumented. Created by Microsoft to be a universal, cross-session solution for remote thread creation.
+            /// <summary>
+            /// NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
+            /// for remote thread creation.
+            /// </summary>
+            /// <param name="threadHandle"></param>
+            /// <param name="desiredAccess"></param>
+            /// <param name="objectAttributes"></param>
+            /// <param name="processHandle"></param>
+            /// <param name="startAddress"></param>
+            /// <param name="parameter"></param>
+            /// <param name="creationFlags"></param>
+            /// <param name="stackZeroBits"></param>
+            /// <param name="sizeOfStack"></param>
+            /// <param name="maximumStackSize"></param>
+            /// <param name="attributeList"></param>
+            /// <returns></returns>
             [DllImport("ntdll.dll")]
             public static extern IntPtr NtCreateThreadEx(
                 out IntPtr threadHandle,
@@ -1183,8 +1197,9 @@ namespace SharpSploit.Execution
                 IntPtr attributeList
             );
 
-            //Undocumented. Not the same as normal thread creation flags.
-            //https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            /// <summary>
+            /// NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            /// </summary>
             public enum NT_CREATION_FLAGS : ulong
             {
                 CREATE_SUSPENDED = 0x00000001,
@@ -1195,9 +1210,10 @@ namespace SharpSploit.Execution
                 INITIAL_THREAD = 0x00000080
             }
 
-            //Wrapper for the NTSTATUS return code data structure used by many API calls in the NT Layer.
-            // https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
-            // https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
+            /// <summary>
+            /// NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+            /// https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
+            /// </summary>
             public enum NTSTATUS : uint
             {
                 // Success

@@ -90,27 +90,27 @@ The `SharpSploit.Execution.ShellCode` class includes the following primary funct
 
 Win32 contains a large library of PInvoke signatures for Win32 API functions.
 
-### SharpSploit.Execution.DynamicInvoke
+## SharpSploit.Execution.DynamicInvoke
 
-Namespace that contains function prototypes and helper classes for dynamically loading and invoking unmanaged code from disk or memory. Allows the user to call functions in Win32, API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, or many other use cases.
+The `SharpSploit.Execution.DynamicInvoke` namespaces contains classes for dynamically invoking unmanaged DLL functions.  Allows the user to call functions in Win32, API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, or many other use cases.
 
 Function prototypes for delegates are much less forgiving than P/Invoke. Data types used as parameters must have exactly the same format in memory as the unmanaged function expects, whereas P/Invoke is forgiving and lets you use data types that are close but not the same. There is no existing library of delegates that is verified to be compatable with the Win32 and NT APIs. As such, the library of delegates in SharpSploit will be updated over time as they are discovered, tested, and used by SharpSploit commands.
 
-#### SharpSploit.Execution.DynamicInvoke.Win32
+### SharpSploit.Execution.DynamicInvoke.Win32
 
-Delegates and wrapper functions for dynamically invoking Win32 APIs.
+The `SharpSploit.Execution.DyanmicInvoke.Win32` class contains a library of DyanmicInvoke signatures for Win32 API functions.
 
-#### SharpSploit.Execution.DynamicInvoke.Native
+### SharpSploit.Execution.DynamicInvoke.Native
 
-Delegates and wrapper functions for dynamically invoking functions from NT API layer.
+The `SharpSploit.Execution.DyanmicInvoke.Win32` class contains a library of DyanmicInvoke signatures for NT API functions.
 
-#### SharpSploit.Execution.DynamicInvoke.Generic
+### SharpSploit.Execution.DynamicInvoke.Generic
 
-Helper functions for invoking arbitrary unmanaged functions by name or from pointers.
+The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper functions for invoking arbitrary unmanaged functions by name or from pointers.
 
-* `DynamicAPICall()` - Dynamically invoke an API call by name from a DLL on disk.
-* `DynamicFunctionCall()` - Dynamically invoke a function by a pointer.
-* `GetLibraryAddress()` - A helpful managed wrapper for `LoadLibrary` and `GetProcAddress` that obtains the pointer to a function from a DLL on disk.
+* `DynamicAPIInvoke()` - Dynamically invokes a specified API call from a DLL on disk.
+* `DynamicFunctionInvoke()` - Dynamically invokes a function at a specified pointer.
+* `GetLibraryAddress()` - Helper function that calss `LoadLibrary` and `GetProcAddress` to obtain the pointer to a function from a DLL on disk.
 
 ## SharpSploit.LateralMovement
 
