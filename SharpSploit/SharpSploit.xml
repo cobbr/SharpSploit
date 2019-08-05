@@ -561,6 +561,68 @@
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
         </member>
+        <member name="T:SharpSploit.Enumeration.GPO">
+            <summary>
+            GPO is a library for GPO enumeration.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetEnableLua(System.String)">
+            <summary>
+            Gets the value of EnableLUA from a GptTmpl.inf file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if EnableLUA is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetFilterAdministratorToken(System.String)">
+            <summary>
+            Gets the value of FilterAdministratorToken from a GptTmpl.inf file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if FilterAdministratorToken is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetLocalAccountTokenFilterPolicy(System.String)">
+            <summary>
+            Gets the value of LocalAccountTokenFilterPolicy from a Registry.xml file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="RegistryXMLPath">Path to the Registry.xml file.</param>
+            <returns>True if LocalAccountTokenFilterPolicy is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetSeDenyNetworkLogonRight(System.String)">
+            <summary>
+            Gets the value of SeDenyNetworkLogonRight from a GptTmpl.inf file,
+            which determines if Administrators are allowed to perform network authentication.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if SeDenyNetworkLogonRight is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetSeDenyRemoteInteractiveLogonRight(System.String)">
+            <summary>
+            Gets the value of SeDenyRemoteInteractiveLogonRight from a GptTmpl.inf file,
+            which determines if Administrators are allowed to perform remote interactive authentication.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if SeDenyRemoteInteractiveLogonRight is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetRemoteAccessPolicies(System.String,System.String,System.String,System.String)">
+            <summary>
+            Gets domain computer objects for which remote access policies are applied via GPO.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="Domain">pecifies the domain to use for the query, defaults to the current domain.</param>
+            <param name="DomainController">Specifies an Active Directory server (domain controller) to bind to.</param>
+            <param name="SearchScope">Specifies the scope to search under, Base/OneLevel/Subtree (default of Subtree).</param>
+            <param name="SearchBase">The LDAP source to search through, e.g. /OU=Workstations,DC=domain,DC=local. Useful for OU queries.</param>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credits to Jon Cave (@joncave) and William Knowles (@william_knows) for their PowerShell implementation.
+            https://labs.mwrinfosecurity.com/blog/enumerating-remote-access-policies-through-gpo/
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Enumeration.Host">
             <summary>
             Host is a library for local host enumeration.
