@@ -838,24 +838,26 @@
             <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
             <returns>Content of the value of the RegistryKey, cast as a string.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
             <param name="RegValue">The name of the RegistryKey to set.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -863,9 +865,10 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -873,15 +876,17 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKey">The RegistryKey to set.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
         <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,System.String)">
@@ -921,16 +926,17 @@
             <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
             <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="Hostname">Remote hostname to connect to for remote registry.</param>
             <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -938,9 +944,10 @@
             <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
             <param name="RegValue">The name of the RegistryKey to set.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -949,9 +956,10 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -960,7 +968,22 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.ConvertToRegistryHive(System.String)">
+            <summary>
+            Convert a string to a Win32.RegistryHive.
+            </summary>
+            <param name="RegHive">RegHive value to convert to RegistryHive.</param>
+            <returns>Matching RegistryHive value, defaults to CurrentUser if none match.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.ConvertRegistryHiveToString(Microsoft.Win32.RegistryHive)">
+            <summary>
+            Convert Win32.RegistryHive to a string.
+            </summary>
+            <param name="RegHive">RegistryHive value to convert to string.</param>
+            <returns>Matching RegistryHive string, defaults to HKEY_CURRENT_USER if none match.</returns>
         </member>
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
@@ -1341,6 +1364,31 @@
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
         </member>
+        <member name="T:SharpSploit.Persistence.Autorun">
+            <summary>
+            Autorun is a class for abusing the Windows Registry to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Autorun.InstallAutorun(Microsoft.Win32.RegistryHive,System.String,System.String)">
+            <summary>
+            Installs an autorun value in HKCU or HKLM to execute a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+            <param name="Value">Value to set in the registry.</param>
+            <param name="Name">Name for the registy value. Defaults to "Updater".</param>
+        </member>
+        <member name="M:SharpSploit.Persistence.Autorun.InstallAutorun(System.String,System.String,System.String)">
+            <summary>
+            Installs an autorun value in HKCU or HKLM to execute a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+            <param name="Value">Value to set in the registry.</param>
+            <param name="Name">Name for the registy value. Defaults to "Updater".</param>
+        </member>
         <member name="T:SharpSploit.Persistence.COM">
             <summary>
             COM is a class for abusing the Microsoft Component Object Model to establish peristence.
@@ -1357,6 +1405,42 @@
             </remarks>
             <param name="CLSID">Missing CLSID to abuse.</param>
             <param name="ExecutablePath">Path to the executable payload.</param>
+        </member>
+        <member name="T:SharpSploit.Persistence.Startup">
+            <summary>
+            Startup is a class for abusing the Windows Startup folder to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Startup.InstallStartup(System.String,System.String)">
+            <summary>
+            Installs a payload into the current users startup folder.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Payload">Payload to write to a file.</param>
+            <param name="FileName">Name of the file to write. Defaults to "startup.bat"</param>
+            <returns>True if execution succeeds, false otherwise.</returns>
+        </member>
+        <member name="T:SharpSploit.Persistence.WMI">
+            <summary>
+            WMI is a class for abusing WMI Event Subscriptions to establish peristence. Requires elevation.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.WMI.InstallWMIPersistence(System.String,SharpSploit.Persistence.WMI.EventFilter,SharpSploit.Persistence.WMI.EventConsumer,System.String,System.String,SharpSploit.Persistence.WMI.ScriptingEngine)">
+            <summary>
+            Creates a WMI Event, Consumer and Binding to execuate a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credit to Andrew Luke (@sw4mp_f0x) for PowerLurk and
+            Dominic Chell (@domchell) for Persistence Part 3 – WMI Event Subscription.
+            </remarks>
+            <param name="EventName">An arbitrary name to be assigned to the new WMI Event.</param>
+            <param name="EventFilter">Specifies the event trigger to use. The options are ProcessStart.</param>
+            <param name="EventConsumer">Specifies the action to carry out. The options are CommandLine (OS Command) and ActiveScript (JScript or VBScript).</param>
+            <param name="Payload">Specifies the CommandLine or ActiveScript payload to run.</param>
+            <param name="ProcessName">Specifies the process name when the ProcessStart trigger is selected. Defaults to notepad.exe.</param>
+            <param name="ScriptingEngine">Specifies the scripting engine when the ActiveScript consumer is selected. Defaults to VBScript.</param>
         </member>
         <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
             <summary>
