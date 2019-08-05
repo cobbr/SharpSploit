@@ -160,8 +160,9 @@ namespace SharpSploit.Enumeration
         /// </summary>
         /// <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRegistryKey(string RegHiveKeyValue, object Value)
+        public static bool SetRegistryKey(string RegHiveKeyValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             string[] pieces = RegHiveKeyValue.Split(Path.DirectorySeparatorChar);
             if (!pieces.Any()) { return false; }
@@ -170,7 +171,7 @@ namespace SharpSploit.Enumeration
             {
                 RegHiveKey = pieces[i] + Path.DirectorySeparatorChar;
             }
-            return SetRegistryKey(ConvertToRegistryHive(pieces.First()), RegHiveKey.Trim(Path.DirectorySeparatorChar), pieces[pieces.Length - 1], Value);
+            return SetRegistryKey(ConvertToRegistryHive(pieces.First()), RegHiveKey.Trim(Path.DirectorySeparatorChar), pieces[pieces.Length - 1], Value, ValueKind);
         }
 
         /// <summary>
@@ -179,8 +180,9 @@ namespace SharpSploit.Enumeration
         /// <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
         /// <param name="RegValue">The name of the RegistryKey to set.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRegistryKey(string RegHiveKey, string RegValue, object Value)
+        public static bool SetRegistryKey(string RegHiveKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             string[] pieces = RegHiveKey.Split(Path.DirectorySeparatorChar);
             if (!pieces.Any()) { return false; }
@@ -189,7 +191,7 @@ namespace SharpSploit.Enumeration
             {
                 RegKey = pieces[i] + Path.DirectorySeparatorChar;
             }
-            return SetRegistryKey(ConvertToRegistryHive(pieces.First()), RegKey.Trim(Path.DirectorySeparatorChar), RegValue, Value);
+            return SetRegistryKey(ConvertToRegistryHive(pieces.First()), RegKey.Trim(Path.DirectorySeparatorChar), RegValue, Value, ValueKind);
         }
 
         /// <summary>
@@ -199,10 +201,11 @@ namespace SharpSploit.Enumeration
         /// <param name="RegKey">The RegistryKey to set, including the hive.</param>
         /// <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRegistryKey(string RegHive, string RegKey, string RegValue, object Value)
+        public static bool SetRegistryKey(string RegHive, string RegKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
-            return SetRegistryKey(ConvertToRegistryHive(RegHive), RegKey, RegValue, Value);
+            return SetRegistryKey(ConvertToRegistryHive(RegHive), RegKey, RegValue, Value, ValueKind);
         }
 
         /// <summary>
@@ -212,8 +215,9 @@ namespace SharpSploit.Enumeration
         /// <param name="RegKey">The RegistryKey to set, including the hive.</param>
         /// <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRegistryKey(Win.RegistryHive RegHive, string RegKey, string RegValue, object Value)
+        public static bool SetRegistryKey(Win.RegistryHive RegHive, string RegKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             Win.RegistryKey baseKey = null;
             switch (RegHive)
@@ -250,7 +254,7 @@ namespace SharpSploit.Enumeration
                     baseKey = baseKey.OpenSubKey(pieces[i], true);
                 }
             }
-            return SetRegistryKeyValue(baseKey, RegValue, Value);
+            return SetRegistryKeyValue(baseKey, RegValue, Value, ValueKind);
         }
 
         /// <summary>
@@ -259,12 +263,13 @@ namespace SharpSploit.Enumeration
         /// <param name="RegHiveKey">The RegistryKey to set.</param>
         /// <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        private static bool SetRegistryKeyValue(Win.RegistryKey RegHiveKey, string RegValue, object Value)
+        private static bool SetRegistryKeyValue(Win.RegistryKey RegHiveKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             try
             {
-                RegHiveKey.SetValue(RegValue, Value);
+                RegHiveKey.SetValue(RegValue, Value, ValueKind);
                 return true;
             }
             catch (Exception e)
@@ -405,8 +410,9 @@ namespace SharpSploit.Enumeration
         /// <param name="Hostname">Remote hostname to connect to for remote registry.</param>
         /// <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRemoteRegistryKey(string Hostname, string RegHiveKeyValue, object Value)
+        public static bool SetRemoteRegistryKey(string Hostname, string RegHiveKeyValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             string[] pieces = RegHiveKeyValue.Split(Path.DirectorySeparatorChar);
             if (!pieces.Any()) { return false; }
@@ -415,7 +421,7 @@ namespace SharpSploit.Enumeration
             {
                 RegHiveKey = pieces[i] + Path.DirectorySeparatorChar;
             }
-            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(pieces.First()), RegHiveKey.Trim(Path.DirectorySeparatorChar), pieces[pieces.Length - 1], Value);
+            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(pieces.First()), RegHiveKey.Trim(Path.DirectorySeparatorChar), pieces[pieces.Length - 1], Value, ValueKind);
         }
 
         /// <summary>
@@ -425,8 +431,9 @@ namespace SharpSploit.Enumeration
         /// <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
         /// <param name="RegValue">The name of the RegistryKey to set.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRemoteRegistryKey(string Hostname, string RegHiveKey, string RegValue, object Value)
+        public static bool SetRemoteRegistryKey(string Hostname, string RegHiveKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             string[] pieces = RegHiveKey.Split(Path.DirectorySeparatorChar);
             if (!pieces.Any()) { return false; }
@@ -435,7 +442,7 @@ namespace SharpSploit.Enumeration
             {
                 RegKey = pieces[i] + Path.DirectorySeparatorChar;
             }
-            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(pieces.First()), RegKey.Trim(Path.DirectorySeparatorChar), RegValue, Value);
+            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(pieces.First()), RegKey.Trim(Path.DirectorySeparatorChar), RegValue, Value, ValueKind);
         }
 
         /// <summary>
@@ -446,10 +453,11 @@ namespace SharpSploit.Enumeration
         /// <param name="RegKey">The RegistryKey to set, including the hive.</param>
         /// <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRemoteRegistryKey(string Hostname, string RegHive, string RegKey, string RegValue, object Value)
+        public static bool SetRemoteRegistryKey(string Hostname, string RegHive, string RegKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
-            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(RegHive), RegKey, RegValue, Value);
+            return SetRemoteRegistryKey(Hostname, ConvertToRegistryHive(RegHive), RegKey, RegValue, Value, ValueKind);
         }
 
         /// <summary>
@@ -460,8 +468,9 @@ namespace SharpSploit.Enumeration
         /// <param name="RegKey">The RegistryKey to set, including the hive.</param>
         /// <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
         /// <param name="Value">The value to write to the registry key.</param>
+        /// <param name="ValueKind">The kind of value to write to the registry key.</param>
         /// <returns>True if succeeded, false otherwise.</returns>
-        public static bool SetRemoteRegistryKey(string Hostname, Win.RegistryHive RegHive, string RegKey, string RegValue, object Value)
+        public static bool SetRemoteRegistryKey(string Hostname, Win.RegistryHive RegHive, string RegKey, string RegValue, object Value, Win.RegistryValueKind ValueKind = Win.RegistryValueKind.String)
         {
             Win.RegistryKey baseKey = null;
             switch (RegHive)
@@ -498,25 +507,30 @@ namespace SharpSploit.Enumeration
                     baseKey = baseKey.OpenSubKey(pieces[i], true);
                 }
             }
-            return SetRegistryKeyValue(baseKey, RegValue, Value);
+            return SetRegistryKeyValue(baseKey, RegValue, Value, ValueKind);
         }
         #endregion
 
-        private static Win.RegistryHive ConvertToRegistryHive(string RegHive)
+        /// <summary>
+        /// Convert a string to a Win32.RegistryHive.
+        /// </summary>
+        /// <param name="RegHive">RegHive value to convert to RegistryHive.</param>
+        /// <returns>Matching RegistryHive value, defaults to CurrentUser if none match.</returns>
+        public static Win.RegistryHive ConvertToRegistryHive(string RegHive)
         {
-            if (RegHive.Equals("HKEY_CURRENT_USER", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCU", StringComparison.OrdinalIgnoreCase))
+            if (RegHive.Equals("HKEY_CURRENT_USER", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCU", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("CurrentUser", StringComparison.OrdinalIgnoreCase))
             {
                 return Win.RegistryHive.CurrentUser;
             }
-            if (RegHive.Equals("HKEY_LOCAL_MACHINE", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKLM", StringComparison.OrdinalIgnoreCase))
+            if (RegHive.Equals("HKEY_LOCAL_MACHINE", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKLM", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("LocalMachine", StringComparison.OrdinalIgnoreCase))
             {
                 return Win.RegistryHive.LocalMachine;
             }
-            if (RegHive.Equals("HKEY_CLASSES_ROOT", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCR", StringComparison.OrdinalIgnoreCase))
+            if (RegHive.Equals("HKEY_CLASSES_ROOT", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCR", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("ClassesRoot", StringComparison.OrdinalIgnoreCase))
             {
                 return Win.RegistryHive.ClassesRoot;
             }
-            if (RegHive.Equals("HKEY_CURRENT_CONFIG", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCC", StringComparison.OrdinalIgnoreCase))
+            if (RegHive.Equals("HKEY_CURRENT_CONFIG", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("HKCC", StringComparison.OrdinalIgnoreCase) || RegHive.Equals("CurrentConfig", StringComparison.OrdinalIgnoreCase))
             {
                 return Win.RegistryHive.CurrentConfig;
             }
@@ -527,7 +541,12 @@ namespace SharpSploit.Enumeration
             return Win.RegistryHive.CurrentUser;
         }
 
-        private static string ConvertRegistryHiveToString(Win.RegistryHive RegHive)
+        /// <summary>
+        /// Convert Win32.RegistryHive to a string.
+        /// </summary>
+        /// <param name="RegHive">RegistryHive value to convert to string.</param>
+        /// <returns>Matching RegistryHive string, defaults to HKEY_CURRENT_USER if none match.</returns>
+        public static string ConvertRegistryHiveToString(Win.RegistryHive RegHive)
         {
             switch (RegHive)
             {

@@ -561,6 +561,68 @@
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
         </member>
+        <member name="T:SharpSploit.Enumeration.GPO">
+            <summary>
+            GPO is a library for GPO enumeration.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetEnableLua(System.String)">
+            <summary>
+            Gets the value of EnableLUA from a GptTmpl.inf file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if EnableLUA is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetFilterAdministratorToken(System.String)">
+            <summary>
+            Gets the value of FilterAdministratorToken from a GptTmpl.inf file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if FilterAdministratorToken is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetLocalAccountTokenFilterPolicy(System.String)">
+            <summary>
+            Gets the value of LocalAccountTokenFilterPolicy from a Registry.xml file.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="RegistryXMLPath">Path to the Registry.xml file.</param>
+            <returns>True if LocalAccountTokenFilterPolicy is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetSeDenyNetworkLogonRight(System.String)">
+            <summary>
+            Gets the value of SeDenyNetworkLogonRight from a GptTmpl.inf file,
+            which determines if Administrators are allowed to perform network authentication.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if SeDenyNetworkLogonRight is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetSeDenyRemoteInteractiveLogonRight(System.String)">
+            <summary>
+            Gets the value of SeDenyRemoteInteractiveLogonRight from a GptTmpl.inf file,
+            which determines if Administrators are allowed to perform remote interactive authentication.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="GptTmplPath">Path to the GptTmpl.inf file.</param>
+            <returns>True if SeDenyRemoteInteractiveLogonRight is enabled, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.GPO.GetRemoteAccessPolicies(System.String,System.String,System.String,System.String)">
+            <summary>
+            Gets domain computer objects for which remote access policies are applied via GPO.
+            </summary>
+            <author>Dennis Panagiotopoulos (@den_n1s)</author>
+            <param name="Domain">pecifies the domain to use for the query, defaults to the current domain.</param>
+            <param name="DomainController">Specifies an Active Directory server (domain controller) to bind to.</param>
+            <param name="SearchScope">Specifies the scope to search under, Base/OneLevel/Subtree (default of Subtree).</param>
+            <param name="SearchBase">The LDAP source to search through, e.g. /OU=Workstations,DC=domain,DC=local. Useful for OU queries.</param>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <remarks>
+            Credits to Jon Cave (@joncave) and William Knowles (@william_knows) for their PowerShell implementation.
+            https://labs.mwrinfosecurity.com/blog/enumerating-remote-access-policies-through-gpo/
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Enumeration.Host">
             <summary>
             Host is a library for local host enumeration.
@@ -776,24 +838,26 @@
             <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
             <returns>Content of the value of the RegistryKey, cast as a string.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
             <param name="RegValue">The name of the RegistryKey to set.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -801,9 +865,10 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKey(Microsoft.Win32.RegistryHive,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -811,15 +876,17 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRegistryKeyValue(Microsoft.Win32.RegistryKey,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="RegHiveKey">The RegistryKey to set.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
         <member name="M:SharpSploit.Enumeration.Registry.GetRemoteRegistryKey(System.String,System.String)">
@@ -859,16 +926,17 @@
             <param name="RegValue">The name of name/value pair to read from in the RegistryKey.</param>
             <returns>List of the entries of the RegistrySubKey or the RegistryValue, cast as a string.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
             <param name="Hostname">Remote hostname to connect to for remote registry.</param>
             <param name="RegHiveKeyValue">The path to the registry key to set, including: hive, subkey, and value name.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -876,9 +944,10 @@
             <param name="RegHiveKey">The path to the registry key to set, including: hive and subkey.</param>
             <param name="RegValue">The name of the RegistryKey to set.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,System.String,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -887,9 +956,10 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String,System.Object)">
+        <member name="M:SharpSploit.Enumeration.Registry.SetRemoteRegistryKey(System.String,Microsoft.Win32.RegistryHive,System.String,System.String,System.Object,Microsoft.Win32.RegistryValueKind)">
             <summary>
             Sets a value in the registry.
             </summary>
@@ -898,7 +968,22 @@
             <param name="RegKey">The RegistryKey to set, including the hive.</param>
             <param name="RegValue">The name of name/value pair to write to in the RegistryKey.</param>
             <param name="Value">The value to write to the registry key.</param>
+            <param name="ValueKind">The kind of value to write to the registry key.</param>
             <returns>True if succeeded, false otherwise.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.ConvertToRegistryHive(System.String)">
+            <summary>
+            Convert a string to a Win32.RegistryHive.
+            </summary>
+            <param name="RegHive">RegHive value to convert to RegistryHive.</param>
+            <returns>Matching RegistryHive value, defaults to CurrentUser if none match.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Registry.ConvertRegistryHiveToString(Microsoft.Win32.RegistryHive)">
+            <summary>
+            Convert Win32.RegistryHive to a string.
+            </summary>
+            <param name="RegHive">RegistryHive value to convert to string.</param>
+            <returns>Matching RegistryHive string, defaults to HKEY_CURRENT_USER if none match.</returns>
         </member>
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
@@ -954,6 +1039,84 @@
             </summary>
             <param name="EncodedAssembly">The base64-encoded .NET assembly byte array.</param>
             <returns>Loaded assembly.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Generic">
+            <summary>
+            Generic is class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
+            P/Invoke signatures, imports, and IAT entries by loading modules and invoking their functions at runtime.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.DynamicAPIInvoke(System.String,System.String,System.Type,System.Object[]@)">
+            <summary>
+            Dynamically invoke an arbitrary function from a DLL, providing its name, function prototype, and arguments.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="DLLName">Name of the DLL.</param>
+            <param name="FunctionName">Name of the function.</param>
+            <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+            <param name="Parameters">Parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke(System.IntPtr,System.Type,System.Object[]@)">
+            <summary>
+            Dynamically invokes an arbitrary function from a pointer. Useful for manually mapped modules or loading/invoking unmanaged code from memory.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="FunctionPointer">A pointer to the unmanaged function.</param>
+            <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+            <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL on disk.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="DLLName">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <param name="FunctionName">Name of the exported procedure.</param>
+            <returns>IntPtr handle to the function.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
+            <summary>
+            Contains function prototypes and wrapper functions for dynamically invoking NT API Calls.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Native.DELEGATES">
+             <summary>
+             Holds delegates for API calls in the NT Layer.
+             Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
+             </summary>
+             <example>
+             
+             //These delegates may also be used directly.
+            
+             //Get a pointer to the NtCreateThreadEx function.
+             IntPtr pFunction = Execution.DynamicInvoke.Generic.GetLibraryAddress(@"ntdll.dll", "NtCreateThreadEx");
+             
+             //Create an instance of a NtCreateThreadEx delegate from our function pointer.
+             DELEGATES.NtCreateThreadEx createThread = (NATIVE_DELEGATES.NtCreateThreadEx)Marshal.GetDelegateForFunctionPointer(
+                pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
+            
+             //Invoke NtCreateThreadEx using the delegate
+             createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
+                 procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
+             
+             </example>
+        </member>
+        <member name="T:SharpSploit.Execution.DynamicInvoke.Win32">
+            <summary>
+            Contains function prototypes and wrapper functions for dynamically invoking Win32 API Calls.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Win32.OpenProcess(SharpSploit.Execution.Win32.Kernel32.ProcessAccessFlags,System.Boolean,System.UInt32)">
+            <summary>
+            Uses DynamicInvocation to call the OpenProcess Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="dwDesiredAccess"></param>
+            <param name="bInheritHandle"></param>
+            <param name="dwProcessId"></param>
+            <returns></returns>
         </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
@@ -1068,6 +1231,35 @@
             A majority of this library is adapted from signatures found at www.pinvoke.net.
             </remarks>
         </member>
+        <member name="M:SharpSploit.Execution.Win32.NtDll.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
+            for remote thread creation.
+            </summary>
+            <param name="threadHandle"></param>
+            <param name="desiredAccess"></param>
+            <param name="objectAttributes"></param>
+            <param name="processHandle"></param>
+            <param name="startAddress"></param>
+            <param name="parameter"></param>
+            <param name="creationFlags"></param>
+            <param name="stackZeroBits"></param>
+            <param name="sizeOfStack"></param>
+            <param name="maximumStackSize"></param>
+            <param name="attributeList"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS">
+            <summary>
+            NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Win32.NtDll.NTSTATUS">
+            <summary>
+            NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+            https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
+            </summary>
+        </member>
         <member name="T:SharpSploit.Generic.GenericObjectResult">
             <summary>
             GenericObjectResult for listing objects whose type is unknown at compile time.
@@ -1171,6 +1363,31 @@
             <remarks>
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
+        </member>
+        <member name="T:SharpSploit.Persistence.Autorun">
+            <summary>
+            Autorun is a class for abusing the Windows Registry to establish peristence.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.Autorun.InstallAutorun(Microsoft.Win32.RegistryHive,System.String,System.String)">
+            <summary>
+            Installs an autorun value in HKCU or HKLM to execute a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+            <param name="Value">Value to set in the registry.</param>
+            <param name="Name">Name for the registy value. Defaults to "Updater".</param>
+        </member>
+        <member name="M:SharpSploit.Persistence.Autorun.InstallAutorun(System.String,System.String,System.String)">
+            <summary>
+            Installs an autorun value in HKCU or HKLM to execute a payload.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>True if execution succeeds, false otherwise.</returns>
+            <param name="TargetHive">Target hive to install autorun. CurrentUser or LocalMachine.</param>
+            <param name="Value">Value to set in the registry.</param>
+            <param name="Name">Name for the registy value. Defaults to "Updater".</param>
         </member>
         <member name="T:SharpSploit.Persistence.COM">
             <summary>
