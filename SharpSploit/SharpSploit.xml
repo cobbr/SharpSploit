@@ -985,6 +985,21 @@
             <param name="RegHive">RegistryHive value to convert to string.</param>
             <returns>Matching RegistryHive string, defaults to HKEY_CURRENT_USER if none match.</returns>
         </member>
+        <member name="T:SharpSploit.Evasion.Amsi">
+            <summary>
+            Amsi is a class for manipulating the Antimalware Scan Interface.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Evasion.Amsi.PatchAmsiScanBuffer">
+            <summary>
+            Patch the AmsiScanBuffer function in amsi.dll.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if succeeded, otherwise false.</returns>
+            <remarks>
+            Credit to Adam Chester (@_xpn_).
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
             Assembly is a library for loading .NET assemblies and executing methods contained within them.
@@ -1355,21 +1370,6 @@
             <param name="Username">Username to authenticate as to the remote system.</param>
             <param name="Password">Password to authenticate the user.</param>
             <returns>Bool. True if execution succeeds, false otherwise.</returns>
-        </member>
-        <member name="T:SharpSploit.Misc.Amsi">
-            <summary>
-            Amsi is a class for manipulating the Antimalware Scan Interface.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Misc.Amsi.PatchAmsiScanBuffer">
-            <summary>
-            Patch the AmsiScanBuffer function in amsi.dll.
-            </summary>
-            <author>Daniel Duggan (@_RastaMouse)</author>
-            <returns>Bool. True if succeeded, otherwise false.</returns>
-            <remarks>
-            Credit to Adam Chester (@_xpn_).
-            </remarks>
         </member>
         <member name="T:SharpSploit.Misc.CountdownEvent">
             <summary>

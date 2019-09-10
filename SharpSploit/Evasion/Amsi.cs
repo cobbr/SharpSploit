@@ -5,9 +5,10 @@
 using System;
 using System.Runtime.InteropServices;
 
+using SharpSploit.Misc;
 using SharpSploit.Execution;
 
-namespace SharpSploit.Misc
+namespace SharpSploit.Evasion
 {
     /// <summary>
     /// Amsi is a class for manipulating the Antimalware Scan Interface.
