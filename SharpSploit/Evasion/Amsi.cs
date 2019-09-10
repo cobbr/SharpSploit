@@ -44,6 +44,7 @@ namespace SharpSploit.Evasion
             catch (Exception e)
             {
                 Console.Error.WriteLine("Exception: " + e.Message);
+
                 return false;
             }
         }
