@@ -1356,6 +1356,21 @@
             <param name="Password">Password to authenticate the user.</param>
             <returns>Bool. True if execution succeeds, false otherwise.</returns>
         </member>
+        <member name="T:SharpSploit.Misc.Amsi">
+            <summary>
+            Amsi is a class for manipulating the Antimalware Scan Interface.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Misc.Amsi.PatchAmsiScanBuffer">
+            <summary>
+            Patch the AmsiScanBuffer function in amsi.dll.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if succeeded, otherwise false.</returns>
+            <remarks>
+            Credit to Adam Chester (@_xpn_).
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Misc.CountdownEvent">
             <summary>
             CountdownEvent is used for counting Asynchronous operations
