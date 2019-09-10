@@ -9,9 +9,20 @@ using SharpSploit.Execution;
 
 namespace SharpSploit.Misc
 {
+    /// <summary>
+    /// Amsi is a class for manipulating the Antimalware Scan Interface.
+    /// </summary>
     public class Amsi
     {
-        public static bool BypassAmsi()
+        /// <summary>
+        /// Patch the AmsiScanBuffer function in amsi.dll.
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <returns>Bool. True if succeeded, otherwise false.</returns>
+        /// <remarks>
+        /// Credit to Adam Chester (@_xpn_).
+        /// </remarks>
+        public static bool PatchAmsiScanBuffer()
         {
             byte[] patch;
 
@@ -31,10 +42,9 @@ namespace SharpSploit.Misc
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine("Exception: " + e.Message + Environment.NewLine + e.InnerException);
+                Console.Error.WriteLine("Exception: " + e.Message);
                 return false;
             }
-            
         }
     }
 }
