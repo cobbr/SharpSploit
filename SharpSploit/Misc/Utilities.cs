@@ -78,7 +78,7 @@ namespace SharpSploit.Misc
             }
         }
 
-        public static bool is64Bit
+        public static bool Is64Bit
         {
             get { return IntPtr.Size == 8; }
         }
