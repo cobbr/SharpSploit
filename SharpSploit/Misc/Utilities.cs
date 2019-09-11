@@ -2,6 +2,7 @@
 // Project: SharpSploit (https://github.com/cobbr/SharpSploit)
 // License: BSD 3-Clause
 
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -75,6 +76,11 @@ namespace SharpSploit.Misc
                     return outputStream.ToArray();
                 }
             }
+        }
+
+        public static bool is64Bit
+        {
+            get { return IntPtr.Size == 8; }
         }
     }
 }
