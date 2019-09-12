@@ -55,6 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Credentials\TokensTests.cs" />
+    <Compile Include="Enumeration\DnsTests.cs" />
     <Compile Include="Enumeration\DomainTests.cs" />
     <Compile Include="Enumeration\HostTests.cs" />
     <Compile Include="Enumeration\NetworkTests.cs" />

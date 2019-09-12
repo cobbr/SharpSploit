@@ -198,6 +198,30 @@
             <param name="Privilege">Privilege to enable.</param>
             <returns>True if enabling Token succeeds, false otherwise.</returns>
         </member>
+        <member name="T:SharpSploit.Enumeration.Dns">
+            <summary>
+            Dns is a library for dumping dns via Active Directory.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Dns.DnsResult">
+            <summary>
+            DnsResult represent the result entry of an host.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Dns.DumpDns(System.String)">
+            <summary>
+            Query specified domain controller via ldap and extrat hosts name list from dns, than perform a dns lookup to resolve ips. .
+            </summary>
+            <author>@b4rtik</author>
+            <param name="DomainController">DomainController to query.</param>
+            <returns>List of PortScanResults</returns>
+            <remarks>
+            based on 
+            Getting in the zone dumping active directory dns with adidnsdump
+            https://dirkjanm.io/getting-in-the-zone-dumping-active-directory-dns-with-adidnsdump/
+            by @_dirkjan
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Enumeration.Domain">
             <summary>
             Domain is a library for domain enumeration that can be used to search for and query for information from
