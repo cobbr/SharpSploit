@@ -13,19 +13,22 @@ namespace SharpSploit.Execution.DynamicInvoke
     public class Native
     {
 
-        public static IntPtr NtCreateThreadEx(ref IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
+        public static Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
             IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
-            Execution.Win32.NtDll.NT_CREATION_FLAGS creationFlags, int stackZeroBits, int sizeOfStack, int maximumStackSize,
+            bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
             IntPtr attributeList)
         { 
             //Craft an array for the arguments
             object[] funcargs =
             {
-                threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, creationFlags, stackZeroBits,
+                threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, createSuspended, stackZeroBits,
                 sizeOfStack, maximumStackSize, attributeList
             };
 
-            return (IntPtr)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
+            //Update the modified variables
+            threadHandle = (IntPtr)funcargs[0];
+
+            return (Execution.Win32.NtDll.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
                 typeof(DELEGATES.NtCreateThreadEx), ref funcargs);
         }
 
@@ -38,14 +41,22 @@ namespace SharpSploit.Execution.DynamicInvoke
             uint AllocationAttributes,
             IntPtr FileHandle)
         {
+
             //Craft an array for the arguments
             object[] funcargs =
             {
                 SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle
             };
 
-            return (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
                 typeof(DELEGATES.NtCreateSection), ref funcargs);
+
+            //Update the modified variables
+            SectionHandle = (IntPtr) funcargs[0];
+
+            MaximumSize = (ulong) funcargs[3];
+
+            return retValue;
         }
 
         public static Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr)
@@ -56,8 +67,10 @@ namespace SharpSploit.Execution.DynamicInvoke
                 hProc, baseAddr
             };
 
-            return (Execution.Win32.NtDll.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtUnMapViewOfSection",
+            Execution.Win32.NtDll.NTSTATUS result = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtUnmapViewOfSection",
                 typeof(DELEGATES.NtUnmapViewOfSection), ref funcargs);
+
+            return result;
         }
 
         public static Execution.Win32.NtDll.NTSTATUS NtMapViewOfSection(
@@ -80,7 +93,14 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Win32Protect
             };
 
-            return (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
+
+            //Update the modified variables.
+            BaseAddress = (IntPtr) funcargs[2];
+
+            ViewSize = (uint) funcargs[6];
+
+            return retValue;
         }
 
         /// <summary>
@@ -105,27 +125,27 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// </example>
         public struct DELEGATES
         {
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate IntPtr NtCreateThreadEx(out IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
                 IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
-                Execution.Win32.NtDll.NT_CREATION_FLAGS creationFlags, int stackZeroBits, int sizeOfStack, int maximumStackSize,
+                bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
                 IntPtr attributeList);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate uint NtCreateSection(
-                out IntPtr SectionHandle,
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateSection(
+                ref IntPtr SectionHandle,
                 uint DesiredAccess,
                 IntPtr ObjectAttributes,
-                out ulong MaximumSize,
+                ref ulong MaximumSize,
                 uint SectionPageProtection,
                 uint AllocationAttributes,
                 IntPtr FileHandle);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate UIntPtr NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr);
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr);
 
-            [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-            public delegate UIntPtr NtMapViewOfSection(
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execution.Win32.NtDll.NTSTATUS NtMapViewOfSection(
                 IntPtr SectionHandle,
                 IntPtr ProcessHandle,
                 out IntPtr BaseAddress,
