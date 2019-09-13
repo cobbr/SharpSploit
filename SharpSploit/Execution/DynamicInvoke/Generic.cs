@@ -24,15 +24,9 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
         public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
         {
-            IntPtr hModule = Execution.Win32.Kernel32.LoadLibrary(DLLName);
+            IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
 
-            IntPtr pFunction = Execution.Win32.Kernel32.GetProcAddress(hModule, FunctionName);
-
-            Delegate funcDelegate = Marshal.GetDelegateForFunctionPointer(pFunction, FunctionDelegateType);
-
-            Object result = funcDelegate.DynamicInvoke(Parameters);
-
-            return result;
+            return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
         }
 
 
@@ -48,9 +42,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         {
             Delegate funcDelegate = Marshal.GetDelegateForFunctionPointer(FunctionPointer, FunctionDelegateType);
 
-            Object result = funcDelegate.DynamicInvoke(Parameters);
-
-            return result;
+            return funcDelegate.DynamicInvoke(Parameters);
         }
 
         /// <summary>
