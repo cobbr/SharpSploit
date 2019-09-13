@@ -37,6 +37,7 @@
 * `GetCurrentDirectory()` - Gets the current working directory full path.
 * `GetDirectoryListing()` - Gets a directory listing of the current working directory.
 * `ChangeCurrentDirectory()` - Changes the current directory by appending a specified string to the current working directory.
+* `IsX64Process` - Checks if a process is 64-bit or not.
 
 ### SharpSploit.Enumeration.Network
 
