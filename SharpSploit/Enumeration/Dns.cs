@@ -69,7 +69,8 @@ namespace SharpSploit.Enumeration
         /// </summary>
         /// <author>@b4rtik</author>
         /// <param name="DomainController">DomainController to query.</param>
-        /// <returns>List of PortScanResults</returns>
+        /// <param name="ssl">Use ldaps or not</param>
+        /// <returns>List of DnsResults</returns>
         /// <remarks>
         /// based on 
         /// Getting in the zone dumping active directory dns with adidnsdump

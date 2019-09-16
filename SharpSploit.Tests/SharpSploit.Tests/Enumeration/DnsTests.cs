@@ -19,7 +19,7 @@ namespace SharpSploit.Tests.Enumeration
         [TestMethod]
         public void TestDumpDns()
         {
-            SharpSploitResultList<Dns.DnsResult> hosts = Dns.DumpDns(System.DirectoryServices.ActiveDirectory.Domain.GetCurrentDomain().FindDomainController().Name);
+            SharpSploitResultList<Dns.DnsResult> hosts = Dns.DumpDns(System.DirectoryServices.ActiveDirectory.Domain.GetCurrentDomain().FindDomainController().Name, true);
             Assert.IsTrue(hosts.Count > 0);
             foreach (Dns.DnsResult host in hosts)
             {

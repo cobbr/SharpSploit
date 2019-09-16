@@ -200,7 +200,7 @@
         </member>
         <member name="T:SharpSploit.Enumeration.Dns">
             <summary>
-            Dns is a library for dumping dns via Active Directory.
+            Dns is a library for dumping entry from Active Directory-integrated DNS.
             </summary>
         </member>
         <member name="T:SharpSploit.Enumeration.Dns.DnsResult">
@@ -208,13 +208,14 @@
             DnsResult represent the result entry of an host.
             </summary>
         </member>
-        <member name="M:SharpSploit.Enumeration.Dns.DumpDns(System.String)">
+        <member name="M:SharpSploit.Enumeration.Dns.DumpDns(System.String,System.Boolean)">
             <summary>
-            Query specified domain controller via ldap and extrat hosts name list from dns, than perform a dns lookup to resolve ips. .
+            Query specified domain controller via ldap and extrat hosts name list from Active Directory-integrated DNS, than perform a dns lookup to resolve ips. .
             </summary>
             <author>@b4rtik</author>
             <param name="DomainController">DomainController to query.</param>
-            <returns>List of PortScanResults</returns>
+            <param name="ssl">Use ldaps or not</param>
+            <returns>List of DnsResults</returns>
             <remarks>
             based on 
             Getting in the zone dumping active directory dns with adidnsdump
