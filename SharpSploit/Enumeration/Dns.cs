@@ -76,13 +76,16 @@ namespace SharpSploit.Enumeration
         /// https://dirkjanm.io/getting-in-the-zone-dumping-active-directory-dns-with-adidnsdump/
         /// by @_dirkjan
         /// </remarks>
-        public static SharpSploitResultList<DnsResult> DumpDns(string DomainController)
+        public static SharpSploitResultList<DnsResult> DumpDns(string DomainController, bool ssl)
         {
             SharpSploitResultList<DnsResult> results = new SharpSploitResultList<DnsResult>();
 
             try
             {
-                
+                string proto = "ldap";
+                if (ssl)
+                    proto = "ldaps";
+
                 string rootDn = "DC=DomainDnsZones";
 
                 string domain_local = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName;
@@ -95,7 +98,7 @@ namespace SharpSploit.Enumeration
                 }
 
                 rootDn += domain_path;
-                DirectoryEntry rootEntry = new DirectoryEntry("LDAP://" + DomainController + "/" + rootDn);
+                DirectoryEntry rootEntry = new DirectoryEntry(proto + "://" + DomainController + "/" + rootDn);
                 rootEntry.AuthenticationType = AuthenticationTypes.Delegation;
                 DirectorySearcher searcher = new DirectorySearcher(rootEntry);
 
@@ -111,7 +114,7 @@ namespace SharpSploit.Enumeration
                     Console.WriteLine("Domain: {0}", domain);
                     Console.WriteLine();
 
-                    DirectoryEntry rootEntry_d = new DirectoryEntry("LDAP://" + DomainController + "/DC=" + result.Properties["DC"][0].ToString() + ",CN=microsoftdns," + rootDn);
+                    DirectoryEntry rootEntry_d = new DirectoryEntry(proto + "://" + DomainController + "/DC=" + result.Properties["DC"][0].ToString() + ",CN=microsoftdns," + rootDn);
                     rootEntry_d.AuthenticationType = AuthenticationTypes.Delegation;
                     DirectorySearcher searcher_h = new DirectorySearcher(rootEntry_d);
 
@@ -132,7 +135,7 @@ namespace SharpSploit.Enumeration
                         {
                             //Hidden entry
                             String path = result_h.Path;
-                            target = (path.Substring(path.IndexOf("LDAP://" + DomainController + "/"), path.IndexOf(","))).Split('=')[1];
+                            target = (path.Substring(path.IndexOf(proto + "://" + DomainController + "/"), path.IndexOf(","))).Split('=')[1];
                         }
 
                         DnsResult dnsentry = new DnsResult(DomainName: domain, ComputerName: target);
