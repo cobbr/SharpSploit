@@ -2,9 +2,6 @@
 // Project: SharpSploit (https://github.com/cobbr/SharpSploit)
 // License: BSD 3-Clause
 
-
-
-
 using System;
 using System.Net;
 using System.DirectoryServices;
@@ -14,7 +11,7 @@ using System.Collections.Generic;
 namespace SharpSploit.Enumeration
 {
     /// <summary>
-    /// Dns is a library for dumping dns via Active Directory.
+    /// Dns is a library for dumping entry from Active Directory-integrated DNS.
     /// </summary>
     public class Dns
     {
@@ -27,6 +24,7 @@ namespace SharpSploit.Enumeration
             public string ComputerName { get; } = string.Empty;
             public string IP { get; set; } = string.Empty;
             public bool Tombstoned { get; set; } = false;
+
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -67,7 +65,7 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
-        /// Query specified domain controller via ldap and extrat hosts name list from dns, than perform a dns lookup to resolve ips. .
+        /// Query specified domain controller via ldap and extrat hosts name list from Active Directory-integrated DNS, than perform a dns lookup to resolve ips. .
         /// </summary>
         /// <author>@b4rtik</author>
         /// <param name="DomainController">DomainController to query.</param>
