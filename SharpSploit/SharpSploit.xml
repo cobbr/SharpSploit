@@ -1379,6 +1379,60 @@
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
         </member>
+        <member name="T:SharpSploit.Monitoring.Keylogger">
+            <summary>
+            Keylogger allows for the monitoring of user keystrokes.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.Start(System.Int32)">
+            <summary>
+            Starts the Keylogger
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>String containing the captured keystrokes, along with identification of what window they were entered in.</returns>
+            <param name="time">The amount of time in seconds the keylogger should run for before returning keystrokes.</param>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.OnTimedEvent(System.Object,System.Timers.ElapsedEventArgs)">
+            <summary>
+            Closes the keylogger when the alotted time has been reached.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>null</returns>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.SetHook(SharpSploit.Execution.Win32.User32.LowLevelKeyboardProc)">
+            <summary>
+            Sets the keylogging hook
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>IntPtr pointing to the keyboard hook.</returns>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.HookCallback(System.Int32,System.IntPtr,System.IntPtr)">
+            <summary>
+            Called when a key is pressed.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.GetActiveWindowTitle">
+            <summary>
+            Gets the active window title of the window keystrokes are being entered in.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>Title of the active window.</returns>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.isShift">
+            <summary>
+            Checks if Shift is pressed.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>True if shift is pressed, False if not.</returns>
+        </member>
+        <member name="M:SharpSploit.Monitoring.Keylogger.isCapsLock">
+            <summary>
+            Checks if Caps Lock is currently on.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>True if Caps Lock is on, False if not.</returns>
+        </member>
         <member name="T:SharpSploit.Persistence.Autorun">
             <summary>
             Autorun is a class for abusing the Windows Registry to establish peristence.
