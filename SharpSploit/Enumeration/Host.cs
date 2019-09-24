@@ -37,6 +37,46 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
+        /// Gets whether a process is 64-bit or not.
+        /// </summary>
+        /// <param name="process">The process to check.</param>
+        /// <returns></returns>
+        public static bool Is64BitProcess(Process process)
+        {
+            bool retVal = false;
+            bool Is64Bit = false;
+            // Checking if the operating system is 64-bit
+            // Are we currently in a 64-bit process?
+            if (IntPtr.Size == 8)
+            {
+                Is64Bit = true;
+            }
+            // Are we currently in a 32-bit process on a 64-bit machine?
+            else
+            {
+                // Check our current process
+                Execution.DynamicInvoke.Win32.IsWow64Process(System.Diagnostics.Process.GetCurrentProcess().Handle, ref Is64Bit);
+            }
+
+            // If the OS is 64-bit
+            if (Is64Bit == true)
+            {
+                // Check the target process
+                Execution.DynamicInvoke.Win32.IsWow64Process(process.Handle, ref retVal);
+
+                // IsWow64Process uses pass-by-reference to modify retVal with the result
+                // Get that result, convert it to a bool, flip it, and return the result
+                // The flipping is because of the logic in IsWow64Process. Returns true if WOW64, which is 32-bit.
+                return !retVal;
+            }
+            // If not 64-bit operating system, the process can never be 64-bit
+            else
+            {
+                return retVal;
+            }
+        }
+
+        /// <summary>
         /// Generates a minidump that represents the memory of a running process. Useful for offline Mimikatz
         /// if dumping the LSASS process. (Requires Admin)
         /// </summary>

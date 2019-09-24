@@ -61,6 +61,11 @@ namespace SharpSploit.Execution
                 IntPtr hMem
             );
 
+            [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+            public static extern bool IsWow64Process(
+                System.IntPtr hProcess, out bool lpSystemInfo
+            );
+
             [DllImport("kernel32.dll")]
             public static extern IntPtr OpenProcess(
                 ProcessAccessFlags dwDesiredAccess,
@@ -745,6 +750,14 @@ namespace SharpSploit.Execution
             public const UInt32 PAGE_TARGETS_INVALID = 0x40000000;
             public const UInt32 PAGE_TARGETS_NO_UPDATE = 0x40000000;
 
+            public const UInt32 SEC_COMMIT = 0x08000000;
+            public const UInt32 SEC_IMAGE = 0x1000000;
+            public const UInt32 SEC_IMAGE_NO_EXECUTE = 0x11000000;
+            public const UInt32 SEC_LARGE_PAGES = 0x80000000;
+            public const UInt32 SEC_NOCACHE = 0x10000000;
+            public const UInt32 SEC_RESERVE = 0x4000000;
+            public const UInt32 SEC_WRITECOMBINE = 0x40000000;
+
             public const UInt32 SE_PRIVILEGE_ENABLED = 0x2;
             public const UInt32 SE_PRIVILEGE_ENABLED_BY_DEFAULT = 0x1;
             public const UInt32 SE_PRIVILEGE_REMOVED = 0x4;
@@ -949,7 +962,7 @@ namespace SharpSploit.Execution
 
             // http://www.pinvoke.net/default.aspx/Enums.ACCESS_MASK
             [Flags]
-            public enum ACCESS_MASK : uint
+            public enum ACCESS_MASK : UInt32
             {
                 DELETE = 0x00010000,
                 READ_CONTROL = 0x00020000,
@@ -986,8 +999,15 @@ namespace SharpSploit.Execution
                 WINSTA_EXITWINDOWS = 0x00000040,
                 WINSTA_ENUMERATE = 0x00000100,
                 WINSTA_READSCREEN = 0x00000200,
-                WINSTA_ALL_ACCESS = 0x0000037F
-            };
+                WINSTA_ALL_ACCESS = 0x0000037F,
+
+                SECTION_ALL_ACCESS = 0x10000000,
+                SECTION_QUERY = 0x0001,
+                SECTION_MAP_WRITE = 0x0002,
+                SECTION_MAP_READ = 0x0004,
+                SECTION_MAP_EXECUTE = 0x0008,
+                SECTION_EXTEND_SIZE = 0x0010
+        };
         }
 
         public class ProcessThreadsAPI
@@ -1190,7 +1210,7 @@ namespace SharpSploit.Execution
                 IntPtr processHandle,
                 IntPtr startAddress,
                 IntPtr parameter,
-                NT_CREATION_FLAGS creationFlags,
+                bool createSuspended,
                 int stackZeroBits,
                 int sizeOfStack,
                 int maximumStackSize,
