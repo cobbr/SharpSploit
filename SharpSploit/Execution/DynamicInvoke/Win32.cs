@@ -39,7 +39,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static bool IsWow64Process(System.IntPtr hProcess, ref bool lpSystemInfo)
         {
 
-            //Build the set of parameters to pass in to IsWow64Process
+            // Build the set of parameters to pass in to IsWow64Process
             object[] funcargs =
             {
                 hProcess, lpSystemInfo
@@ -50,7 +50,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             lpSystemInfo = (bool) funcargs[1];
 
-            //Dynamically load and invoke the API call with out parameters
+            // Dynamically load and invoke the API call with out parameters
             return retVal;
         }
 

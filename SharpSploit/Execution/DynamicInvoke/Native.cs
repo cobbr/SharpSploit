@@ -12,20 +12,19 @@ namespace SharpSploit.Execution.DynamicInvoke
     /// </summary>
     public class Native
     {
-
         public static Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
             IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
             bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
             IntPtr attributeList)
         { 
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 threadHandle, desiredAccess, objectAttributes, processHandle, startAddress, parameter, createSuspended, stackZeroBits,
                 sizeOfStack, maximumStackSize, attributeList
             };
 
-            //Update the modified variables
+            // Update the modified variables
             threadHandle = (IntPtr)funcargs[0];
 
             return (Execution.Win32.NtDll.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
@@ -42,7 +41,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             IntPtr FileHandle)
         {
 
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle
@@ -51,9 +50,8 @@ namespace SharpSploit.Execution.DynamicInvoke
             Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
                 typeof(DELEGATES.NtCreateSection), ref funcargs);
 
-            //Update the modified variables
+            // Update the modified variables
             SectionHandle = (IntPtr) funcargs[0];
-
             MaximumSize = (ulong) funcargs[3];
 
             return retValue;
@@ -61,7 +59,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
         public static Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr)
         {
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 hProc, baseAddr
@@ -86,7 +84,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             uint Win32Protect)
         {
 
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 SectionHandle, ProcessHandle, BaseAddress, ZeroBits, CommitSize, SectionOffset, ViewSize, InheritDisposition, AllocationType,
@@ -95,9 +93,8 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
 
-            //Update the modified variables.
+            // Update the modified variables.
             BaseAddress = (IntPtr) funcargs[2];
-
             ViewSize = (uint) funcargs[6];
 
             return retValue;
@@ -109,16 +106,16 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// </summary>
         /// <example>
         /// 
-        /// //These delegates may also be used directly.
+        /// // These delegates may also be used directly.
         ///
-        /// //Get a pointer to the NtCreateThreadEx function.
+        /// // Get a pointer to the NtCreateThreadEx function.
         /// IntPtr pFunction = Execution.DynamicInvoke.Generic.GetLibraryAddress(@"ntdll.dll", "NtCreateThreadEx");
         /// 
-        /// //Create an instance of a NtCreateThreadEx delegate from our function pointer.
+        /// //  Create an instance of a NtCreateThreadEx delegate from our function pointer.
         /// DELEGATES.NtCreateThreadEx createThread = (NATIVE_DELEGATES.NtCreateThreadEx)Marshal.GetDelegateForFunctionPointer(
         ///    pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
         ///
-        /// //Invoke NtCreateThreadEx using the delegate
+        /// //  Invoke NtCreateThreadEx using the delegate
         /// createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
         ///     procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
         /// 

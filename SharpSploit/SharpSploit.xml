@@ -634,7 +634,7 @@
             </summary>
             <returns>List of ProcessResults.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.IsX64Process(System.Diagnostics.Process)">
+        <member name="M:SharpSploit.Enumeration.Host.Is64BitProcess(System.Diagnostics.Process)">
             <summary>
             Gets whether a process is 64-bit or not.
             </summary>
@@ -1110,16 +1110,16 @@
              </summary>
              <example>
              
-             //These delegates may also be used directly.
+             // These delegates may also be used directly.
             
-             //Get a pointer to the NtCreateThreadEx function.
+             // Get a pointer to the NtCreateThreadEx function.
              IntPtr pFunction = Execution.DynamicInvoke.Generic.GetLibraryAddress(@"ntdll.dll", "NtCreateThreadEx");
              
-             //Create an instance of a NtCreateThreadEx delegate from our function pointer.
+             //  Create an instance of a NtCreateThreadEx delegate from our function pointer.
              DELEGATES.NtCreateThreadEx createThread = (NATIVE_DELEGATES.NtCreateThreadEx)Marshal.GetDelegateForFunctionPointer(
                 pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
             
-             //Invoke NtCreateThreadEx using the delegate
+             //  Invoke NtCreateThreadEx using the delegate
              createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
                  procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
              

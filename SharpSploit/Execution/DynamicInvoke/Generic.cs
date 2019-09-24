@@ -25,10 +25,8 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
         {
             IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
-
             return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
         }
-
 
         /// <summary>
         /// Dynamically invokes an arbitrary function from a pointer. Useful for manually mapped modules or loading/invoking unmanaged code from memory.
@@ -41,7 +39,6 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static object DynamicFunctionInvoke(IntPtr FunctionPointer, Type FunctionDelegateType, ref object[] Parameters)
         {
             Delegate funcDelegate = Marshal.GetDelegateForFunctionPointer(FunctionPointer, FunctionDelegateType);
-
             return funcDelegate.DynamicInvoke(Parameters);
         }
 
