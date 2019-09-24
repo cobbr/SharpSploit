@@ -211,6 +211,61 @@ namespace SharpSploit.Execution
             }
         }
 
+        public static class User32
+        {
+            public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+            public const int PAGE_READWRITE = 0x04;
+            public const int WM_CLIPBOARDUPDATE = 0x031D;
+            public static IntPtr HWND_MESSAGE = new IntPtr(-3);
+
+            [DllImport("user32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr CallNextHookEx(
+                IntPtr hhk, 
+                int nCode, 
+                IntPtr wParam, 
+                IntPtr lParam
+            );
+
+            [DllImport("user32.dll")]
+            public static extern IntPtr GetForegroundWindow();
+
+            [DllImport("user32.dll")]
+            public static extern int GetWindowText(
+                IntPtr hWnd,
+                StringBuilder text,
+                int count
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr SetWindowsHookEx(
+                int idHook, 
+                LowLevelKeyboardProc lpfn, 
+                IntPtr hMod, 
+                uint dwThreadId
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            [DllImport("user32.dll", SetLastError = true)]
+            public static extern IntPtr SetParent(
+                IntPtr hWndChild, 
+                IntPtr hWndNewParent
+            );
+
+            [DllImport("user32.dll")]
+            public static extern int GetWindowTextLength(IntPtr hWnd);
+
+            [DllImport("USER32.dll")]
+            public static extern short GetKeyState(int nVirtKey);
+        }
+
         public static class Netapi32
         {
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
