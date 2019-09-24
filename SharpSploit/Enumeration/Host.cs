@@ -27,11 +27,23 @@ namespace SharpSploit.Enumeration
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
             foreach (Process process in processes)
             {
-                var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {0}", process.Id));
-		        var pidresult = search.Get().GetEnumerator();
-                pidresult.MoveNext();
-                var parentId = (uint)pidresult.Current["ParentProcessId"];
-                results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName));
+                var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT * FROM Win32_Process WHERE ProcessId = {0}", process.Id));
+                string[] argList = new string[] { string.Empty, string.Empty };
+                foreach (ManagementObject obj in search.Get())
+                {
+                    string processOwner;
+                    int returnVal = Convert.ToInt32(obj.InvokeMethod("GetOwner", argList));
+                    if (String.IsNullOrEmpty(argList[0]))
+                    {
+                        processOwner = "";
+                    }
+                    else
+                    {
+                        processOwner = argList[1] + "\\" + argList[0];
+                    }
+                    var parentId = Convert.ToInt32(obj["ParentProcessId"]);
+                    results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName, processOwner));
+                }
             }
             return results;
         }
@@ -226,6 +238,7 @@ namespace SharpSploit.Enumeration
             public int Pid { get; } = 0;
             public int Ppid { get; } = 0;
             public string Name { get; } = "";
+            public string ProcessOnwer { get; } = "";
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -246,16 +259,22 @@ namespace SharpSploit.Enumeration
                         {
                             Name = "Name",
                             Value = this.Name
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "ProcessOnwer",
+                            Value = this.ProcessOnwer
                         }
                     };
                 }
             }
 
-            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "")
+            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "", string ProcessOnwer = "")
             {
                 this.Pid = Pid;
                 this.Ppid = Ppid;
                 this.Name = Name;
+                this.ProcessOnwer = ProcessOnwer;
             }
         }
 
