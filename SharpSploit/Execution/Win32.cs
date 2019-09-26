@@ -61,6 +61,11 @@ namespace SharpSploit.Execution
                 IntPtr hMem
             );
 
+            [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+            public static extern bool IsWow64Process(
+                System.IntPtr hProcess, out bool lpSystemInfo
+            );
+
             [DllImport("kernel32.dll")]
             public static extern IntPtr OpenProcess(
                 ProcessAccessFlags dwDesiredAccess,
@@ -208,28 +213,23 @@ namespace SharpSploit.Execution
 
         public static class User32
         {
-            public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-            public const int PAGE_READWRITE = 0x04;
-            public const int WM_CLIPBOARDUPDATE = 0x031D;
-            public static IntPtr HWND_MESSAGE = new IntPtr(-3);
+            public static int WH_KEYBOARD_LL { get; } = 13;
+            public static int WM_KEYDOWN { get; } = 0x0100;
 
-            [DllImport("user32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AddClipboardFormatListener(IntPtr hwnd);
-
+            public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern IntPtr CallNextHookEx(
-                IntPtr hhk, 
-                int nCode, 
-                IntPtr wParam, 
+                IntPtr hhk,
+                int nCode,
+                IntPtr wParam,
                 IntPtr lParam
             );
 
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto,  SetLastError = true)]
             public static extern IntPtr GetForegroundWindow();
 
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern int GetWindowText(
                 IntPtr hWnd,
                 StringBuilder text,
@@ -238,9 +238,9 @@ namespace SharpSploit.Execution
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern IntPtr SetWindowsHookEx(
-                int idHook, 
-                LowLevelKeyboardProc lpfn, 
-                IntPtr hMod, 
+                int idHook,
+                HookProc lpfn,
+                IntPtr hMod,
                 uint dwThreadId
             );
 
@@ -248,16 +248,10 @@ namespace SharpSploit.Execution
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
-            [DllImport("user32.dll", SetLastError = true)]
-            public static extern IntPtr SetParent(
-                IntPtr hWndChild, 
-                IntPtr hWndNewParent
-            );
-
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern int GetWindowTextLength(IntPtr hWnd);
 
-            [DllImport("USER32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern short GetKeyState(int nVirtKey);
         }
 
@@ -800,6 +794,14 @@ namespace SharpSploit.Execution
             public const UInt32 PAGE_TARGETS_INVALID = 0x40000000;
             public const UInt32 PAGE_TARGETS_NO_UPDATE = 0x40000000;
 
+            public const UInt32 SEC_COMMIT = 0x08000000;
+            public const UInt32 SEC_IMAGE = 0x1000000;
+            public const UInt32 SEC_IMAGE_NO_EXECUTE = 0x11000000;
+            public const UInt32 SEC_LARGE_PAGES = 0x80000000;
+            public const UInt32 SEC_NOCACHE = 0x10000000;
+            public const UInt32 SEC_RESERVE = 0x4000000;
+            public const UInt32 SEC_WRITECOMBINE = 0x40000000;
+
             public const UInt32 SE_PRIVILEGE_ENABLED = 0x2;
             public const UInt32 SE_PRIVILEGE_ENABLED_BY_DEFAULT = 0x1;
             public const UInt32 SE_PRIVILEGE_REMOVED = 0x4;
@@ -1004,7 +1006,7 @@ namespace SharpSploit.Execution
 
             // http://www.pinvoke.net/default.aspx/Enums.ACCESS_MASK
             [Flags]
-            public enum ACCESS_MASK : uint
+            public enum ACCESS_MASK : UInt32
             {
                 DELETE = 0x00010000,
                 READ_CONTROL = 0x00020000,
@@ -1041,8 +1043,15 @@ namespace SharpSploit.Execution
                 WINSTA_EXITWINDOWS = 0x00000040,
                 WINSTA_ENUMERATE = 0x00000100,
                 WINSTA_READSCREEN = 0x00000200,
-                WINSTA_ALL_ACCESS = 0x0000037F
-            };
+                WINSTA_ALL_ACCESS = 0x0000037F,
+
+                SECTION_ALL_ACCESS = 0x10000000,
+                SECTION_QUERY = 0x0001,
+                SECTION_MAP_WRITE = 0x0002,
+                SECTION_MAP_READ = 0x0004,
+                SECTION_MAP_EXECUTE = 0x0008,
+                SECTION_EXTEND_SIZE = 0x0010
+        };
         }
 
         public class ProcessThreadsAPI
@@ -1092,7 +1101,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-            #pragma warning disable 0618
+#pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1108,7 +1117,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-            #pragma warning restore 0618
+#pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {
@@ -1245,7 +1254,7 @@ namespace SharpSploit.Execution
                 IntPtr processHandle,
                 IntPtr startAddress,
                 IntPtr parameter,
-                NT_CREATION_FLAGS creationFlags,
+                bool createSuspended,
                 int stackZeroBits,
                 int sizeOfStack,
                 int maximumStackSize,

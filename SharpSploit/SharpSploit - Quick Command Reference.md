@@ -37,6 +37,7 @@
 * `GetCurrentDirectory()` - Gets the current working directory full path.
 * `GetDirectoryListing()` - Gets a directory listing of the current working directory.
 * `ChangeCurrentDirectory()` - Changes the current directory by appending a specified string to the current working directory.
+* `Is64BitProcess` - Checks if a process is 64-bit or not.
 
 ### SharpSploit.Enumeration.Network
 
@@ -59,6 +60,10 @@
 * `GetNetLocalGroupMembers()` - Gets a list of `LocalGroupMember`s from specified remote computer(s) for a specified group.
 * `GetNetLoggedOnUsers()` - Gets a list of `LoggedOnUser`s from specified remote computer(s).
 * `GetNetSessions()` - Gets a list of `SessionInfo`s from specified remote computer(s).
+
+### SharpSploit.Enumeration.Keylogger
+
+* `StartKeylogger()` - Starts a keylogger that gets keystrokes for a specified amount of time.
 
 ## SharpSploit.Evastion
 

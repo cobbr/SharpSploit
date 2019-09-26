@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added Evasion namespace, Amsi class, PatchAmsiScanBuffer function (credit @rasta-mouse)
 - Added Is64Bit Utility property (credit @rasta-mouse)
+- Added Is64BitProcess Host function (credit @TheWover)
+- Added Keylogger class (credit @checkymander)
+
+### Changed
+- Improved DynamicInvoke library (credit @TheWover)
 
 ## [v1.4]
 ### Added
