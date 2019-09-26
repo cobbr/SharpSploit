@@ -4,11 +4,11 @@
 
 using System;
 using System.IO;
-using System.Management;
 using System.Diagnostics;
 using System.Collections.Generic;
 
 using SharpSploit.Generic;
+using SharpSploit.Execution;
 
 namespace SharpSploit.Enumeration
 {
@@ -23,17 +23,73 @@ namespace SharpSploit.Enumeration
         /// <returns>List of ProcessResults.</returns>
         public static SharpSploitResultList<ProcessResult> GetProcessList()
         {
+            var processorArchitecture = GetProcessessorArchitecture();
             Process[] processes = Process.GetProcesses();
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
             foreach (Process process in processes)
             {
-                var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {0}", process.Id));
-		        var pidresult = search.Get().GetEnumerator();
-                pidresult.MoveNext();
-                var parentId = (uint)pidresult.Current["ParentProcessId"];
-                results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName));
+                try
+                {
+                    var processId = process.Id;
+                    var parentProcessId = process.GetParentProcess();
+                    var processName = process.ProcessName;
+                    var processPath = string.Empty;
+                    var sessionId = process.SessionId;
+                    var processOwner = process.GetProcessOwner();
+                    var processArch = Win32.Kernel32.Platform.Unknown;
+
+                    if (parentProcessId != 0)
+                        processPath = process.MainModule.FileName;
+
+                    if (processorArchitecture == Win32.Kernel32.Platform.x64)
+                    {
+                        if (!process.IsWow64())
+                        {
+                            processArch = Win32.Kernel32.Platform.x64;
+                        }
+                        else
+                        {
+                            processArch = Win32.Kernel32.Platform.x86;
+                        }
+                    }
+                    else if (processorArchitecture == Win32.Kernel32.Platform.x86)
+                    {
+                        processArch = Win32.Kernel32.Platform.x86;
+                    }
+
+                    results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
+                }
+                catch
+                {
+                    // meh
+                }
             }
             return results;
+        }
+
+        /// <summary>
+        /// Establishes the architecture of the OS.
+        /// </summary>
+        /// <remarks>
+        /// Authored by Daniel Duggan (@_RastaMouse).
+        /// </remarks>
+        public static Win32.Kernel32.Platform GetProcessessorArchitecture()
+        {
+            const ushort PROCESSOR_ARCHITECTURE_INTEL = 0;
+            const ushort PROCESSOR_ARCHITECTURE_AMD64 = 9;
+
+            var sysInfo = new Win32.Kernel32.SYSTEM_INFO();
+            Win32.Kernel32.GetNativeSystemInfo(ref sysInfo);
+
+            switch (sysInfo.wProcessorArchitecture)
+            {
+                case PROCESSOR_ARCHITECTURE_AMD64:
+                    return Win32.Kernel32.Platform.x64;
+                case PROCESSOR_ARCHITECTURE_INTEL:
+                    return Win32.Kernel32.Platform.x86;
+                default:
+                    return Win32.Kernel32.Platform.Unknown;
+            }
         }
 
         /// <summary>
@@ -186,6 +242,10 @@ namespace SharpSploit.Enumeration
             public int Pid { get; } = 0;
             public int Ppid { get; } = 0;
             public string Name { get; } = "";
+            public string Path { get; } = "";
+            public int Sessionid { get; } = 0;
+            public string Owner { get; } = "";
+            public Win32.Kernel32.Platform Architecture { get; } = Win32.Kernel32.Platform.Unknown;
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -206,16 +266,40 @@ namespace SharpSploit.Enumeration
                         {
                             Name = "Name",
                             Value = this.Name
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Path",
+                            Value = this.Path
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Sessionid",
+                            Value = this.Sessionid
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Owner",
+                            Value = this.Owner
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Architecture",
+                            Value = this.Architecture
                         }
                     };
                 }
             }
 
-            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "")
+            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "", string Path = "", int Sessionid = 0, string Owner = "", Win32.Kernel32.Platform Architecture = Win32.Kernel32.Platform.Unknown)
             {
                 this.Pid = Pid;
                 this.Ppid = Ppid;
                 this.Name = Name;
+                this.Path = Path;
+                this.Sessionid = Sessionid;
+                this.Owner = Owner;
+                this.Architecture = Architecture;
             }
         }
 

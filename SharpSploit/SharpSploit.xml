@@ -634,6 +634,14 @@
             </summary>
             <returns>List of ProcessResults.</returns>
         </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetProcessessorArchitecture">
+            <summary>
+            Establishes the architecture of the OS.
+            </summary>
+            <remarks>
+            Authored by Daniel Duggan (@_RastaMouse).
+            </remarks>
+        </member>
         <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.Int32,System.String,System.String)">
             <summary>
             Generates a minidump that represents the memory of a running process. Useful for offline Mimikatz
