@@ -213,28 +213,23 @@ namespace SharpSploit.Execution
 
         public static class User32
         {
-            public delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-            public const int PAGE_READWRITE = 0x04;
-            public const int WM_CLIPBOARDUPDATE = 0x031D;
-            public static IntPtr HWND_MESSAGE = new IntPtr(-3);
+            public static int WH_KEYBOARD_LL { get; } = 13;
+            public static int WM_KEYDOWN { get; } = 0x0100;
 
-            [DllImport("user32.dll", SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            public static extern bool AddClipboardFormatListener(IntPtr hwnd);
-
+            public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern IntPtr CallNextHookEx(
-                IntPtr hhk, 
-                int nCode, 
-                IntPtr wParam, 
+                IntPtr hhk,
+                int nCode,
+                IntPtr wParam,
                 IntPtr lParam
             );
 
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto,  SetLastError = true)]
             public static extern IntPtr GetForegroundWindow();
 
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern int GetWindowText(
                 IntPtr hWnd,
                 StringBuilder text,
@@ -243,9 +238,9 @@ namespace SharpSploit.Execution
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern IntPtr SetWindowsHookEx(
-                int idHook, 
-                LowLevelKeyboardProc lpfn, 
-                IntPtr hMod, 
+                int idHook,
+                HookProc lpfn,
+                IntPtr hMod,
                 uint dwThreadId
             );
 
@@ -253,16 +248,10 @@ namespace SharpSploit.Execution
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
-            [DllImport("user32.dll", SetLastError = true)]
-            public static extern IntPtr SetParent(
-                IntPtr hWndChild, 
-                IntPtr hWndNewParent
-            );
-
-            [DllImport("user32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern int GetWindowTextLength(IntPtr hWnd);
 
-            [DllImport("USER32.dll")]
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern short GetKeyState(int nVirtKey);
         }
 
@@ -1112,7 +1101,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-            #pragma warning disable 0618
+#pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1128,7 +1117,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-            #pragma warning restore 0618
+#pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {

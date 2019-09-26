@@ -61,6 +61,10 @@
 * `GetNetLoggedOnUsers()` - Gets a list of `LoggedOnUser`s from specified remote computer(s).
 * `GetNetSessions()` - Gets a list of `SessionInfo`s from specified remote computer(s).
 
+### SharpSploit.Enumeration.Keylogger
+
+* `StartKeylogger()` - Starts a keylogger that gets keystrokes for a specified amount of time.
+
 ## SharpSploit.Evastion
 
 ### SharpSploit.Evasion.Amsi
