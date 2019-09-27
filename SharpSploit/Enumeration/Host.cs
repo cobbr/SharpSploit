@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ namespace SharpSploit.Enumeration
         public static SharpSploitResultList<ProcessResult> GetProcessList()
         {
             var processorArchitecture = GetArchitecture();
-            Process[] processes = Process.GetProcesses();
+            Process[] processes = Process.GetProcesses().OrderBy(P => P.Id).ToArray();
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
             foreach (Process process in processes)
             {
