@@ -240,6 +240,50 @@ namespace SharpSploit.Execution
             }
         }
 
+        public static class User32
+        {
+            public static int WH_KEYBOARD_LL { get; } = 13;
+            public static int WM_KEYDOWN { get; } = 0x0100;
+
+            public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr CallNextHookEx(
+                IntPtr hhk,
+                int nCode,
+                IntPtr wParam,
+                IntPtr lParam
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto,  SetLastError = true)]
+            public static extern IntPtr GetForegroundWindow();
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern int GetWindowText(
+                IntPtr hWnd,
+                StringBuilder text,
+                int count
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr SetWindowsHookEx(
+                int idHook,
+                HookProc lpfn,
+                IntPtr hMod,
+                uint dwThreadId
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern int GetWindowTextLength(IntPtr hWnd);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern short GetKeyState(int nVirtKey);
+        }
+
         public static class Netapi32
         {
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -1086,7 +1130,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-            #pragma warning disable 0618
+#pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1102,7 +1146,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-            #pragma warning restore 0618
+#pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {
