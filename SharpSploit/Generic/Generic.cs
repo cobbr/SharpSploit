@@ -75,35 +75,48 @@ namespace SharpSploit.Generic
         {
             if (this.Results.Count > 0)
             {
-                StringBuilder builder1 = new StringBuilder();
-                StringBuilder builder2 = new StringBuilder();
+                StringBuilder labels = new StringBuilder();
+                StringBuilder underlines = new StringBuilder();
+                List<StringBuilder> rows = new List<StringBuilder>();
+                for (int i = 0; i < this.Results.Count; i++)
+                {
+                    rows.Add(new StringBuilder());
+                }
                 for (int i = 0; i < this.Results[0].ResultProperties.Count; i++)
                 {
-                    builder1.Append(this.Results[0].ResultProperties[i].Name);
-                    builder2.Append(new String('-', this.Results[0].ResultProperties[i].Name.Length));
-                    if (i != this.Results[0].ResultProperties.Count-1)
+                    labels.Append(this.Results[0].ResultProperties[i].Name);
+                    underlines.Append(new string('-', this.Results[0].ResultProperties[i].Name.Length));
+                    int maxproplen = 0;
+                    for (int j = 0; j < rows.Count; j++)
                     {
-                        builder1.Append(new String(' ', PROPERTY_SPACE));
-                        builder2.Append(new String(' ', PROPERTY_SPACE));
-                    }
-                }
-                builder1.AppendLine();
-                builder1.AppendLine(builder2.ToString());
-                foreach (SharpSploitResult result in this.Results)
-                {
-                    for (int i = 0; i < result.ResultProperties.Count; i++)
-                    {
-                        SharpSploitResultProperty property = result.ResultProperties[i];
+                        SharpSploitResultProperty property = this.Results[j].ResultProperties[i];
                         string ValueString = property.Value.ToString();
-                        builder1.Append(ValueString);
-                        if (i != result.ResultProperties.Count-1)
+                        rows[j].Append(ValueString);
+                        if (maxproplen < ValueString.Length)
                         {
-                            builder1.Append(new String(' ', Math.Max(1, property.Name.Length + PROPERTY_SPACE - ValueString.Length)));
+                            maxproplen = ValueString.Length;
                         }
                     }
-                    builder1.AppendLine();
+                    if (i != this.Results[0].ResultProperties.Count - 1)
+                    {
+                        labels.Append(new string(' ', Math.Max(2, maxproplen + 2 - this.Results[0].ResultProperties[i].Name.Length)));
+                        underlines.Append(new string(' ', Math.Max(2, maxproplen + 2 - this.Results[0].ResultProperties[i].Name.Length)));
+                        for (int j = 0; j < rows.Count; j++)
+                        {
+                            SharpSploitResultProperty property = this.Results[j].ResultProperties[i];
+                            string ValueString = property.Value.ToString();
+                            rows[j].Append(new string(' ', Math.Max(this.Results[0].ResultProperties[i].Name.Length - ValueString.Length + 2, maxproplen - ValueString.Length + 2)));
+                        }
+                    }
                 }
-                return builder1.ToString();
+                labels.AppendLine();
+                labels.Append(underlines.ToString());
+                foreach (StringBuilder row in rows)
+                {
+                    labels.AppendLine();
+                    labels.Append(row.ToString());
+                }
+                return labels.ToString();
             }
             return "";
         }

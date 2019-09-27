@@ -4,11 +4,13 @@
 
 using System;
 using System.IO;
-using System.Management;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using SharpSploit.Generic;
+using SharpSploit.Execution;
 
 namespace SharpSploit.Enumeration
 {
@@ -23,56 +25,149 @@ namespace SharpSploit.Enumeration
         /// <returns>List of ProcessResults.</returns>
         public static SharpSploitResultList<ProcessResult> GetProcessList()
         {
+            var processorArchitecture = GetArchitecture();
             Process[] processes = Process.GetProcesses();
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
             foreach (Process process in processes)
             {
-                var search = new ManagementObjectSearcher("root\\CIMV2", string.Format("SELECT ParentProcessId FROM Win32_Process WHERE ProcessId = {0}", process.Id));
-		        var pidresult = search.Get().GetEnumerator();
-                pidresult.MoveNext();
-                var parentId = (uint)pidresult.Current["ParentProcessId"];
-                results.Add(new ProcessResult(process.Id, Convert.ToInt32(parentId), process.ProcessName));
+                int processId = process.Id;
+                int parentProcessId = GetParentProcess(process);
+                string processName = process.ProcessName;
+                string processPath = string.Empty;
+                int sessionId = process.SessionId;
+                string processOwner = GetProcessOwner(process);
+                Win32.Kernel32.Platform processArch = Win32.Kernel32.Platform.Unknown;
+
+                if (parentProcessId != 0)
+                {
+                    processPath = process.MainModule.FileName;
+                }
+
+                if (processorArchitecture == Win32.Kernel32.Platform.x64)
+                {
+                    processArch = IsWow64(process) ? Win32.Kernel32.Platform.x86 : Win32.Kernel32.Platform.x64;
+                }
+                else if (processorArchitecture == Win32.Kernel32.Platform.x86)
+                {
+                    processArch = Win32.Kernel32.Platform.x86;
+                }
+                else if (processorArchitecture == Win32.Kernel32.Platform.IA64)
+                {
+                    processArch = Win32.Kernel32.Platform.x86;
+                }
+
+                results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
             }
             return results;
         }
 
         /// <summary>
-        /// Gets whether a process is 64-bit or not.
+        /// Gets the architecture of the OS.
         /// </summary>
-        /// <param name="process">The process to check.</param>
-        /// <returns></returns>
-        public static bool Is64BitProcess(Process process)
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        public static Win32.Kernel32.Platform GetArchitecture()
         {
-            bool retVal = false;
-            bool Is64Bit = false;
-            // Checking if the operating system is 64-bit
-            // Are we currently in a 64-bit process?
-            if (IntPtr.Size == 8)
-            {
-                Is64Bit = true;
-            }
-            // Are we currently in a 32-bit process on a 64-bit machine?
-            else
-            {
-                // Check our current process
-                Execution.DynamicInvoke.Win32.IsWow64Process(System.Diagnostics.Process.GetCurrentProcess().Handle, ref Is64Bit);
-            }
+            const ushort PROCESSOR_ARCHITECTURE_INTEL = 0;
+            const ushort PROCESSOR_ARCHITECTURE_IA64 = 6;
+            const ushort PROCESSOR_ARCHITECTURE_AMD64 = 9;
 
-            // If the OS is 64-bit
-            if (Is64Bit == true)
-            {
-                // Check the target process
-                Execution.DynamicInvoke.Win32.IsWow64Process(process.Handle, ref retVal);
+            var sysInfo = new Win32.Kernel32.SYSTEM_INFO();
+            Win32.Kernel32.GetNativeSystemInfo(ref sysInfo);
 
-                // IsWow64Process uses pass-by-reference to modify retVal with the result
-                // Get that result, convert it to a bool, flip it, and return the result
-                // The flipping is because of the logic in IsWow64Process. Returns true if WOW64, which is 32-bit.
-                return !retVal;
-            }
-            // If not 64-bit operating system, the process can never be 64-bit
-            else
+            switch (sysInfo.wProcessorArchitecture)
             {
-                return retVal;
+                case PROCESSOR_ARCHITECTURE_AMD64:
+                    return Win32.Kernel32.Platform.x64;
+                case PROCESSOR_ARCHITECTURE_INTEL:
+                    return Win32.Kernel32.Platform.x86;
+                case PROCESSOR_ARCHITECTURE_IA64:
+                    return Win32.Kernel32.Platform.IA64;
+                default:
+                    return Win32.Kernel32.Platform.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent process id of a Process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process"></param>
+        /// <returns>Parent Process Id. Returns 0 if unsuccessful</returns>
+        public static int GetParentProcess(Process Process)
+        {
+            try
+            {
+                return GetParentProcess(Process.Handle);
+            }
+            catch (InvalidOperationException)
+            {
+                return 0;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent process id of a process handle
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Handle">Handle to the process to get the parent process id of</param>
+        /// <returns>Parent Process Id</returns>
+        private static int GetParentProcess(IntPtr Handle)
+        {
+            var basicProcessInformation = new Win32.NtDll.PROCESS_BASIC_INFORMATION();
+            Win32.NtDll.NtQueryInformationProcess(Handle, Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation, ref basicProcessInformation, Marshal.SizeOf(basicProcessInformation), out int returnLength);
+            return basicProcessInformation.InheritedFromUniqueProcessId;
+        }
+
+        /// <summary>
+        /// Gets the username of the owner of a process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process">Process to get owner of</param>
+        /// <returns>Username of process owner. Returns empty string if unsuccessful.</returns>
+        public static string GetProcessOwner(Process Process)
+        {
+            try
+            {
+                Win32.Kernel32.OpenProcessToken(Process.Handle, 8, out IntPtr handle);
+                using (var winIdentity = new WindowsIdentity(handle))
+                {
+                    return winIdentity.Name;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                return string.Empty;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a process is a Wow64 process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process">Process to check Wow64</param>
+        /// <returns>True if process is Wow64, false otherwise. Returns false if unsuccessful.</returns>
+        public static bool IsWow64(Process Process)
+        {
+            try
+            {
+                Win32.Kernel32.IsWow64Process(Process.Handle, out bool isWow64);
+                return isWow64;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return false;
             }
         }
 
@@ -226,36 +321,35 @@ namespace SharpSploit.Enumeration
             public int Pid { get; } = 0;
             public int Ppid { get; } = 0;
             public string Name { get; } = "";
+            public string Path { get; } = "";
+            public int SessionID { get; } = 0;
+            public string Owner { get; } = "";
+            public Win32.Kernel32.Platform Architecture { get; } = Win32.Kernel32.Platform.Unknown;
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
                 {
-                    return new List<SharpSploitResultProperty>
-                    {
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Pid",
-                            Value = this.Pid
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Ppid",
-                            Value = this.Ppid
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Name",
-                            Value = this.Name
-                        }
+                    return new List<SharpSploitResultProperty> {
+                        new SharpSploitResultProperty { Name = "Pid", Value = this.Pid },
+                        new SharpSploitResultProperty { Name = "Ppid", Value = this.Ppid },
+                        new SharpSploitResultProperty { Name = "Name", Value = this.Name },
+                        new SharpSploitResultProperty { Name = "SessionID", Value = this.SessionID },
+                        new SharpSploitResultProperty { Name = "Owner", Value = this.Owner },
+                        new SharpSploitResultProperty { Name = "Architecture", Value = this.Architecture },
+                        new SharpSploitResultProperty { Name = "Path", Value = this.Path }
                     };
                 }
             }
 
-            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "")
+            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "", string Path = "", int Sessionid = 0, string Owner = "", Win32.Kernel32.Platform Architecture = Win32.Kernel32.Platform.Unknown)
             {
                 this.Pid = Pid;
                 this.Ppid = Ppid;
                 this.Name = Name;
+                this.Path = Path;
+                this.SessionID = Sessionid;
+                this.Owner = Owner;
+                this.Architecture = Architecture;
             }
         }
 

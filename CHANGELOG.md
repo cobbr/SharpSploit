@@ -9,9 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Evasion namespace, Amsi class, PatchAmsiScanBuffer function (credit @rasta-mouse)
 - Added Is64Bit Utility property (credit @rasta-mouse)
 - Added Is64BitProcess Host function (credit @TheWover)
+- Added GetProcessorArchitecture, GetParentProcess, GetProcessOwner, IsWow64, and supporting P/Invoke signatures (credit @rasta-mouse)
 
 ### Changed
 - Improved DynamicInvoke library (credit @TheWover)
+- Removed GetProcessListing use of WMI to obtain ppid (credit @rasta-mouse)
+- Improved GetProcessListing to include ppid, architecture, owner (credit @rasta-mouse)
 
 ## [v1.4]
 ### Added
