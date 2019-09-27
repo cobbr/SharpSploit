@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved DynamicInvoke library (credit @TheWover)
 - Removed GetProcessListing use of WMI to obtain ppid (credit @rasta-mouse)
 - Improved GetProcessListing to include ppid, architecture, owner (credit @rasta-mouse)
+- Improved SharpSploitResultList ToString() display
 
 ## [v1.4]
 ### Added
