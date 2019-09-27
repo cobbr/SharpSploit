@@ -755,6 +755,26 @@
             FileSystemEntryResult represents a file on disk, used with the GetDirectoryListing() function.
             </summary>
         </member>
+        <member name="T:SharpSploit.Enumeration.Keylogger">
+            <summary>
+            Keylogger allows for the monitoring of user keystrokes.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Keylogger.StartKeylogger(System.Int32)">
+            <summary>
+            Starts the Keylogger
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>String containing the captured keystrokes, along with identification of what window they were entered in.</returns>
+            <param name="Seconds">The amount of time in seconds the keylogger should run for before returning keystrokes.</param>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Keylogger.GetActiveWindowTitle">
+            <summary>
+            Gets the active window title of the window keystrokes are being entered in.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>Title of the active window.</returns>
+        </member>
         <member name="T:SharpSploit.Enumeration.Network">
             <summary>
             Network is a library for network enumeration such as identifying live systems and open ports.
