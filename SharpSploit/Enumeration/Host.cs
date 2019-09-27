@@ -5,7 +5,9 @@
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 using SharpSploit.Generic;
 using SharpSploit.Execution;
@@ -23,59 +25,50 @@ namespace SharpSploit.Enumeration
         /// <returns>List of ProcessResults.</returns>
         public static SharpSploitResultList<ProcessResult> GetProcessList()
         {
-            var processorArchitecture = GetProcessessorArchitecture();
+            var processorArchitecture = GetArchitecture();
             Process[] processes = Process.GetProcesses();
             SharpSploitResultList<ProcessResult> results = new SharpSploitResultList<ProcessResult>();
             foreach (Process process in processes)
             {
-                try
+                int processId = process.Id;
+                int parentProcessId = GetParentProcess(process);
+                string processName = process.ProcessName;
+                string processPath = string.Empty;
+                int sessionId = process.SessionId;
+                string processOwner = GetProcessOwner(process);
+                Win32.Kernel32.Platform processArch = Win32.Kernel32.Platform.Unknown;
+
+                if (parentProcessId != 0)
                 {
-                    var processId = process.Id;
-                    var parentProcessId = process.GetParentProcess();
-                    var processName = process.ProcessName;
-                    var processPath = string.Empty;
-                    var sessionId = process.SessionId;
-                    var processOwner = process.GetProcessOwner();
-                    var processArch = Win32.Kernel32.Platform.Unknown;
-
-                    if (parentProcessId != 0)
-                        processPath = process.MainModule.FileName;
-
-                    if (processorArchitecture == Win32.Kernel32.Platform.x64)
-                    {
-                        if (!process.IsWow64())
-                        {
-                            processArch = Win32.Kernel32.Platform.x64;
-                        }
-                        else
-                        {
-                            processArch = Win32.Kernel32.Platform.x86;
-                        }
-                    }
-                    else if (processorArchitecture == Win32.Kernel32.Platform.x86)
-                    {
-                        processArch = Win32.Kernel32.Platform.x86;
-                    }
-
-                    results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
+                    processPath = process.MainModule.FileName;
                 }
-                catch
+
+                if (processorArchitecture == Win32.Kernel32.Platform.x64)
                 {
-                    // meh
+                    processArch = IsWow64(process) ? Win32.Kernel32.Platform.x86 : Win32.Kernel32.Platform.x64;
                 }
+                else if (processorArchitecture == Win32.Kernel32.Platform.x86)
+                {
+                    processArch = Win32.Kernel32.Platform.x86;
+                }
+                else if (processorArchitecture == Win32.Kernel32.Platform.IA64)
+                {
+                    processArch = Win32.Kernel32.Platform.x86;
+                }
+
+                results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
             }
             return results;
         }
 
         /// <summary>
-        /// Establishes the architecture of the OS.
+        /// Gets the architecture of the OS.
         /// </summary>
-        /// <remarks>
-        /// Authored by Daniel Duggan (@_RastaMouse).
-        /// </remarks>
-        public static Win32.Kernel32.Platform GetProcessessorArchitecture()
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        public static Win32.Kernel32.Platform GetArchitecture()
         {
             const ushort PROCESSOR_ARCHITECTURE_INTEL = 0;
+            const ushort PROCESSOR_ARCHITECTURE_IA64 = 6;
             const ushort PROCESSOR_ARCHITECTURE_AMD64 = 9;
 
             var sysInfo = new Win32.Kernel32.SYSTEM_INFO();
@@ -87,8 +80,94 @@ namespace SharpSploit.Enumeration
                     return Win32.Kernel32.Platform.x64;
                 case PROCESSOR_ARCHITECTURE_INTEL:
                     return Win32.Kernel32.Platform.x86;
+                case PROCESSOR_ARCHITECTURE_IA64:
+                    return Win32.Kernel32.Platform.IA64;
                 default:
                     return Win32.Kernel32.Platform.Unknown;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent process id of a Process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process"></param>
+        /// <returns>Parent Process Id. Returns 0 if unsuccessful</returns>
+        public static int GetParentProcess(Process Process)
+        {
+            try
+            {
+                return GetParentProcess(Process.Handle);
+            }
+            catch (InvalidOperationException)
+            {
+                return 0;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent process id of a process handle
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Handle">Handle to the process to get the parent process id of</param>
+        /// <returns>Parent Process Id</returns>
+        private static int GetParentProcess(IntPtr Handle)
+        {
+            var basicProcessInformation = new Win32.NtDll.PROCESS_BASIC_INFORMATION();
+            Win32.NtDll.NtQueryInformationProcess(Handle, Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation, ref basicProcessInformation, Marshal.SizeOf(basicProcessInformation), out int returnLength);
+            return basicProcessInformation.InheritedFromUniqueProcessId;
+        }
+
+        /// <summary>
+        /// Gets the username of the owner of a process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process">Process to get owner of</param>
+        /// <returns>Username of process owner. Returns empty string if unsuccessful.</returns>
+        public static string GetProcessOwner(Process Process)
+        {
+            try
+            {
+                Win32.Kernel32.OpenProcessToken(Process.Handle, 8, out IntPtr handle);
+                using (var winIdentity = new WindowsIdentity(handle))
+                {
+                    return winIdentity.Name;
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                return string.Empty;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Checks if a process is a Wow64 process
+        /// </summary>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        /// <param name="Process">Process to check Wow64</param>
+        /// <returns>True if process is Wow64, false otherwise. Returns false if unsuccessful.</returns>
+        public static bool IsWow64(Process Process)
+        {
+            try
+            {
+                Win32.Kernel32.IsWow64Process(Process.Handle, out bool isWow64);
+                return isWow64;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                return false;
             }
         }
 
@@ -243,50 +322,21 @@ namespace SharpSploit.Enumeration
             public int Ppid { get; } = 0;
             public string Name { get; } = "";
             public string Path { get; } = "";
-            public int Sessionid { get; } = 0;
+            public int SessionID { get; } = 0;
             public string Owner { get; } = "";
             public Win32.Kernel32.Platform Architecture { get; } = Win32.Kernel32.Platform.Unknown;
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
                 {
-                    return new List<SharpSploitResultProperty>
-                    {
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Pid",
-                            Value = this.Pid
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Ppid",
-                            Value = this.Ppid
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Name",
-                            Value = this.Name
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Path",
-                            Value = this.Path
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Sessionid",
-                            Value = this.Sessionid
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Owner",
-                            Value = this.Owner
-                        },
-                        new SharpSploitResultProperty
-                        {
-                            Name = "Architecture",
-                            Value = this.Architecture
-                        }
+                    return new List<SharpSploitResultProperty> {
+                        new SharpSploitResultProperty { Name = "Pid", Value = this.Pid },
+                        new SharpSploitResultProperty { Name = "Ppid", Value = this.Ppid },
+                        new SharpSploitResultProperty { Name = "Name", Value = this.Name },
+                        new SharpSploitResultProperty { Name = "SessionID", Value = this.SessionID },
+                        new SharpSploitResultProperty { Name = "Owner", Value = this.Owner },
+                        new SharpSploitResultProperty { Name = "Architecture", Value = this.Architecture },
+                        new SharpSploitResultProperty { Name = "Path", Value = this.Path }
                     };
                 }
             }
@@ -297,7 +347,7 @@ namespace SharpSploit.Enumeration
                 this.Ppid = Ppid;
                 this.Name = Name;
                 this.Path = Path;
-                this.Sessionid = Sessionid;
+                this.SessionID = Sessionid;
                 this.Owner = Owner;
                 this.Architecture = Architecture;
             }

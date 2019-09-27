@@ -31,6 +31,10 @@
 ### SharpSploit.Enumeration.Host
 
 * `GetProcessList()` - Gets a list of running processes on the system.
+* `GetArchitecture()` - Gets the architecuture of the OS.
+* `GetParentProcess()` - Gets the parent process if of a process.
+* `GetProcessOwner()` - Gets the username of the owner of a process.
+* `IsWow64()` - Checks if a process is a Wow64 process.
 * `CreateProcessDump()` - Creates a minidump of the memory of a running process. Useful for offline Mimikatz if dumping the LSASS process. (Requires Admin)
 * `GetHostname()` - Gets the hostname of the system.
 * `GetUsername()` - Gets the current Domain and username of the process running.
@@ -59,6 +63,12 @@
 * `GetNetLocalGroupMembers()` - Gets a list of `LocalGroupMember`s from specified remote computer(s) for a specified group.
 * `GetNetLoggedOnUsers()` - Gets a list of `LoggedOnUser`s from specified remote computer(s).
 * `GetNetSessions()` - Gets a list of `SessionInfo`s from specified remote computer(s).
+
+## SharpSploit.Evastion
+
+### SharpSploit.Evasion.Amsi
+
+* `PatchAmsiScanBuffer()` - Patch the AmsiScanBuffer function in amsi.dll to disable the AMSI for the current process.
 
 ## SharpSploit.Execution
 

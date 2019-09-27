@@ -634,13 +634,43 @@
             </summary>
             <returns>List of ProcessResults.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.GetProcessessorArchitecture">
+        <member name="M:SharpSploit.Enumeration.Host.GetArchitecture">
             <summary>
-            Establishes the architecture of the OS.
+            Gets the architecture of the OS.
             </summary>
-            <remarks>
-            Authored by Daniel Duggan (@_RastaMouse).
-            </remarks>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetParentProcess(System.Diagnostics.Process)">
+            <summary>
+            Gets the parent process id of a Process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process"></param>
+            <returns>Parent Process Id. Returns 0 if unsuccessful</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetParentProcess(System.IntPtr)">
+            <summary>
+            Gets the parent process id of a process handle
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Handle">Handle to the process to get the parent process id of</param>
+            <returns>Parent Process Id</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetProcessOwner(System.Diagnostics.Process)">
+            <summary>
+            Gets the username of the owner of a process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process">Process to get owner of</param>
+            <returns>Username of process owner. Returns empty string if unsuccessful.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.IsWow64(System.Diagnostics.Process)">
+            <summary>
+            Checks if a process is a Wow64 process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process">Process to check Wow64</param>
+            <returns>True if process is Wow64, false otherwise. Returns false if unsuccessful.</returns>
         </member>
         <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.Int32,System.String,System.String)">
             <summary>
@@ -993,6 +1023,21 @@
             <param name="RegHive">RegistryHive value to convert to string.</param>
             <returns>Matching RegistryHive string, defaults to HKEY_CURRENT_USER if none match.</returns>
         </member>
+        <member name="T:SharpSploit.Evasion.Amsi">
+            <summary>
+            Amsi is a class for manipulating the Antimalware Scan Interface.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Evasion.Amsi.PatchAmsiScanBuffer">
+            <summary>
+            Patch the AmsiScanBuffer function in amsi.dll.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <returns>Bool. True if succeeded, otherwise false.</returns>
+            <remarks>
+            Credit to Adam Chester (@_xpn_).
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
             Assembly is a library for loading .NET assemblies and executing methods contained within them.
@@ -1096,16 +1141,16 @@
              </summary>
              <example>
              
-             //These delegates may also be used directly.
+             // These delegates may also be used directly.
             
-             //Get a pointer to the NtCreateThreadEx function.
+             // Get a pointer to the NtCreateThreadEx function.
              IntPtr pFunction = Execution.DynamicInvoke.Generic.GetLibraryAddress(@"ntdll.dll", "NtCreateThreadEx");
              
-             //Create an instance of a NtCreateThreadEx delegate from our function pointer.
+             //  Create an instance of a NtCreateThreadEx delegate from our function pointer.
              DELEGATES.NtCreateThreadEx createThread = (NATIVE_DELEGATES.NtCreateThreadEx)Marshal.GetDelegateForFunctionPointer(
                 pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
             
-             //Invoke NtCreateThreadEx using the delegate
+             //  Invoke NtCreateThreadEx using the delegate
              createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
                  procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
              
@@ -1125,6 +1170,12 @@
             <param name="bInheritHandle"></param>
             <param name="dwProcessId"></param>
             <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Win32.IsWow64Process(System.IntPtr,System.Boolean@)">
+            <summary>
+            Uses DynamicInvocation to call the IsWow64Process Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
+            </summary>
+            <returns>Returns true if process is WOW64, and false if not (64-bit, or 32-bit on a 32-bit machine).</returns>
         </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
@@ -1239,7 +1290,7 @@
             A majority of this library is adapted from signatures found at www.pinvoke.net.
             </remarks>
         </member>
-        <member name="M:SharpSploit.Execution.Win32.NtDll.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.Win32.NtDll.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,System.Boolean,System.Int32,System.Int32,System.Int32,System.IntPtr)">
             <summary>
             NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
             for remote thread creation.
