@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.DirectoryServices" />
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +60,7 @@
     <Compile Include="Enumeration\HostTests.cs" />
     <Compile Include="Enumeration\NetworkTests.cs" />
     <Compile Include="Enumeration\RegistryTests.cs" />
+    <Compile Include="Enumeration\KeyloggerTests.cs" />
     <Compile Include="Execution\ShellCodeTests.cs" />
     <Compile Include="Execution\ShellTests.cs" />
     <Compile Include="LateralMovement\DCOMTests.cs" />

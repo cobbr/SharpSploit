@@ -634,12 +634,43 @@
             </summary>
             <returns>List of ProcessResults.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Host.Is64BitProcess(System.Diagnostics.Process)">
+        <member name="M:SharpSploit.Enumeration.Host.GetArchitecture">
             <summary>
-            Gets whether a process is 64-bit or not.
+            Gets the architecture of the OS.
             </summary>
-            <param name="process">The process to check.</param>
-            <returns></returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetParentProcess(System.Diagnostics.Process)">
+            <summary>
+            Gets the parent process id of a Process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process"></param>
+            <returns>Parent Process Id. Returns 0 if unsuccessful</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetParentProcess(System.IntPtr)">
+            <summary>
+            Gets the parent process id of a process handle
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Handle">Handle to the process to get the parent process id of</param>
+            <returns>Parent Process Id</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetProcessOwner(System.Diagnostics.Process)">
+            <summary>
+            Gets the username of the owner of a process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process">Process to get owner of</param>
+            <returns>Username of process owner. Returns empty string if unsuccessful.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.IsWow64(System.Diagnostics.Process)">
+            <summary>
+            Checks if a process is a Wow64 process
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <param name="Process">Process to check Wow64</param>
+            <returns>True if process is Wow64, false otherwise. Returns false if unsuccessful.</returns>
         </member>
         <member name="M:SharpSploit.Enumeration.Host.CreateProcessDump(System.Int32,System.String,System.String)">
             <summary>
@@ -723,6 +754,26 @@
             <summary>
             FileSystemEntryResult represents a file on disk, used with the GetDirectoryListing() function.
             </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Keylogger">
+            <summary>
+            Keylogger allows for the monitoring of user keystrokes.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Keylogger.StartKeylogger(System.Int32)">
+            <summary>
+            Starts the Keylogger
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>String containing the captured keystrokes, along with identification of what window they were entered in.</returns>
+            <param name="Seconds">The amount of time in seconds the keylogger should run for before returning keystrokes.</param>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Keylogger.GetActiveWindowTitle">
+            <summary>
+            Gets the active window title of the window keystrokes are being entered in.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>Title of the active window.</returns>
         </member>
         <member name="T:SharpSploit.Enumeration.Network">
             <summary>

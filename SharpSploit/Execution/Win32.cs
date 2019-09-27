@@ -61,9 +61,10 @@ namespace SharpSploit.Execution
                 IntPtr hMem
             );
 
-            [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+            [DllImport("kernel32.dll", SetLastError = true)]
             public static extern bool IsWow64Process(
-                System.IntPtr hProcess, out bool lpSystemInfo
+                IntPtr hProcess,
+                out bool Wow64Process
             );
 
             [DllImport("kernel32.dll")]
@@ -190,6 +191,34 @@ namespace SharpSploit.Execution
                 IntPtr hProcess
             );
 
+            [DllImport("kernel32.dll")]
+            public static extern void GetNativeSystemInfo(
+                ref SYSTEM_INFO lpSystemInfo
+            );
+
+            public struct SYSTEM_INFO
+            {
+                public ushort wProcessorArchitecture;
+                public ushort wReserved;
+                public uint dwPageSize;
+                public IntPtr lpMinimumApplicationAddress;
+                public IntPtr lpMaximumApplicationAddress;
+                public UIntPtr dwActiveProcessorMask;
+                public uint dwNumberOfProcessors;
+                public uint dwProcessorType;
+                public uint dwAllocationGranularity;
+                public ushort wProcessorLevel;
+                public ushort wProcessorRevision;
+            };
+
+            public enum Platform
+            {
+                x86,
+                x64,
+                IA64,
+                Unknown
+            }
+
             [Flags]
             public enum ProcessAccessFlags : UInt32
             {
@@ -209,6 +238,50 @@ namespace SharpSploit.Execution
                 PROCESS_VM_WRITE = 0x0020,
                 SYNCHRONIZE = 0x00100000
             }
+        }
+
+        public static class User32
+        {
+            public static int WH_KEYBOARD_LL { get; } = 13;
+            public static int WM_KEYDOWN { get; } = 0x0100;
+
+            public delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr CallNextHookEx(
+                IntPtr hhk,
+                int nCode,
+                IntPtr wParam,
+                IntPtr lParam
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto,  SetLastError = true)]
+            public static extern IntPtr GetForegroundWindow();
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern int GetWindowText(
+                IntPtr hWnd,
+                StringBuilder text,
+                int count
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr SetWindowsHookEx(
+                int idHook,
+                HookProc lpfn,
+                IntPtr hMod,
+                uint dwThreadId
+            );
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern int GetWindowTextLength(IntPtr hWnd);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern short GetKeyState(int nVirtKey);
         }
 
         public static class Netapi32
@@ -1057,7 +1130,7 @@ namespace SharpSploit.Execution
 
         public class WinCred
         {
-            #pragma warning disable 0618
+#pragma warning disable 0618
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
             public struct _CREDENTIAL
             {
@@ -1073,7 +1146,7 @@ namespace SharpSploit.Execution
                 public IntPtr TargetAlias;
                 public IntPtr UserName;
             }
-            #pragma warning restore 0618
+#pragma warning restore 0618
 
             public enum CRED_FLAGS : uint
             {
@@ -1216,6 +1289,92 @@ namespace SharpSploit.Execution
                 int maximumStackSize,
                 IntPtr attributeList
             );
+
+            [DllImport("ntdll.dll", SetLastError = true)]
+            public static extern int NtQueryInformationProcess(
+                IntPtr hProcess,
+                PROCESSINFOCLASS pic,
+                ref PROCESS_BASIC_INFORMATION pbi,
+                int cb,
+                out int pSize
+            );
+
+            public struct PROCESS_BASIC_INFORMATION
+            {
+                public IntPtr ExitStatus;
+                public IntPtr PebBaseAddress;
+                public IntPtr AffinityMask;
+                public IntPtr BasePriority;
+                public UIntPtr UniqueProcessId;
+                public int InheritedFromUniqueProcessId;
+
+                public int Size
+                {
+                    get { return (int)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)); }
+                }
+            }
+
+            public enum PROCESSINFOCLASS : int
+            {
+                ProcessBasicInformation = 0, // 0, q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
+                ProcessQuotaLimits, // qs: QUOTA_LIMITS, QUOTA_LIMITS_EX
+                ProcessIoCounters, // q: IO_COUNTERS
+                ProcessVmCounters, // q: VM_COUNTERS, VM_COUNTERS_EX
+                ProcessTimes, // q: KERNEL_USER_TIMES
+                ProcessBasePriority, // s: KPRIORITY
+                ProcessRaisePriority, // s: ULONG
+                ProcessDebugPort, // q: HANDLE
+                ProcessExceptionPort, // s: HANDLE
+                ProcessAccessToken, // s: PROCESS_ACCESS_TOKEN
+                ProcessLdtInformation, // 10
+                ProcessLdtSize,
+                ProcessDefaultHardErrorMode, // qs: ULONG
+                ProcessIoPortHandlers, // (kernel-mode only)
+                ProcessPooledUsageAndLimits, // q: POOLED_USAGE_AND_LIMITS
+                ProcessWorkingSetWatch, // q: PROCESS_WS_WATCH_INFORMATION[]; s: void
+                ProcessUserModeIOPL,
+                ProcessEnableAlignmentFaultFixup, // s: BOOLEAN
+                ProcessPriorityClass, // qs: PROCESS_PRIORITY_CLASS
+                ProcessWx86Information,
+                ProcessHandleCount, // 20, q: ULONG, PROCESS_HANDLE_INFORMATION
+                ProcessAffinityMask, // s: KAFFINITY
+                ProcessPriorityBoost, // qs: ULONG
+                ProcessDeviceMap, // qs: PROCESS_DEVICEMAP_INFORMATION, PROCESS_DEVICEMAP_INFORMATION_EX
+                ProcessSessionInformation, // q: PROCESS_SESSION_INFORMATION
+                ProcessForegroundInformation, // s: PROCESS_FOREGROUND_BACKGROUND
+                ProcessWow64Information, // q: ULONG_PTR
+                ProcessImageFileName, // q: UNICODE_STRING
+                ProcessLUIDDeviceMapsEnabled, // q: ULONG
+                ProcessBreakOnTermination, // qs: ULONG
+                ProcessDebugObjectHandle, // 30, q: HANDLE
+                ProcessDebugFlags, // qs: ULONG
+                ProcessHandleTracing, // q: PROCESS_HANDLE_TRACING_QUERY; s: size 0 disables, otherwise enables
+                ProcessIoPriority, // qs: ULONG
+                ProcessExecuteFlags, // qs: ULONG
+                ProcessResourceManagement,
+                ProcessCookie, // q: ULONG
+                ProcessImageInformation, // q: SECTION_IMAGE_INFORMATION
+                ProcessCycleTime, // q: PROCESS_CYCLE_TIME_INFORMATION
+                ProcessPagePriority, // q: ULONG
+                ProcessInstrumentationCallback, // 40
+                ProcessThreadStackAllocation, // s: PROCESS_STACK_ALLOCATION_INFORMATION, PROCESS_STACK_ALLOCATION_INFORMATION_EX
+                ProcessWorkingSetWatchEx, // q: PROCESS_WS_WATCH_INFORMATION_EX[]
+                ProcessImageFileNameWin32, // q: UNICODE_STRING
+                ProcessImageFileMapping, // q: HANDLE (input)
+                ProcessAffinityUpdateMode, // qs: PROCESS_AFFINITY_UPDATE_MODE
+                ProcessMemoryAllocationMode, // qs: PROCESS_MEMORY_ALLOCATION_MODE
+                ProcessGroupInformation, // q: USHORT[]
+                ProcessTokenVirtualizationEnabled, // s: ULONG
+                ProcessConsoleHostProcess, // q: ULONG_PTR
+                ProcessWindowInformation, // 50, q: PROCESS_WINDOW_INFORMATION
+                ProcessHandleInformation, // q: PROCESS_HANDLE_SNAPSHOT_INFORMATION // since WIN8
+                ProcessMitigationPolicy, // s: PROCESS_MITIGATION_POLICY_INFORMATION
+                ProcessDynamicFunctionTableInformation,
+                ProcessHandleCheckingMode,
+                ProcessKeepAliveCount, // q: PROCESS_KEEPALIVE_COUNT_INFORMATION
+                ProcessRevokeFileHandles, // s: PROCESS_REVOKE_FILE_HANDLES_INFORMATION
+                MaxProcessInfoClass
+            };
 
             /// <summary>
             /// NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
