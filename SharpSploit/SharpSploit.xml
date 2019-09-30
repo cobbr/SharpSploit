@@ -1410,6 +1410,24 @@
             here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
             </remarks>
         </member>
+        <member name="T:SharpSploit.LateralMovement.PSExec">
+            <summary>
+            PSExec is a class for executing lateral movement via the Service Control Manager.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PSExec.ExecuteService(System.String,System.String,System.String,System.String)">
+            <summary>
+            Execute a process on a remote system using PSExec.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">The short service name.</param>
+            <param name="ServiceDisplayName">The friendly display name.</param>
+            <param name="BinaryPath">The path to the Service Executable.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>
+            Daniel Duggan (@_RastaMouse)
+            </author>
+        </member>
         <member name="T:SharpSploit.LateralMovement.WMI">
             <summary>
             WMI is a class for executing WMI lateral movement techniques.
