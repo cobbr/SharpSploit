@@ -294,13 +294,16 @@ namespace SharpSploit.Enumeration
 		public static SharpSploitResultList<FileSystemEntryResult> GetDirectoryListing(string Path)
         {
             SharpSploitResultList<FileSystemEntryResult> results = new SharpSploitResultList<FileSystemEntryResult>();
+
             foreach (string dir in Directory.GetDirectories(Path))
             {
-                results.Add(new FileSystemEntryResult(dir));
+                var dirInfo = new DirectoryInfo(dir);
+                results.Add(new FileSystemEntryResult(dirInfo.FullName, 0, dirInfo.CreationTimeUtc, dirInfo.LastAccessTimeUtc, dirInfo.LastWriteTimeUtc));
             }
             foreach (string file in Directory.GetFiles(Path))
             {
-                results.Add(new FileSystemEntryResult(file));
+                var fileInfo = new FileInfo(file);
+                results.Add(new FileSystemEntryResult(fileInfo.FullName, fileInfo.Length, fileInfo.CreationTimeUtc, fileInfo.LastAccessTimeUtc, fileInfo.LastWriteTimeUtc));
             }
             return results;
         }
@@ -360,6 +363,10 @@ namespace SharpSploit.Enumeration
         public sealed class FileSystemEntryResult : SharpSploitResult
         {
             public string Name { get; } = "";
+            public long Length { get; } = 0;
+            public DateTime CreationTimeUtc { get; } = new DateTime();
+            public DateTime LastAccessTimeUtc { get; } = new DateTime();
+            public DateTime LastWriteTimeUtc { get; } = new DateTime();
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -370,14 +377,38 @@ namespace SharpSploit.Enumeration
                         {
                             Name = "Name",
                             Value = this.Name
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Length",
+                            Value = this.Length
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "CreationTimeUtc",
+                            Value = this.CreationTimeUtc
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "LastAccessTimeUtc",
+                            Value = this.LastAccessTimeUtc
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "LastWriteTimeUtc",
+                            Value = this.LastWriteTimeUtc
                         }
                     };
                 }
             }
 
-            public FileSystemEntryResult(string Name = "")
+            public FileSystemEntryResult(string Name, long Length, DateTime CreationTimeUtc, DateTime LastAccessTimeUtc, DateTime LastWriteTimeUtc)
             {
                 this.Name = Name;
+                this.Length = Length;
+                this.CreationTimeUtc = CreationTimeUtc;
+                this.LastAccessTimeUtc = LastAccessTimeUtc;
+                this.LastWriteTimeUtc = LastWriteTimeUtc;
             }
         }
     }
