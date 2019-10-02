@@ -739,6 +739,14 @@
             <param name="Path">The path of the directory to get a listing of.</param>
             <returns>List of FileSystemEntryResults.</returns>
         </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetDacl(System.String)">
+            <summary>
+            Gets a DACL of a file or directory.
+            </summary>
+            <param name="Path">The path of the file or directory to get a DACL for.</param>
+            <returns>List of DaclResults.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
         <member name="M:SharpSploit.Enumeration.Host.ChangeCurrentDirectory(System.String)">
             <summary>
             Changes the current working directory.
@@ -753,6 +761,11 @@
         <member name="T:SharpSploit.Enumeration.Host.FileSystemEntryResult">
             <summary>
             FileSystemEntryResult represents a file on disk, used with the GetDirectoryListing() function.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Host.DaclResult">
+            <summary>
+            DaclResult represents a DACL of a file or directory on disk, used with the GetDacl() function.
             </summary>
         </member>
         <member name="T:SharpSploit.Enumeration.Keylogger">

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Collections.Generic;
+using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Generic;
@@ -309,6 +310,51 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
+        /// Gets a DACL of a file or directory.
+        /// </summary>
+        /// <param name="Path">The path of the file or directory to get a DACL for.</param>
+        /// <returns>List of DaclResults.</returns>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+		public static SharpSploitResultList<DaclResult> GetDacl(string Path)
+        {
+            SharpSploitResultList<DaclResult> results = new SharpSploitResultList<DaclResult>();
+            try
+            {
+                if (File.Exists(Path))
+                {
+                    FileInfo fInfo = new FileInfo(Path);
+                    FileSecurity fSecurity = fInfo.GetAccessControl();
+                    AuthorizationRuleCollection fDacl = fSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+                    foreach (FileSystemAccessRule ace in fDacl)
+                    {
+                        results.Add(new DaclResult(ace.IdentityReference.Value, ace.AccessControlType, ace.FileSystemRights, ace.IsInherited, ace.InheritanceFlags, ace.PropagationFlags));
+                    }
+                }
+                else if (Directory.Exists(Path))
+                {
+                    DirectoryInfo dInfo = new DirectoryInfo(Path);
+                    DirectorySecurity dSecurity = dInfo.GetAccessControl();
+                    AuthorizationRuleCollection dDacl = dSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+                    foreach (FileSystemAccessRule ace in dDacl)
+                    {
+                        results.Add(new DaclResult(ace.IdentityReference.Value, ace.AccessControlType, ace.FileSystemRights, ace.IsInherited, ace.InheritanceFlags, ace.PropagationFlags));
+                    }
+                }
+                else
+                {
+                    Console.Error.WriteLine("Path not found");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+            return results;
+        }
+
+        /// <summary>
         /// Changes the current working directory.
         /// </summary>
         /// <param name="DirectoryName">Relative or absolute path to new working directory.</param>
@@ -409,6 +455,43 @@ namespace SharpSploit.Enumeration
                 this.CreationTimeUtc = CreationTimeUtc;
                 this.LastAccessTimeUtc = LastAccessTimeUtc;
                 this.LastWriteTimeUtc = LastWriteTimeUtc;
+            }
+        }
+
+        /// <summary>
+        /// DaclResult represents a DACL of a file or directory on disk, used with the GetDacl() function.
+        /// </summary>
+        public sealed class DaclResult : SharpSploitResult
+        {
+            public string IdentityReference { get; } = "";
+            public AccessControlType AccessControlType { get; } = new AccessControlType();
+            public FileSystemRights FileSystemRights { get; } = new FileSystemRights();
+            public bool IsInherited { get; } = false;
+            public InheritanceFlags InheritanceFlags { get; } = new InheritanceFlags();
+            public PropagationFlags PropagationFlags { get; } = new PropagationFlags();
+            protected internal override IList<SharpSploitResultProperty> ResultProperties
+            {
+                get
+                {
+                    return new List<SharpSploitResultProperty> {
+                        new SharpSploitResultProperty { Name = "IdentityReference", Value = this.IdentityReference },
+                        new SharpSploitResultProperty { Name = "AccessControlType", Value = this.AccessControlType },
+                        new SharpSploitResultProperty { Name = "FileSystemRights", Value = this.FileSystemRights },
+                        new SharpSploitResultProperty { Name = "IsInherited", Value = this.IsInherited },
+                        new SharpSploitResultProperty { Name = "InheritanceFlags", Value = this.InheritanceFlags },
+                        new SharpSploitResultProperty { Name = "PropagationFlags", Value = this.PropagationFlags }
+                    };
+                }
+            }
+
+            public DaclResult(string IdentityReference, AccessControlType AccessControlType, FileSystemRights FileSystemRights, bool IsInherited, InheritanceFlags InheritanceFlags, PropagationFlags PropagationFlags)
+            {
+                this.IdentityReference = IdentityReference;
+                this.AccessControlType = AccessControlType;
+                this.FileSystemRights = FileSystemRights;
+                this.IsInherited = IsInherited;
+                this.InheritanceFlags = InheritanceFlags;
+                this.PropagationFlags = PropagationFlags;
             }
         }
     }
