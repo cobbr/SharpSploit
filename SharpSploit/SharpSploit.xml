@@ -1410,12 +1410,59 @@
             here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
             </remarks>
         </member>
-        <member name="T:SharpSploit.LateralMovement.PSExec">
+        <member name="T:SharpSploit.LateralMovement.Service">
             <summary>
-            PSExec is a class for executing lateral movement via the Service Control Manager.
+            Service is a class for interacting with the Service Control Manager on a target computer.
             </summary>
         </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.ExecuteService(System.String,System.String,System.String,System.String)">
+        <member name="M:SharpSploit.LateralMovement.Service.QueryServices(System.String,System.String)">
+            <summary>
+            Query Services on a remote target.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">Optional. The short service name.</param>
+            <returns>A SharpSploitResultList of services.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.CreateService(System.String,System.String,System.String,System.String)">
+            <summary>
+            Creates a new service on the target computer.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">The short service name.</param>
+            <param name="ServiceDisplayName">The friendly display name.</param>
+            <param name="BinaryPath">The path to the Service Executable.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.StartService(System.String,System.String)">
+            <summary>
+            Starts a service.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">The (short) service name to start.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.StopService(System.String,System.String)">
+            <summary>
+            Stops a service.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">The (short) service name to stop.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.DeleteService(System.String,System.String)">
+            <summary>
+            Deletes a service.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <param name="ServiceName">The (short) service name to delete.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.PSExec(System.String,System.String,System.String,System.String)">
             <summary>
             Execute a process on a remote system using PSExec.
             </summary>
@@ -1424,73 +1471,25 @@
             <param name="ServiceDisplayName">The friendly display name.</param>
             <param name="BinaryPath">The path to the Service Executable.</param>
             <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.Service.CloseHandle(System.IntPtr)">
+            <summary>
+            Closes Service Handles.
+            </summary>
+            <param name="handle">The handle to close.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
             <author>
             Daniel Duggan (@_RastaMouse)
             </author>
         </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.OpenServiceManager(System.String)">
+        <member name="M:SharpSploit.LateralMovement.Service.OpenServiceManager(System.String)">
             <summary>
             Opens the Service Control Manager on the target computer.
             </summary>
             <param name="ComputerName">The target computer.</param>
             <returns>IntPtr. Returns a handle to the SCM.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
-        </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.CreateService(System.IntPtr,System.String,System.String,System.String)">
-            <summary>
-            Creates a new service on the target computer.
-            </summary>
-            <param name="hManager">Handle to the SCM.</param>
-            <param name="ServiceName">The short service name.</param>
-            <param name="ServiceDisplayName">The friendly display name.</param>
-            <param name="BinaryPath">The path to the Service Executable.</param>
-            <returns>IntPtr. Returns a handle to the service.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
-        </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.StartService(System.IntPtr)">
-            <summary>
-            Starts a service.
-            </summary>
-            <param name="hService">The handle to the service.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
-        </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.StopService(System.IntPtr)">
-            <summary>
-            Stops a service.
-            </summary>
-            <param name="hService">The handle to the service.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
-        </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.DeleteService(System.IntPtr)">
-            <summary>
-            Deletes a service.
-            </summary>
-            <param name="hService">The handle to the service.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
-        </member>
-        <member name="M:SharpSploit.LateralMovement.PSExec.CloseHandles(System.IntPtr,System.IntPtr)">
-            <summary>
-            Closes the handles to the SCM and Service.
-            </summary>
-            <param name="hService">The handle to the service.</param>
-            /// <param name="hManager">The handle to the SCM.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
-            <author>
-            Daniel Duggan (@_RastaMouse)
-            </author>
+            <author>Daniel Duggan (@_RastaMouse)</author>
         </member>
         <member name="T:SharpSploit.LateralMovement.WinRM">
             <summary>

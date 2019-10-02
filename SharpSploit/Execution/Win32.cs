@@ -671,6 +671,13 @@ namespace SharpSploit.Execution
             );
 
             [DllImport("advapi32.dll", SetLastError = true)]
+            public static extern IntPtr OpenService(
+                IntPtr hSCManager,
+                string lpServiceName,
+                SERVICE_ACCESS dwDesiredAccess
+            );
+
+            [DllImport("advapi32.dll", SetLastError = true)]
             public static extern IntPtr CreateService(
                 IntPtr hSCManager,
                 string lpServiceName,
@@ -685,20 +692,6 @@ namespace SharpSploit.Execution
                 string lpDependencies,
                 string lpServiceStartName,
                 string lpPassword
-            );
-
-            [DllImport("advapi32", SetLastError = true)]
-            public static extern bool StartService(
-                IntPtr hService,
-                int dwNumServiceArgs,
-                string[] lpServiceArgVectors
-            );
-
-            [DllImport("advapi32.dll", SetLastError = true)]
-            public static extern bool ControlService(
-                IntPtr hService,
-                SERVICE_CONTROL dwControl,
-                ref SERVICE_STATUS lpServiceStatus
             );
 
             [DllImport("advapi32.dll", SetLastError = true)]
@@ -895,37 +888,6 @@ namespace SharpSploit.Execution
                 SERVICE_ERROR_NORMAL = 0x00000001,
                 SERVICE_ERROR_SEVERE = 0x00000002,
                 SERVICE_ERROR_CRITICAL = 0x00000003,
-            }
-
-            [Flags]
-            public enum SERVICE_CONTROL : uint
-            {
-                STOP = 0x00000001,
-                PAUSE = 0x00000002,
-                CONTINUE = 0x00000003,
-                INTERROGATE = 0x00000004,
-                SHUTDOWN = 0x00000005,
-                PARAMCHANGE = 0x00000006,
-                NETBINDADD = 0x00000007,
-                NETBINDREMOVE = 0x00000008,
-                NETBINDENABLE = 0x00000009,
-                NETBINDDISABLE = 0x0000000A,
-                DEVICEEVENT = 0x0000000B,
-                HARDWAREPROFILECHANGE = 0x0000000C,
-                POWEREVENT = 0x0000000D,
-                SESSIONCHANGE = 0x0000000E
-            }
-
-            [StructLayout(LayoutKind.Sequential)]
-            public struct SERVICE_STATUS
-            {
-                public int serviceType;
-                public int currentState;
-                public int controlsAccepted;
-                public int win32ExitCode;
-                public int serviceSpecificExitCode;
-                public int checkPoint;
-                public int waitHint;
             }
         }
 
