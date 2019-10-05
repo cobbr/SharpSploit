@@ -131,3 +131,21 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 ### SharpSploit.LateralMovement.WMI
 
 * `WMIExecute()` - Execute a process on a remote system with Win32_Process Create4 with specified credentials.
+
+### SharpSploit.LateralMovement.DCOM
+
+* `DCOMExecute()` - Execute a command on a remote system using various DCOM methods.
+
+### SharpSploit.LateralMovement.SCM
+
+* `GetService()` - Gets a service on a remote machine.
+* `GetServices()` - Gets a list of all services on a remote machine.
+* `CreateService()` - Creates a service on a remote machine.
+* `StartService()` - Starts a service on a remote machine.
+* `StopService()` - Stops a service on a remote machine.
+* `DeleteService()` - Deletes a service on a remote machine.
+* `PSExec()` - Executes a command on a remote computer using a PSExec-like technique.
+
+### SharpSploit.LateralMovement.PowerShellRemoting
+
+* `InvokeCommand()` - Invoke a PowerShell command on a remote machine.
