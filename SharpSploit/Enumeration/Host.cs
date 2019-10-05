@@ -42,7 +42,11 @@ namespace SharpSploit.Enumeration
 
                 if (parentProcessId != 0)
                 {
-                    processPath = process.MainModule.FileName;
+                    try
+                    {
+                        processPath = process.MainModule.FileName;
+                    }
+                    catch (System.ComponentModel.Win32Exception) { }
                 }
 
                 if (processorArchitecture == Win32.Kernel32.Platform.x64)
@@ -57,8 +61,16 @@ namespace SharpSploit.Enumeration
                 {
                     processArch = Win32.Kernel32.Platform.x86;
                 }
-
-                results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
+                results.Add(new ProcessResult
+                {
+                    Pid = processId,
+                    Ppid = parentProcessId,
+                    Name = processName,
+                    Path = processPath,
+                    SessionID = sessionId,
+                    Owner = processOwner,
+                    Architecture = processArch
+                });
             }
             return results;
         }
@@ -291,20 +303,33 @@ namespace SharpSploit.Enumeration
         /// Gets a directory listing of a directory.
         /// </summary>
         /// <param name="Path">The path of the directory to get a listing of.</param>
-        /// <returns>List of FileSystemEntryResults.</returns>
+        /// <returns>SharpSploitResultList of FileSystemEntryResults.</returns>
 		public static SharpSploitResultList<FileSystemEntryResult> GetDirectoryListing(string Path)
         {
             SharpSploitResultList<FileSystemEntryResult> results = new SharpSploitResultList<FileSystemEntryResult>();
-
             foreach (string dir in Directory.GetDirectories(Path))
             {
-                var dirInfo = new DirectoryInfo(dir);
-                results.Add(new FileSystemEntryResult(dirInfo.FullName, 0, dirInfo.CreationTimeUtc, dirInfo.LastAccessTimeUtc, dirInfo.LastWriteTimeUtc));
+                DirectoryInfo dirInfo = new DirectoryInfo(dir);
+                results.Add(new FileSystemEntryResult
+                {
+                    Name = dirInfo.FullName,
+                    Length = 0,
+                    CreationTimeUtc = dirInfo.CreationTimeUtc,
+                    LastAccessTimeUtc = dirInfo.LastAccessTimeUtc,
+                    LastWriteTimeUtc = dirInfo.LastWriteTimeUtc
+                });
             }
             foreach (string file in Directory.GetFiles(Path))
             {
-                var fileInfo = new FileInfo(file);
-                results.Add(new FileSystemEntryResult(fileInfo.FullName, fileInfo.Length, fileInfo.CreationTimeUtc, fileInfo.LastAccessTimeUtc, fileInfo.LastWriteTimeUtc));
+                FileInfo fileInfo = new FileInfo(file);
+                results.Add(new FileSystemEntryResult
+                {
+                    Name = fileInfo.FullName,
+                    Length = fileInfo.Length,
+                    CreationTimeUtc = fileInfo.CreationTimeUtc,
+                    LastAccessTimeUtc = fileInfo.LastAccessTimeUtc,
+                    LastWriteTimeUtc = fileInfo.LastWriteTimeUtc
+                });
             }
             return results;
         }
@@ -313,43 +338,36 @@ namespace SharpSploit.Enumeration
         /// Gets a DACL of a file or directory.
         /// </summary>
         /// <param name="Path">The path of the file or directory to get a DACL for.</param>
-        /// <returns>List of DaclResults.</returns>
+        /// <returns>List of DaclResults. NULL if not found.</returns>
         /// <author>Daniel Duggan (@_RastaMouse)</author>
 		public static SharpSploitResultList<DaclResult> GetDacl(string Path)
         {
-            SharpSploitResultList<DaclResult> results = new SharpSploitResultList<DaclResult>();
-            try
+            if (File.Exists(Path))
             {
-                if (File.Exists(Path))
-                {
-                    FileInfo fInfo = new FileInfo(Path);
-                    FileSecurity fSecurity = fInfo.GetAccessControl();
-                    AuthorizationRuleCollection fDacl = fSecurity.GetAccessRules(true, true, typeof(NTAccount));
-
-                    foreach (FileSystemAccessRule ace in fDacl)
-                    {
-                        results.Add(new DaclResult(ace.IdentityReference.Value, ace.AccessControlType, ace.FileSystemRights, ace.IsInherited, ace.InheritanceFlags, ace.PropagationFlags));
-                    }
-                }
-                else if (Directory.Exists(Path))
-                {
-                    DirectoryInfo dInfo = new DirectoryInfo(Path);
-                    DirectorySecurity dSecurity = dInfo.GetAccessControl();
-                    AuthorizationRuleCollection dDacl = dSecurity.GetAccessRules(true, true, typeof(NTAccount));
-
-                    foreach (FileSystemAccessRule ace in dDacl)
-                    {
-                        results.Add(new DaclResult(ace.IdentityReference.Value, ace.AccessControlType, ace.FileSystemRights, ace.IsInherited, ace.InheritanceFlags, ace.PropagationFlags));
-                    }
-                }
-                else
-                {
-                    Console.Error.WriteLine("Path not found");
-                }
+                return GetDaclResults(new FileInfo(Path).GetAccessControl());
             }
-            catch (Exception e)
+            if (Directory.Exists(Path))
             {
-                Console.Error.WriteLine(e.Message);
+                DirectoryInfo dInfo = new DirectoryInfo(Path);
+                return GetDaclResults(new DirectoryInfo(Path).GetAccessControl());
+            }
+            return null;
+        }
+
+        private static SharpSploitResultList<DaclResult> GetDaclResults(FileSystemSecurity SecurityEntry)
+        {
+            SharpSploitResultList<DaclResult> results = new SharpSploitResultList<DaclResult>();
+            foreach (FileSystemAccessRule ace in SecurityEntry.GetAccessRules(true, true, typeof(NTAccount)))
+            {
+                results.Add(new DaclResult
+                {
+                    IdentityReference = ace.IdentityReference.Value,
+                    AccessControlType = ace.AccessControlType,
+                    FileSystemRights = ace.FileSystemRights,
+                    IsInherited = ace.IsInherited,
+                    InheritanceFlags = ace.InheritanceFlags,
+                    PropagationFlags = ace.PropagationFlags
+                });
             }
             return results;
         }
@@ -368,13 +386,13 @@ namespace SharpSploit.Enumeration
         /// </summary>
         public sealed class ProcessResult : SharpSploitResult
         {
-            public int Pid { get; } = 0;
-            public int Ppid { get; } = 0;
-            public string Name { get; } = "";
-            public string Path { get; } = "";
-            public int SessionID { get; } = 0;
-            public string Owner { get; } = "";
-            public Win32.Kernel32.Platform Architecture { get; } = Win32.Kernel32.Platform.Unknown;
+            public int Pid { get; set; } = 0;
+            public int Ppid { get; set; } = 0;
+            public string Name { get; set; } = "";
+            public string Path { get; set; } = "";
+            public int SessionID { get; set; } = 0;
+            public string Owner { get; set; } = "";
+            public Win32.Kernel32.Platform Architecture { get; set; } = Win32.Kernel32.Platform.Unknown;
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -390,17 +408,6 @@ namespace SharpSploit.Enumeration
                     };
                 }
             }
-
-            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "", string Path = "", int Sessionid = 0, string Owner = "", Win32.Kernel32.Platform Architecture = Win32.Kernel32.Platform.Unknown)
-            {
-                this.Pid = Pid;
-                this.Ppid = Ppid;
-                this.Name = Name;
-                this.Path = Path;
-                this.SessionID = Sessionid;
-                this.Owner = Owner;
-                this.Architecture = Architecture;
-            }
         }
 
         /// <summary>
@@ -408,11 +415,11 @@ namespace SharpSploit.Enumeration
         /// </summary>
         public sealed class FileSystemEntryResult : SharpSploitResult
         {
-            public string Name { get; } = "";
-            public long Length { get; } = 0;
-            public DateTime CreationTimeUtc { get; } = new DateTime();
-            public DateTime LastAccessTimeUtc { get; } = new DateTime();
-            public DateTime LastWriteTimeUtc { get; } = new DateTime();
+            public string Name { get; set; } = "";
+            public long Length { get; set; } = 0;
+            public DateTime CreationTimeUtc { get; set; } = new DateTime();
+            public DateTime LastAccessTimeUtc { get; set; } = new DateTime();
+            public DateTime LastWriteTimeUtc { get; set; } = new DateTime();
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -447,15 +454,6 @@ namespace SharpSploit.Enumeration
                     };
                 }
             }
-
-            public FileSystemEntryResult(string Name, long Length, DateTime CreationTimeUtc, DateTime LastAccessTimeUtc, DateTime LastWriteTimeUtc)
-            {
-                this.Name = Name;
-                this.Length = Length;
-                this.CreationTimeUtc = CreationTimeUtc;
-                this.LastAccessTimeUtc = LastAccessTimeUtc;
-                this.LastWriteTimeUtc = LastWriteTimeUtc;
-            }
         }
 
         /// <summary>
@@ -463,12 +461,12 @@ namespace SharpSploit.Enumeration
         /// </summary>
         public sealed class DaclResult : SharpSploitResult
         {
-            public string IdentityReference { get; } = "";
-            public AccessControlType AccessControlType { get; } = new AccessControlType();
-            public FileSystemRights FileSystemRights { get; } = new FileSystemRights();
-            public bool IsInherited { get; } = false;
-            public InheritanceFlags InheritanceFlags { get; } = new InheritanceFlags();
-            public PropagationFlags PropagationFlags { get; } = new PropagationFlags();
+            public string IdentityReference { get; set; } = "";
+            public AccessControlType AccessControlType { get; set; } = new AccessControlType();
+            public FileSystemRights FileSystemRights { get; set; } = new FileSystemRights();
+            public bool IsInherited { get; set; } = false;
+            public InheritanceFlags InheritanceFlags { get; set; } = new InheritanceFlags();
+            public PropagationFlags PropagationFlags { get; set; } = new PropagationFlags();
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -482,16 +480,6 @@ namespace SharpSploit.Enumeration
                         new SharpSploitResultProperty { Name = "PropagationFlags", Value = this.PropagationFlags }
                     };
                 }
-            }
-
-            public DaclResult(string IdentityReference, AccessControlType AccessControlType, FileSystemRights FileSystemRights, bool IsInherited, InheritanceFlags InheritanceFlags, PropagationFlags PropagationFlags)
-            {
-                this.IdentityReference = IdentityReference;
-                this.AccessControlType = AccessControlType;
-                this.FileSystemRights = FileSystemRights;
-                this.IsInherited = IsInherited;
-                this.InheritanceFlags = InheritanceFlags;
-                this.PropagationFlags = PropagationFlags;
             }
         }
     }

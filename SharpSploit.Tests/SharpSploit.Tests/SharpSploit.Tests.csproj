@@ -51,6 +51,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.DirectoryServices" />
   </ItemGroup>
@@ -64,6 +65,8 @@
     <Compile Include="Execution\ShellCodeTests.cs" />
     <Compile Include="Execution\ShellTests.cs" />
     <Compile Include="LateralMovement\DCOMTests.cs" />
+    <Compile Include="LateralMovement\PowerShellRemotingTests.cs" />
+    <Compile Include="LateralMovement\SCMTests.cs" />
     <Compile Include="LateralMovement\WMITests.cs" />
     <Compile Include="Persistence\AutorunTests.cs" />
     <Compile Include="Persistence\StartupTests.cs" />
