@@ -39,6 +39,7 @@
 * `GetHostname()` - Gets the hostname of the system.
 * `GetUsername()` - Gets the current Domain and username of the process running.
 * `GetCurrentDirectory()` - Gets the current working directory full path.
+* `GetDacl()` - Gets the Discretionary Access Control List (DACL) of a file or directory.
 * `GetDirectoryListing()` - Gets a directory listing of the current working directory.
 * `ChangeCurrentDirectory()` - Changes the current directory by appending a specified string to the current working directory.
 
