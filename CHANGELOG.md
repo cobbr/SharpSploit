@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added GetProcessorArchitecture, GetParentProcess, GetProcessOwner, IsWow64, and supporting P/Invoke signatures (credit @rasta-mouse)
 - Added Keylogger class (credit @checkymander)
 - Added SCM class, PowerShellRemoting class, Host.GetDacl function (credit @rasta-mouse)
+- Added NetShareEnum functionality for Share Enumeration (credit @checkymander)
 
 ### Changed
 - Improved DynamicInvoke library (credit @TheWover)
