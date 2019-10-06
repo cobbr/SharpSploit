@@ -566,6 +566,22 @@
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
         </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(SharpSploit.Enumeration.Domain.DomainObject,SharpSploit.Enumeration.Domain.Credential)">
+            <summary>
+            Gets a list of `SessionInfo`s from a DomainComputer.
+            </summary>
+            <param name="DomainComputer">DomainComputer to query for SessionInfos.</param>
+            <param name="Credential">Credentials to authenticate to the DomainComputer.</param>
+            <returns>List of SessionInfos.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject},SharpSploit.Enumeration.Domain.Credential)">
+            <summary>
+            Gets a list of `SessionInfo`s from a list of DomainComputers.
+            </summary>
+            <param name="DomainComputers">DomainComputers to query for SessionInfos.</param>
+            <param name="Credential">Credentials to authenticate to the DomainComputers.</param>
+            <returns>List of SessionInfos.</returns>
+        </member>
         <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.String,SharpSploit.Enumeration.Domain.Credential)">
             <summary>
             Enumerates shared folders on a host using the Windows NetShareEnum API Call

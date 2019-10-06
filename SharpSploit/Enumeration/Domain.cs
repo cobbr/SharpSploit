@@ -1514,6 +1514,45 @@ namespace SharpSploit.Enumeration
             }
             return sessions;
         }
+
+        /// <summary>
+        /// Gets a list of Shares from a DomainComputer.
+        /// </summary>
+        /// <param name="DomainComputer">DomainComputer to query for ShareInfo.</param>
+        /// <param name="Credential">Credentials to authenticate to the DomainComputer.</param>
+        /// <returns>List of ShareInfo objects containing the list of shares.</returns>
+        /// <author>Scottie Austin (@checkymander)</author>
+        public static List<ShareInfo> GetNetShares(Domain.DomainObject DomainComputer, Domain.Credential Credential = null)
+        {
+            List<string> ComputerNames = new List<string>();
+            if (DomainComputer != null && DomainComputer.samaccounttype == Domain.SamAccountTypeEnum.MACHINE_ACCOUNT)
+            {
+                ComputerNames.Add(DomainComputer.cn);
+            }
+            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames, Credential);
+        }
+
+        /// <summary>
+        /// Gets a list of Shares from a list of DomainComputers.
+        /// </summary>
+        /// <param name="DomainComputers">DomainComputers to query for ShareInfo.</param>
+        /// <param name="Credential">Credentials to authenticate to the DomainComputers.</param>
+        /// <returns>List of SessionInfos.</returns>
+        /// <returns>List of ShareInfo objects containing the list of shares.</returns>
+        /// <author>Scottie Austin (@checkymander)</author>
+        public static List<ShareInfo> GetNetShares(IEnumerable<Domain.DomainObject> DomainComputers, Domain.Credential Credential = null)
+        {
+            List<string> ComputerNames = new List<string>();
+            foreach (Domain.DomainObject DomainComputer in DomainComputers)
+            {
+                if (DomainComputer != null && DomainComputer.samaccounttype == Domain.SamAccountTypeEnum.MACHINE_ACCOUNT)
+                {
+                    ComputerNames.Add(DomainComputer.cn);
+                }
+            }
+            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames, Credential);
+        }
+
         /// <summary>
         /// Enumerates shared folders on a host using the Windows NetShareEnum API Call
         /// </summary>
