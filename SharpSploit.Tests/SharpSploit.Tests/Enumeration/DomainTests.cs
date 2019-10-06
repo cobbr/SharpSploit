@@ -123,7 +123,7 @@ namespace SharpSploit.Tests.Enumeration
         [TestMethod]
         public void TestGetNetShares()
         {
-            List<Net.ShareInfo> shares = Net.GetNetShares("127.0.0.1", null);
+            List<Net.ShareInfo> shares = Net.GetNetShares("127.0.0.1");
             Assert.IsTrue(shares.Count >= 2);
         }
     }

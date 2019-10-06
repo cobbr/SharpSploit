@@ -1519,28 +1519,25 @@ namespace SharpSploit.Enumeration
         /// Gets a list of Shares from a DomainComputer.
         /// </summary>
         /// <param name="DomainComputer">DomainComputer to query for ShareInfo.</param>
-        /// <param name="Credential">Credentials to authenticate to the DomainComputer.</param>
         /// <returns>List of ShareInfo objects containing the list of shares.</returns>
         /// <author>Scottie Austin (@checkymander)</author>
-        public static List<ShareInfo> GetNetShares(Domain.DomainObject DomainComputer, Domain.Credential Credential = null)
+        public static List<ShareInfo> GetNetShares(Domain.DomainObject DomainComputer)
         {
             List<string> ComputerNames = new List<string>();
             if (DomainComputer != null && DomainComputer.samaccounttype == Domain.SamAccountTypeEnum.MACHINE_ACCOUNT)
             {
                 ComputerNames.Add(DomainComputer.cn);
             }
-            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames, Credential);
+            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames);
         }
 
         /// <summary>
         /// Gets a list of Shares from a list of DomainComputers.
         /// </summary>
         /// <param name="DomainComputers">DomainComputers to query for ShareInfo.</param>
-        /// <param name="Credential">Credentials to authenticate to the DomainComputers.</param>
-        /// <returns>List of SessionInfos.</returns>
         /// <returns>List of ShareInfo objects containing the list of shares.</returns>
         /// <author>Scottie Austin (@checkymander)</author>
-        public static List<ShareInfo> GetNetShares(IEnumerable<Domain.DomainObject> DomainComputers, Domain.Credential Credential = null)
+        public static List<ShareInfo> GetNetShares(IEnumerable<Domain.DomainObject> DomainComputers)
         {
             List<string> ComputerNames = new List<string>();
             foreach (Domain.DomainObject DomainComputer in DomainComputers)
@@ -1550,7 +1547,7 @@ namespace SharpSploit.Enumeration
                     ComputerNames.Add(DomainComputer.cn);
                 }
             }
-            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames, Credential);
+            return ComputerNames.Count == 0 ? new List<ShareInfo>() : GetNetShares(ComputerNames);
         }
 
         /// <summary>
@@ -1559,9 +1556,9 @@ namespace SharpSploit.Enumeration
         /// <param name="ComputerName">The target computer.</param>
         /// <returns>List of ShareInfo objects containing the list of shares.</returns>
         /// <author>Scottie Austin (@checkymander)</author>
-        public static List<ShareInfo> GetNetShares(string ComputerName = "127.0.0.1", Domain.Credential Credential = null)
+        public static List<ShareInfo> GetNetShares(string ComputerName = "127.0.0.1")
         {
-            return ComputerName == null ? new List<ShareInfo>() : GetNetShares(new List<string> { ComputerName }, Credential);
+            return ComputerName == null ? new List<ShareInfo>() : GetNetShares(new List<string> { ComputerName });
         }
 
         /// <summary>
@@ -1570,9 +1567,8 @@ namespace SharpSploit.Enumeration
         /// <param name="ComputerNames">The target computer.</param>
         /// <returns>List of ShareInfo objects containing the list of shares.</returns>
         /// <author>Scottie Austin (@checkymander)</author>
-        public static List<ShareInfo> GetNetShares(IEnumerable<string> ComputerNames, Domain.Credential Credential = null)
+        public static List<ShareInfo> GetNetShares(IEnumerable<string> ComputerNames)
         {
-            //Maybe support use of alt credentials?
             List<ShareInfo> shares = new List<ShareInfo>();
             foreach (string ComputerName in ComputerNames)
             {
