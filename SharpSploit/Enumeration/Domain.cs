@@ -1068,6 +1068,29 @@ namespace SharpSploit.Enumeration
                 return output;
             }
         }
+        /// <summary>
+        /// ShareInfo represents a share on a remote system.
+        /// </summary>
+        public class ShareInfo
+        {
+            public string ComputerName { get; set; } = "";
+            public string ShareName { get; set; } = "";
+            public string ShareRemark { get; set; } = "";
+            public uint ShareType { get; set; } = 0;
+
+            public override string ToString()
+            {
+                string output = String.Format("{0}\t\t{1}", this.ShareName, this.ShareRemark);
+                return output;
+            }
+            public ShareInfo(string ComputerName, string ShareName, string ShareRemark, uint ShareType)
+            {
+                this.ComputerName = ComputerName;
+                this.ShareName = ShareName;
+                this.ShareName = ShareRemark;
+                this.ShareType = ShareType;
+            }
+        }
 
         /// <summary>
         /// Gets a list of `LocalGroup`s from a specified DomainCompter.
@@ -1490,6 +1513,55 @@ namespace SharpSploit.Enumeration
                 }
             }
             return sessions;
+        }
+        /// <summary>
+        /// Enumerates shared folders on a host using the Windows NetShareEnum API Call
+        /// </summary>
+        /// <param name="ComputerName">The target computer.</param>
+        /// <returns>List of ShareInfo objects containing the list of shares.</returns>
+        /// <author>Scottie Austin (@checkymander)</author>
+        public static List<ShareInfo> GetNetShares(string ComputerName = "127.0.0.1", Domain.Credential Credential = null)
+        {
+            return ComputerName == null ? new List<ShareInfo>() : GetNetShares(new List<string> { ComputerName }, Credential);
+        }
+
+        /// <summary>
+        /// Enumerates shared folders on a group of hosts using the Windows NetShareEnum API Call
+        /// </summary>
+        /// <param name="ComputerNames">The target computer.</param>
+        /// <returns>List of ShareInfo objects containing the list of shares.</returns>
+        /// <author>Scottie Austin (@checkymander)</author>
+        public static List<ShareInfo> GetNetShares(IEnumerable<string> ComputerNames, Domain.Credential Credential = null)
+        {
+            //Maybe support use of alt credentials?
+            List<ShareInfo> shares = new List<ShareInfo>();
+            foreach (string ComputerName in ComputerNames)
+            {
+                const uint MAX_PREFERRED_LENGTH = 0xFFFFFFFF;
+                const int NERR_Success = 0;
+                int numread = 0;
+                int total = 0;
+                int hResume = 0;
+                int nStructSize = Marshal.SizeOf(typeof(Win32.Netapi32.SHARE_INFO_1));
+                IntPtr hBuf = IntPtr.Zero;
+                int result = Win32.Netapi32.NetShareEnum(ComputerName, 1, ref hBuf, MAX_PREFERRED_LENGTH, ref numread, ref total, ref hResume);
+                if (result == NERR_Success)
+                {
+                    IntPtr hCurrent = hBuf;
+                    for (int i = 0; i < numread; i++)
+                    {
+                        Win32.Netapi32.SHARE_INFO_1 shi = (Win32.Netapi32.SHARE_INFO_1)Marshal.PtrToStructure(hCurrent, typeof(Win32.Netapi32.SHARE_INFO_1));
+                        shares.Add(new ShareInfo(ComputerName, shi.shi1_netname, shi.shi1_remark, shi.shi1_type));
+                        hCurrent = new IntPtr(hCurrent.ToInt64() + nStructSize);
+                    }
+                    Win32.Netapi32.NetApiBufferFree(hBuf);
+                }
+                else
+                {
+                    shares.Add(new ShareInfo(ComputerName, "ERROR CODE = ", result.ToString(), 0));
+                }
+            }
+            return shares;
         }
     }
 }

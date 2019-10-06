@@ -119,5 +119,12 @@ namespace SharpSploit.Tests.Enumeration
             List<Net.SessionInfo> DomainSessions = Net.GetNetSessions(new Domain.DomainSearcher().GetDomainComputers(new List<string> { "COBBR-WIN10-2", "cobbr-win81", "win16" }));
             Assert.AreEqual(DomainSessions.Count, sessions.Count);
         }
+
+        [TestMethod]
+        public void TestGetNetShares()
+        {
+            List<Net.ShareInfo> shares = Net.GetNetShares("192.168.86.198", null);
+            Assert.IsTrue(shares.Count == 6);
+        }
     }
 }

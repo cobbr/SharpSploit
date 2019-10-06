@@ -429,6 +429,11 @@
             SessionInfo represents a user with a session on a remote system.
             </summary>
         </member>
+        <member name="T:SharpSploit.Enumeration.Net.ShareInfo">
+            <summary>
+            ShareInfo represents a share on a remote system.
+            </summary>
+        </member>
         <member name="M:SharpSploit.Enumeration.Net.GetNetLocalGroups(SharpSploit.Enumeration.Domain.DomainObject,SharpSploit.Enumeration.Domain.Credential)">
             <summary>
             Gets a list of `LocalGroup`s from a specified DomainCompter.
@@ -560,6 +565,22 @@
             <param name="ComputerNames">ComputerNames to query for SessionInfos.</param>
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.String,SharpSploit.Enumeration.Domain.Credential)">
+            <summary>
+            Enumerates shared folders on a host using the Windows NetShareEnum API Call
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{System.String},SharpSploit.Enumeration.Domain.Credential)">
+            <summary>
+            Enumerates shared folders on a group of hosts using the Windows NetShareEnum API Call
+            </summary>
+            <param name="ComputerNames">The target computer.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
         </member>
         <member name="T:SharpSploit.Enumeration.GPO">
             <summary>

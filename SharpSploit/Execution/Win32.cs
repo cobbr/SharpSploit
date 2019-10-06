@@ -338,6 +338,21 @@ namespace SharpSploit.Execution
                 SidTypeComputer = 9
             }
 
+            [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+            public struct SHARE_INFO_1
+            {
+                public string shi1_netname;
+                public uint shi1_type;
+                public string shi1_remark;
+
+                public SHARE_INFO_1(string netname, uint type, string remark)
+                {
+                    this.shi1_netname = netname;
+                    this.shi1_type = type;
+                    this.shi1_remark = remark;
+                }
+            }
+
             [DllImport("netapi32.dll")]
             public static extern int NetLocalGroupEnum(
                 [MarshalAs(UnmanagedType.LPWStr)] string servername,
@@ -384,7 +399,16 @@ namespace SharpSploit.Execution
                 out int totalentries,
                 ref int resume_handle
             );
-
+            [DllImport("Netapi32.dll", CharSet = CharSet.Unicode)]
+            public static extern int NetShareEnum(
+                String ServerName,
+                int level,
+                ref IntPtr bufPtr,
+                uint prefmaxlen,
+                ref int entriesread,
+                ref int totalentries,
+                ref int resume_handle
+            );
             [DllImport("netapi32.dll", SetLastError = true)]
             public static extern int NetApiBufferFree(IntPtr Buffer);
         }
