@@ -1087,7 +1087,7 @@ namespace SharpSploit.Enumeration
             {
                 this.ComputerName = ComputerName;
                 this.ShareName = ShareName;
-                this.ShareName = ShareRemark;
+                this.ShareRemark = ShareRemark;
                 this.ShareType = ShareType;
             }
         }
