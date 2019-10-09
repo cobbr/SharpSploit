@@ -3,6 +3,7 @@
 // License: BSD 3-Clause
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SharpSploit.Execution.DynamicInvoke
@@ -84,44 +85,50 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>IntPtr for the desired function or IntPtr.Zero if the export is not found.</returns>
         public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName)
         {
-            // Traverse the PE header in memory
-            Int32 PeHeader = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + 0x3C));
-            Int16 OptHeaderSize = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + PeHeader + 0x14));
-            Int64 OptHeader = ModuleBase.ToInt64() + PeHeader + 0x18;
-            Int16 Magic = Marshal.ReadInt16((IntPtr)OptHeader);
-            Int64 pExport = 0;
-            if (Magic == 0x010b)
+            try
             {
-                pExport = OptHeader + 0x60;
-            }
-            else
-            {
-                pExport = OptHeader + 0x70;
-            }
-
-            // Read -> IMAGE_EXPORT_DIRECTORY
-            Int32 ExportRVA = Marshal.ReadInt32((IntPtr)pExport);
-            Int32 OrdinalBase = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x10));
-            Int32 NumberOfFunctions = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x14));
-            Int32 NumberOfNames = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x18));
-            Int32 FunctionsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x1C));
-            Int32 NamesRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x20));
-            Int32 OrdinalsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x24));
-
-            // Loop the array of export name RVA's
-            for (int i = 0; i < NumberOfNames; i++)
-            {
-                String FunctionName = Marshal.PtrToStringAnsi((IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4))));
-                if (FunctionName.ToLower() == ExportName.ToLower())
+                // Traverse the PE header in memory
+                Int32 PeHeader = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + 0x3C));
+                Int16 OptHeaderSize = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + PeHeader + 0x14));
+                Int64 OptHeader = ModuleBase.ToInt64() + PeHeader + 0x18;
+                Int16 Magic = Marshal.ReadInt16((IntPtr)OptHeader);
+                Int64 pExport = 0;
+                if (Magic == 0x010b)
                 {
-                    Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
-                    Int32 FunctionRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + FunctionsRVA + (4 * (FunctionOrdinal - OrdinalBase))));
-                    IntPtr FunctionPtr = (IntPtr)((Int64)ModuleBase + FunctionRVA);
-                    return FunctionPtr;
+                    pExport = OptHeader + 0x60;
                 }
-            }
+                else
+                {
+                    pExport = OptHeader + 0x70;
+                }
 
-            return IntPtr.Zero;
+                // Read -> IMAGE_EXPORT_DIRECTORY
+                Int32 ExportRVA = Marshal.ReadInt32((IntPtr)pExport);
+                Int32 OrdinalBase = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x10));
+                Int32 NumberOfFunctions = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x14));
+                Int32 NumberOfNames = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x18));
+                Int32 FunctionsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x1C));
+                Int32 NamesRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x20));
+                Int32 OrdinalsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x24));
+
+                // Loop the array of export name RVA's
+                for (int i = 0; i < NumberOfNames; i++)
+                {
+                    String FunctionName = Marshal.PtrToStringAnsi((IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4))));
+                    if (FunctionName.ToLower() == ExportName.ToLower())
+                    {
+                        Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
+                        Int32 FunctionRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + FunctionsRVA + (4 * (FunctionOrdinal - OrdinalBase))));
+                        IntPtr FunctionPtr = (IntPtr)((Int64)ModuleBase + FunctionRVA);
+                        return FunctionPtr;
+                    }
+                }
+
+                return IntPtr.Zero;
+            } catch
+            {
+                return IntPtr.Zero;
+            }
         }
     }
 }
