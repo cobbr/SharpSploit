@@ -44,16 +44,42 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Helper for getting the pointer to a function from a DLL on disk.
+        /// This function manually resolves LdrLoadDll and uses that function to load a DLL from disk.
         /// </summary>
-        /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="DLLName">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+        /// <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
+        public static IntPtr LoadModuleFromDisk(string DLLPath)
+        {
+            Execution.Win32.NtDll.UNICODE_STRING uModuleName = new Execution.Win32.NtDll.UNICODE_STRING();
+            Native.RtlInitUnicodeString(ref uModuleName, DLLPath);
+
+            IntPtr hModule = IntPtr.Zero;
+            Execution.Win32.NtDll.NTSTATUS CallResult = Native.LdrLoadDll(IntPtr.Zero, 0, ref uModuleName, ref hModule);
+            if (CallResult != Execution.Win32.NtDll.NTSTATUS.Success || hModule == IntPtr.Zero)
+            {
+                return IntPtr.Zero;
+            }
+
+            return hModule;
+        }
+
+        /// <summary>
+        /// Helper for getting the pointer to a function from a DLL loaded by the process.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
         /// <param name="FunctionName">Name of the exported procedure.</param>
-        /// <returns>IntPtr handle to the function.</returns>
+        /// <returns>IntPtr for the desired function or IntPtr.Zero if the export can't be resolved.</returns>
         public static IntPtr GetLibraryAddress(string DLLName, string FunctionName)
         {
-            IntPtr hModule = Execution.Win32.Kernel32.LoadLibrary(DLLName);
-            return Execution.Win32.Kernel32.GetProcAddress(hModule, FunctionName);
+            IntPtr hModule = GetLoadedModuleAddress(DLLName);
+            if (hModule == IntPtr.Zero)
+            {
+                return IntPtr.Zero;
+            }
+
+            return GetExportAddress(hModule, FunctionName);
         }
 
         /// <summary>

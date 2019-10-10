@@ -1510,6 +1510,14 @@ namespace SharpSploit.Execution
                 out int pSize
             );
 
+            [StructLayout(LayoutKind.Sequential)]
+            public struct UNICODE_STRING
+            {
+                public UInt16 Length;
+                public UInt16 MaximumLength;
+                public IntPtr Buffer;
+            }
+
             public struct PROCESS_BASIC_INFORMATION
             {
                 public IntPtr ExitStatus;
