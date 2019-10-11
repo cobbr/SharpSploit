@@ -26,6 +26,10 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
         {
             IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
+            if (pFunction == IntPtr.Zero)
+            {
+                return false;
+            }
             return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
         }
 
@@ -68,15 +72,26 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// Helper for getting the pointer to a function from a DLL loaded by the process.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
-        /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+        /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
         /// <param name="FunctionName">Name of the exported procedure.</param>
+        /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
         /// <returns>IntPtr for the desired function or IntPtr.Zero if the export can't be resolved.</returns>
-        public static IntPtr GetLibraryAddress(string DLLName, string FunctionName)
+        public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
             if (hModule == IntPtr.Zero)
             {
-                return IntPtr.Zero;
+                if (CanLoadFromDisk)
+                {
+                    hModule = LoadModuleFromDisk(DLLName);
+                    if (hModule == IntPtr.Zero)
+                    {
+                        return IntPtr.Zero;
+                    }
+                } else
+                {
+                    return IntPtr.Zero;
+                }
             }
 
             return GetExportAddress(hModule, FunctionName);
