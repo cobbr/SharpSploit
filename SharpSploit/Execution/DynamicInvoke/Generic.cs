@@ -26,10 +26,6 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static object DynamicAPIInvoke(string DLLName, string FunctionName, Type FunctionDelegateType, ref object[] Parameters)
         {
             IntPtr pFunction = GetLibraryAddress(DLLName, FunctionName);
-            if (pFunction == IntPtr.Zero)
-            {
-                return false;
-            }
             return DynamicFunctionInvoke(pFunction, FunctionDelegateType, ref Parameters);
         }
 
@@ -75,7 +71,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
         /// <param name="FunctionName">Name of the exported procedure.</param>
         /// <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
-        /// <returns>IntPtr for the desired function or IntPtr.Zero if the export can't be resolved.</returns>
+        /// <returns>IntPtr for the desired function.</returns>
         public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
@@ -86,11 +82,11 @@ namespace SharpSploit.Execution.DynamicInvoke
                     hModule = LoadModuleFromDisk(DLLName);
                     if (hModule == IntPtr.Zero)
                     {
-                        return IntPtr.Zero;
+                        throw new System.IO.FileNotFoundException(DLLName + ", unable to find the specified file.");
                     }
                 } else
                 {
-                    return IntPtr.Zero;
+                    throw new System.DllNotFoundException(DLLName + ", Dll was not found.");
                 }
             }
 
@@ -123,9 +119,10 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
-        /// <returns>IntPtr for the desired function or IntPtr.Zero if the export is not found.</returns>
+        /// <returns>IntPtr for the desired function.</returns>
         public static IntPtr GetExportAddress(IntPtr ModuleBase, string ExportName)
         {
+            IntPtr FunctionPtr = IntPtr.Zero;
             try
             {
                 // Traverse the PE header in memory
@@ -160,15 +157,24 @@ namespace SharpSploit.Execution.DynamicInvoke
                     {
                         Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
                         Int32 FunctionRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + FunctionsRVA + (4 * (FunctionOrdinal - OrdinalBase))));
-                        IntPtr FunctionPtr = (IntPtr)((Int64)ModuleBase + FunctionRVA);
-                        return FunctionPtr;
+                        FunctionPtr = (IntPtr)((Int64)ModuleBase + FunctionRVA);
+                        break;
                     }
                 }
-
-                return IntPtr.Zero;
             } catch
             {
-                return IntPtr.Zero;
+                // Catch parser failure
+                throw new System.InvalidOperationException("Failed to parse module exports.");
+            }
+
+            if (FunctionPtr == IntPtr.Zero)
+            {
+                // Export not found
+                throw new System.MissingMethodException(ExportName + ", export not found.");
+            }
+            else
+            {
+                return FunctionPtr;
             }
         }
     }
