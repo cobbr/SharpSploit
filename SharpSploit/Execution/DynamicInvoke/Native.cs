@@ -130,6 +130,79 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
+        public static void RtlZeroMemory(IntPtr Destination, int Length)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                Destination, Length
+            };
+
+            Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlZeroMemory", typeof(DELEGATES.RtlZeroMemory), ref funcargs);
+        }
+
+        public static bool ProcessWow64Information(IntPtr hProcess)
+        {
+            UInt32 processInformationClass = (UInt32)Execution.Win32.NtDll.PROCESSINFOCLASS.ProcessWow64Information;
+            IntPtr pProcInfo = Marshal.AllocHGlobal(IntPtr.Size);
+            RtlZeroMemory(pProcInfo, IntPtr.Size);
+            int processInformationLength = IntPtr.Size;
+            UInt32 RetLen = 0;
+
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, processInformationClass, pProcInfo, processInformationLength, RetLen
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
+            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            {
+                throw new System.UnauthorizedAccessException("Access is denied.");
+            }
+
+            // Update the modified variables
+            pProcInfo = (IntPtr)funcargs[2];
+
+            if (Marshal.ReadIntPtr(pProcInfo) == IntPtr.Zero)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public static Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION ProcessBasicInformation(IntPtr hProcess)
+        {
+            UInt32 processInformationClass = (UInt32)Execution.Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation;
+            Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION PBI = new Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION();
+            IntPtr pProcInfo = Marshal.AllocHGlobal(Marshal.SizeOf(PBI));
+            RtlZeroMemory(pProcInfo, Marshal.SizeOf(PBI));
+            Marshal.StructureToPtr(PBI, pProcInfo, true);
+            int processInformationLength = Marshal.SizeOf(PBI);
+            UInt32 RetLen = 0;
+
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, processInformationClass, pProcInfo, processInformationLength, RetLen
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
+            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            {
+                throw new System.UnauthorizedAccessException("Access is denied.");
+            }
+
+            // Update the modified variables
+            pProcInfo = (IntPtr)funcargs[2];
+
+            PBI = (Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION));
+            return PBI;
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -196,6 +269,19 @@ namespace SharpSploit.Execution.DynamicInvoke
                 ref Execution.Win32.NtDll.UNICODE_STRING DestinationString,
                 [MarshalAs(UnmanagedType.LPWStr)]
                 string SourceString);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate void RtlZeroMemory(
+                IntPtr Destination,
+                int length);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtQueryInformationProcess(
+                IntPtr processHandle,
+                UInt32 processInformationClass,
+                IntPtr processInformation,
+                int processInformationLength,
+                ref UInt32 returnLength);
         }
     }
 }
