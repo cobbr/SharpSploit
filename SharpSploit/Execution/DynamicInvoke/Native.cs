@@ -203,6 +203,86 @@ namespace SharpSploit.Execution.DynamicInvoke
             return PBI;
         }
 
+        public static IntPtr NtOpenProcess(UInt32 ProcessId, Execution.Win32.Kernel32.ProcessAccessFlags DesiredAccess)
+        {
+            // Create OBJECT_ATTRIBUTES & CLIENT_ID ref's
+            IntPtr ProcessHandle = IntPtr.Zero;
+            Execution.Win32.NtDll.OBJECT_ATTRIBUTES oa = new Execution.Win32.NtDll.OBJECT_ATTRIBUTES();
+            Execution.Win32.NtDll.CLIENT_ID ci = new Execution.Win32.NtDll.CLIENT_ID();
+            ci.UniqueProcess = (IntPtr)ProcessId;
+
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                ProcessHandle, DesiredAccess, oa, ci
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenProcess", typeof(DELEGATES.NtOpenProcess), ref funcargs);
+            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            {
+                if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
+                {
+                    throw new System.InvalidOperationException("An invalid client ID was specified.");
+                } else
+                {
+                    throw new System.UnauthorizedAccessException("Access is denied.");
+                }
+            }
+
+            // Update the modified variables
+            ProcessHandle = (IntPtr)funcargs[0];
+
+            return ProcessHandle;
+        }
+
+        public static void NtQueueApcThread(IntPtr ThreadHandle, IntPtr ApcRoutine, IntPtr ApcArgument1, IntPtr ApcArgument2, IntPtr ApcArgument3)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                ThreadHandle, ApcRoutine, ApcArgument1, ApcArgument2, ApcArgument3
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueueApcThread", typeof(DELEGATES.NtQueueApcThread), ref funcargs);
+            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            {
+                throw new System.InvalidOperationException("Unable to queue APC, " + retValue);
+            }
+        }
+
+        public static IntPtr NtOpenThread(int TID, Execution.Win32.Kernel32.ThreadAccess DesiredAccess)
+        {
+            // Create OBJECT_ATTRIBUTES & CLIENT_ID ref's
+            IntPtr ThreadHandle = IntPtr.Zero;
+            Execution.Win32.NtDll.OBJECT_ATTRIBUTES oa = new Execution.Win32.NtDll.OBJECT_ATTRIBUTES();
+            Execution.Win32.NtDll.CLIENT_ID ci = new Execution.Win32.NtDll.CLIENT_ID();
+            ci.UniqueThread = (IntPtr)TID;
+
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                ThreadHandle, DesiredAccess, oa, ci
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenThread", typeof(DELEGATES.NtOpenProcess), ref funcargs);
+            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            {
+                if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
+                {
+                    throw new System.InvalidOperationException("An invalid client ID was specified.");
+                }
+                else
+                {
+                    throw new System.UnauthorizedAccessException("Access is denied.");
+                }
+            }
+
+            // Update the modified variables
+            ThreadHandle = (IntPtr)funcargs[0];
+
+            return ThreadHandle;
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -226,9 +306,17 @@ namespace SharpSploit.Execution.DynamicInvoke
         public struct DELEGATES
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(out IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
-                IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
-                bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
+            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(
+                out IntPtr threadHandle,
+                Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
+                IntPtr objectAttributes,
+                IntPtr processHandle,
+                IntPtr startAddress,
+                IntPtr parameter,
+                bool createSuspended,
+                int stackZeroBits,
+                int sizeOfStack,
+                int maximumStackSize,
                 IntPtr attributeList);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -242,7 +330,9 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr FileHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr);
+            public delegate Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(
+                IntPtr hProc,
+                IntPtr baseAddr);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate Execution.Win32.NtDll.NTSTATUS NtMapViewOfSection(
@@ -282,6 +372,28 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr processInformation,
                 int processInformationLength,
                 ref UInt32 returnLength);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtOpenProcess(
+                ref IntPtr ProcessHandle,
+                Execution.Win32.Kernel32.ProcessAccessFlags DesiredAccess,
+                ref Execution.Win32.NtDll.OBJECT_ATTRIBUTES ObjectAttributes,
+                ref Execution.Win32.NtDll.CLIENT_ID ClientId);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtQueueApcThread(
+                IntPtr ThreadHandle,
+                IntPtr ApcRoutine,
+                IntPtr ApcArgument1,
+                IntPtr ApcArgument2,
+                IntPtr ApcArgument3);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtOpenThread(
+                ref IntPtr ThreadHandle,
+                Execution.Win32.Kernel32.ThreadAccess DesiredAccess,
+                ref Execution.Win32.NtDll.OBJECT_ATTRIBUTES ObjectAttributes,
+                ref Execution.Win32.NtDll.CLIENT_ID ClientId);
         }
     }
 }

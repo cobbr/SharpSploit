@@ -238,6 +238,47 @@ namespace SharpSploit.Execution
                 PROCESS_VM_WRITE = 0x0020,
                 SYNCHRONIZE = 0x00100000
             }
+
+            [Flags]
+            public enum StandardRights : uint
+            {
+                Delete = 0x00010000,
+                ReadControl = 0x00020000,
+                WriteDac = 0x00040000,
+                WriteOwner = 0x00080000,
+                Synchronize = 0x00100000,
+                Required = 0x000f0000,
+                Read = ReadControl,
+                Write = ReadControl,
+                Execute = ReadControl,
+                All = 0x001f0000,
+
+                SpecificRightsAll = 0x0000ffff,
+                AccessSystemSecurity = 0x01000000,
+                MaximumAllowed = 0x02000000,
+                GenericRead = 0x80000000,
+                GenericWrite = 0x40000000,
+                GenericExecute = 0x20000000,
+                GenericAll = 0x10000000
+            }
+
+            [Flags]
+            public enum ThreadAccess : uint
+            {
+                Terminate = 0x0001,
+                SuspendResume = 0x0002,
+                Alert = 0x0004,
+                GetContext = 0x0008,
+                SetContext = 0x0010,
+                SetInformation = 0x0020,
+                QueryInformation = 0x0040,
+                SetThreadToken = 0x0080,
+                Impersonate = 0x0100,
+                DirectImpersonation = 0x0200,
+                SetLimitedInformation = 0x0400,
+                QueryLimitedInformation = 0x0800,
+                All = StandardRights.Required | StandardRights.Synchronize | 0x3ff
+            }
         }
 
         public static class User32
@@ -1531,6 +1572,24 @@ namespace SharpSploit.Execution
                 {
                     get { return (int)Marshal.SizeOf(typeof(PROCESS_BASIC_INFORMATION)); }
                 }
+            }
+
+            [StructLayout(LayoutKind.Sequential, Pack = 0)]
+            public struct OBJECT_ATTRIBUTES
+            {
+                public Int32 Length;
+                public IntPtr RootDirectory;
+                public IntPtr ObjectName;
+                public uint Attributes;
+                public IntPtr SecurityDescriptor;
+                public IntPtr SecurityQualityOfService;
+            }
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct CLIENT_ID
+            {
+                public IntPtr UniqueProcess;
+                public IntPtr UniqueThread;
             }
 
             public enum PROCESSINFOCLASS : int
