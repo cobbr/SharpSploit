@@ -1505,7 +1505,7 @@ namespace SharpSploit.Execution
             public static extern int NtQueryInformationProcess(
                 IntPtr hProcess,
                 PROCESSINFOCLASS pic,
-                ref PROCESS_BASIC_INFORMATION pbi,
+                IntPtr pi,
                 int cb,
                 out int pSize
             );
