@@ -16,7 +16,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
             bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
             IntPtr attributeList)
-        { 
+        {
             // Craft an array for the arguments
             object[] funcargs =
             {

@@ -399,9 +399,10 @@ namespace SharpSploit.Execution
                 out int totalentries,
                 ref int resume_handle
             );
+
             [DllImport("Netapi32.dll", CharSet = CharSet.Unicode)]
             public static extern int NetShareEnum(
-                String ServerName,
+                StringBuilder ServerName,
                 int level,
                 ref IntPtr bufPtr,
                 uint prefmaxlen,
@@ -409,6 +410,7 @@ namespace SharpSploit.Execution
                 ref int totalentries,
                 ref int resume_handle
             );
+
             [DllImport("netapi32.dll", SetLastError = true)]
             public static extern int NetApiBufferFree(IntPtr Buffer);
         }

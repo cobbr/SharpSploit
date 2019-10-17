@@ -566,23 +566,23 @@
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
         </member>
-        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(SharpSploit.Enumeration.Domain.DomainObject,SharpSploit.Enumeration.Domain.Credential)">
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(SharpSploit.Enumeration.Domain.DomainObject)">
             <summary>
-            Gets a list of `SessionInfo`s from a DomainComputer.
+            Gets a list of Shares from a DomainComputer.
             </summary>
-            <param name="DomainComputer">DomainComputer to query for SessionInfos.</param>
-            <param name="Credential">Credentials to authenticate to the DomainComputer.</param>
-            <returns>List of SessionInfos.</returns>
+            <param name="DomainComputer">DomainComputer to query for ShareInfo.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
         </member>
-        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject},SharpSploit.Enumeration.Domain.Credential)">
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject})">
             <summary>
-            Gets a list of `SessionInfo`s from a list of DomainComputers.
+            Gets a list of Shares from a list of DomainComputers.
             </summary>
-            <param name="DomainComputers">DomainComputers to query for SessionInfos.</param>
-            <param name="Credential">Credentials to authenticate to the DomainComputers.</param>
-            <returns>List of SessionInfos.</returns>
+            <param name="DomainComputers">DomainComputers to query for ShareInfo.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
         </member>
-        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.String,SharpSploit.Enumeration.Domain.Credential)">
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.String)">
             <summary>
             Enumerates shared folders on a host using the Windows NetShareEnum API Call
             </summary>
@@ -590,7 +590,7 @@
             <returns>List of ShareInfo objects containing the list of shares.</returns>
             <author>Scottie Austin (@checkymander)</author>
         </member>
-        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{System.String},SharpSploit.Enumeration.Domain.Credential)">
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
             Enumerates shared folders on a group of hosts using the Windows NetShareEnum API Call
             </summary>
@@ -1190,14 +1190,40 @@
             <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
             <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String)">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.LoadModuleFromDisk(System.String)">
             <summary>
-            Helper for getting the pointer to a function from a DLL on disk.
+            Resolves LdrLoadDll and uses that function to load a DLL from disk.
             </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="DLLName">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String,System.Boolean)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL loaded by the process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
             <param name="FunctionName">Name of the exported procedure.</param>
-            <returns>IntPtr handle to the function.</returns>
+            <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLoadedModuleAddress(System.String)">
+            <summary>
+            Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+            <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetExportAddress(System.IntPtr,System.String)">
+            <summary>
+            Given a module base address, resolve the address of a function by manually walking the module export table.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+            <returns>IntPtr for the desired function.</returns>
         </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
             <summary>

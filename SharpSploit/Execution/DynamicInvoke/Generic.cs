@@ -3,6 +3,7 @@
 // License: BSD 3-Clause
 
 using System;
+using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -44,7 +45,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// This function manually resolves LdrLoadDll and uses that function to load a DLL from disk.
+        /// Resolves LdrLoadDll and uses that function to load a DLL from disk.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
@@ -75,19 +76,17 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static IntPtr GetLibraryAddress(string DLLName, string FunctionName, bool CanLoadFromDisk = false)
         {
             IntPtr hModule = GetLoadedModuleAddress(DLLName);
-            if (hModule == IntPtr.Zero)
+            if (hModule == IntPtr.Zero && CanLoadFromDisk)
             {
-                if (CanLoadFromDisk)
+                hModule = LoadModuleFromDisk(DLLName);
+                if (hModule == IntPtr.Zero)
                 {
-                    hModule = LoadModuleFromDisk(DLLName);
-                    if (hModule == IntPtr.Zero)
-                    {
-                        throw new System.IO.FileNotFoundException(DLLName + ", unable to find the specified file.");
-                    }
-                } else
-                {
-                    throw new System.DllNotFoundException(DLLName + ", Dll was not found.");
+                    throw new FileNotFoundException(DLLName + ", unable to find the specified file.");
                 }
+            }
+            else if (hModule == IntPtr.Zero)
+            {
+                throw new DllNotFoundException(DLLName + ", Dll was not found.");
             }
 
             return GetExportAddress(hModule, FunctionName);
@@ -161,21 +160,19 @@ namespace SharpSploit.Execution.DynamicInvoke
                         break;
                     }
                 }
-            } catch
+            }
+            catch
             {
                 // Catch parser failure
-                throw new System.InvalidOperationException("Failed to parse module exports.");
+                throw new InvalidOperationException("Failed to parse module exports.");
             }
 
             if (FunctionPtr == IntPtr.Zero)
             {
                 // Export not found
-                throw new System.MissingMethodException(ExportName + ", export not found.");
+                throw new MissingMethodException(ExportName + ", export not found.");
             }
-            else
-            {
-                return FunctionPtr;
-            }
+            return FunctionPtr;
         }
     }
 }

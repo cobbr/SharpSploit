@@ -3,6 +3,7 @@
 // License: BSD 3-Clause
 
 using System;
+using System.Text;
 using System.Linq;
 using System.DirectoryServices;
 using System.IdentityModel.Tokens;
@@ -1068,6 +1069,7 @@ namespace SharpSploit.Enumeration
                 return output;
             }
         }
+
         /// <summary>
         /// ShareInfo represents a share on a remote system.
         /// </summary>
@@ -1080,9 +1082,9 @@ namespace SharpSploit.Enumeration
 
             public override string ToString()
             {
-                string output = String.Format("{0}\t\t{1}", this.ShareName, this.ShareRemark);
-                return output;
+                return string.Format("{0}\t\t{1}", this.ShareName, this.ShareRemark);
             }
+
             public ShareInfo(string ComputerName, string ShareName, string ShareRemark, uint ShareType)
             {
                 this.ComputerName = ComputerName;
@@ -1579,7 +1581,7 @@ namespace SharpSploit.Enumeration
                 int hResume = 0;
                 int nStructSize = Marshal.SizeOf(typeof(Win32.Netapi32.SHARE_INFO_1));
                 IntPtr hBuf = IntPtr.Zero;
-                int result = Win32.Netapi32.NetShareEnum(ComputerName, 1, ref hBuf, MAX_PREFERRED_LENGTH, ref numread, ref total, ref hResume);
+                int result = Win32.Netapi32.NetShareEnum(new StringBuilder(ComputerName), 1, ref hBuf, MAX_PREFERRED_LENGTH, ref numread, ref total, ref hResume);
                 if (result == NERR_Success)
                 {
                     IntPtr hCurrent = hBuf;
