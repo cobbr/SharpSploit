@@ -158,7 +158,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
             if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
             {
-                throw new System.UnauthorizedAccessException("Access is denied.");
+                throw new UnauthorizedAccessException("Access is denied.");
             }
 
             // Update the modified variables
@@ -168,10 +168,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 return false;
             }
-            else
-            {
-                return true;
-            }
+            return true;
         }
 
         public static Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION ProcessBasicInformation(IntPtr hProcess)
@@ -193,7 +190,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
             if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
             {
-                throw new System.UnauthorizedAccessException("Access is denied.");
+                throw new UnauthorizedAccessException("Access is denied.");
             }
 
             // Update the modified variables
@@ -222,11 +219,9 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
                 {
-                    throw new System.InvalidOperationException("An invalid client ID was specified.");
-                } else
-                {
-                    throw new System.UnauthorizedAccessException("Access is denied.");
+                    throw new InvalidOperationException("An invalid client ID was specified.");
                 }
+                throw new UnauthorizedAccessException("Access is denied.");
             }
 
             // Update the modified variables
@@ -246,7 +241,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueueApcThread", typeof(DELEGATES.NtQueueApcThread), ref funcargs);
             if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
             {
-                throw new System.InvalidOperationException("Unable to queue APC, " + retValue);
+                throw new InvalidOperationException("Unable to queue APC, " + retValue);
             }
         }
 
@@ -269,12 +264,9 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
                 {
-                    throw new System.InvalidOperationException("An invalid client ID was specified.");
+                    throw new InvalidOperationException("An invalid client ID was specified.");
                 }
-                else
-                {
-                    throw new System.UnauthorizedAccessException("Access is denied.");
-                }
+                throw new UnauthorizedAccessException("Access is denied.");
             }
 
             // Update the modified variables
