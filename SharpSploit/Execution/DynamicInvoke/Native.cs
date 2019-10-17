@@ -16,7 +16,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
             bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
             IntPtr attributeList)
-        { 
+        {
             // Craft an array for the arguments
             object[] funcargs =
             {
@@ -100,6 +100,36 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
+        public static void RtlInitUnicodeString(ref Execution.Win32.NtDll.UNICODE_STRING DestinationString, [MarshalAs(UnmanagedType.LPWStr)] string SourceString)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                DestinationString, SourceString
+            };
+
+            Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlInitUnicodeString", typeof(DELEGATES.RtlInitUnicodeString), ref funcargs);
+
+            // Update the modified variables
+            DestinationString = (Execution.Win32.NtDll.UNICODE_STRING)funcargs[0];
+        }
+
+        public static Execution.Win32.NtDll.NTSTATUS LdrLoadDll(IntPtr PathToFile, UInt32 dwFlags, ref Execution.Win32.NtDll.UNICODE_STRING ModuleFileName, ref IntPtr ModuleHandle)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                PathToFile, dwFlags, ModuleFileName, ModuleHandle
+            };
+
+            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"LdrLoadDll", typeof(DELEGATES.LdrLoadDll), ref funcargs);
+
+            // Update the modified variables
+            ModuleHandle = (IntPtr)funcargs[3];
+
+            return retValue;
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -153,6 +183,19 @@ namespace SharpSploit.Execution.DynamicInvoke
                 uint InheritDisposition,
                 uint AllocationType,
                 uint Win32Protect);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 LdrLoadDll(
+                IntPtr PathToFile,
+                UInt32 dwFlags,
+                ref Execution.Win32.NtDll.UNICODE_STRING ModuleFileName,
+                ref IntPtr ModuleHandle);
+            
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate void RtlInitUnicodeString(
+                ref Execution.Win32.NtDll.UNICODE_STRING DestinationString,
+                [MarshalAs(UnmanagedType.LPWStr)]
+                string SourceString);
         }
     }
 }

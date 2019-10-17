@@ -100,29 +100,5 @@ namespace SharpSploit.Tests.Enumeration
             SharpSploitResultList<Host.FileSystemEntryResult> results2 = Host.GetDirectoryListing();
             Assert.AreNotEqual(results1, results2);
         }
-
-        [TestMethod]
-        public void TestChangeCurrentDirectoryEmptyString()
-        {
-            SharpSploitResultList<Host.FileSystemEntryResult> results1 = Host.GetDirectoryListing();
-            string dir1 = Host.GetCurrentDirectory();
-            Host.ChangeCurrentDirectory("");
-            string dir2 = Host.GetCurrentDirectory();
-            Assert.AreEqual(dir1, dir2);
-            SharpSploitResultList<Host.FileSystemEntryResult> results2 = Host.GetDirectoryListing();
-            Assert.AreEqual(results1.FormatList(), results2.FormatList());
-        }
-
-        [TestMethod]
-        public void TestChangeCurrentDirectoryNull()
-        {
-            SharpSploitResultList<Host.FileSystemEntryResult> results1 = Host.GetDirectoryListing();
-            string dir1 = Host.GetCurrentDirectory();
-            Host.ChangeCurrentDirectory(null);
-            string dir2 = Host.GetCurrentDirectory();
-            Assert.AreEqual(dir1, dir2);
-            SharpSploitResultList<Host.FileSystemEntryResult> results2 = Host.GetDirectoryListing();
-            Assert.AreEqual(results1.FormatList(), results2.FormatList());
-        }
     }
 }

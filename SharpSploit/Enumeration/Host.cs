@@ -8,6 +8,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Security.Principal;
 using System.Collections.Generic;
+using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Generic;
@@ -41,7 +42,11 @@ namespace SharpSploit.Enumeration
 
                 if (parentProcessId != 0)
                 {
-                    processPath = process.MainModule.FileName;
+                    try
+                    {
+                        processPath = process.MainModule.FileName;
+                    }
+                    catch (System.ComponentModel.Win32Exception) { }
                 }
 
                 if (processorArchitecture == Win32.Kernel32.Platform.x64)
@@ -56,8 +61,16 @@ namespace SharpSploit.Enumeration
                 {
                     processArch = Win32.Kernel32.Platform.x86;
                 }
-
-                results.Add(new ProcessResult(processId, parentProcessId, processName, processPath, sessionId, processOwner, processArch));
+                results.Add(new ProcessResult
+                {
+                    Pid = processId,
+                    Ppid = parentProcessId,
+                    Name = processName,
+                    Path = processPath,
+                    SessionID = sessionId,
+                    Owner = processOwner,
+                    Architecture = processArch
+                });
             }
             return results;
         }
@@ -290,17 +303,71 @@ namespace SharpSploit.Enumeration
         /// Gets a directory listing of a directory.
         /// </summary>
         /// <param name="Path">The path of the directory to get a listing of.</param>
-        /// <returns>List of FileSystemEntryResults.</returns>
+        /// <returns>SharpSploitResultList of FileSystemEntryResults.</returns>
 		public static SharpSploitResultList<FileSystemEntryResult> GetDirectoryListing(string Path)
         {
             SharpSploitResultList<FileSystemEntryResult> results = new SharpSploitResultList<FileSystemEntryResult>();
             foreach (string dir in Directory.GetDirectories(Path))
             {
-                results.Add(new FileSystemEntryResult(dir));
+                DirectoryInfo dirInfo = new DirectoryInfo(dir);
+                results.Add(new FileSystemEntryResult
+                {
+                    Name = dirInfo.FullName,
+                    Length = 0,
+                    CreationTimeUtc = dirInfo.CreationTimeUtc,
+                    LastAccessTimeUtc = dirInfo.LastAccessTimeUtc,
+                    LastWriteTimeUtc = dirInfo.LastWriteTimeUtc
+                });
             }
             foreach (string file in Directory.GetFiles(Path))
             {
-                results.Add(new FileSystemEntryResult(file));
+                FileInfo fileInfo = new FileInfo(file);
+                results.Add(new FileSystemEntryResult
+                {
+                    Name = fileInfo.FullName,
+                    Length = fileInfo.Length,
+                    CreationTimeUtc = fileInfo.CreationTimeUtc,
+                    LastAccessTimeUtc = fileInfo.LastAccessTimeUtc,
+                    LastWriteTimeUtc = fileInfo.LastWriteTimeUtc
+                });
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Gets a DACL of a file or directory.
+        /// </summary>
+        /// <param name="Path">The path of the file or directory to get a DACL for.</param>
+        /// <returns>List of DaclResults. NULL if not found.</returns>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+		public static SharpSploitResultList<DaclResult> GetDacl(string Path)
+        {
+            if (File.Exists(Path))
+            {
+                return GetDaclResults(new FileInfo(Path).GetAccessControl());
+            }
+            if (Directory.Exists(Path))
+            {
+                DirectoryInfo dInfo = new DirectoryInfo(Path);
+                return GetDaclResults(new DirectoryInfo(Path).GetAccessControl());
+            }
+            return null;
+        }
+
+        private static SharpSploitResultList<DaclResult> GetDaclResults(FileSystemSecurity SecurityEntry)
+        {
+            SharpSploitResultList<DaclResult> results = new SharpSploitResultList<DaclResult>();
+            foreach (FileSystemAccessRule ace in SecurityEntry.GetAccessRules(true, true, typeof(NTAccount)))
+            {
+                results.Add(new DaclResult
+                {
+                    IdentityReference = ace.IdentityReference.Value,
+                    AccessControlType = ace.AccessControlType,
+                    FileSystemRights = ace.FileSystemRights,
+                    IsInherited = ace.IsInherited,
+                    InheritanceFlags = ace.InheritanceFlags,
+                    PropagationFlags = ace.PropagationFlags
+                });
             }
             return results;
         }
@@ -319,13 +386,13 @@ namespace SharpSploit.Enumeration
         /// </summary>
         public sealed class ProcessResult : SharpSploitResult
         {
-            public int Pid { get; } = 0;
-            public int Ppid { get; } = 0;
-            public string Name { get; } = "";
-            public string Path { get; } = "";
-            public int SessionID { get; } = 0;
-            public string Owner { get; } = "";
-            public Win32.Kernel32.Platform Architecture { get; } = Win32.Kernel32.Platform.Unknown;
+            public int Pid { get; set; } = 0;
+            public int Ppid { get; set; } = 0;
+            public string Name { get; set; } = "";
+            public string Path { get; set; } = "";
+            public int SessionID { get; set; } = 0;
+            public string Owner { get; set; } = "";
+            public Win32.Kernel32.Platform Architecture { get; set; } = Win32.Kernel32.Platform.Unknown;
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -341,17 +408,6 @@ namespace SharpSploit.Enumeration
                     };
                 }
             }
-
-            public ProcessResult(int Pid = 0, int Ppid = 0, string Name = "", string Path = "", int Sessionid = 0, string Owner = "", Win32.Kernel32.Platform Architecture = Win32.Kernel32.Platform.Unknown)
-            {
-                this.Pid = Pid;
-                this.Ppid = Ppid;
-                this.Name = Name;
-                this.Path = Path;
-                this.SessionID = Sessionid;
-                this.Owner = Owner;
-                this.Architecture = Architecture;
-            }
         }
 
         /// <summary>
@@ -359,7 +415,11 @@ namespace SharpSploit.Enumeration
         /// </summary>
         public sealed class FileSystemEntryResult : SharpSploitResult
         {
-            public string Name { get; } = "";
+            public string Name { get; set; } = "";
+            public long Length { get; set; } = 0;
+            public DateTime CreationTimeUtc { get; set; } = new DateTime();
+            public DateTime LastAccessTimeUtc { get; set; } = new DateTime();
+            public DateTime LastWriteTimeUtc { get; set; } = new DateTime();
             protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
                 get
@@ -370,14 +430,56 @@ namespace SharpSploit.Enumeration
                         {
                             Name = "Name",
                             Value = this.Name
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "Length",
+                            Value = this.Length
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "CreationTimeUtc",
+                            Value = this.CreationTimeUtc
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "LastAccessTimeUtc",
+                            Value = this.LastAccessTimeUtc
+                        },
+                        new SharpSploitResultProperty
+                        {
+                            Name = "LastWriteTimeUtc",
+                            Value = this.LastWriteTimeUtc
                         }
                     };
                 }
             }
+        }
 
-            public FileSystemEntryResult(string Name = "")
+        /// <summary>
+        /// DaclResult represents a DACL of a file or directory on disk, used with the GetDacl() function.
+        /// </summary>
+        public sealed class DaclResult : SharpSploitResult
+        {
+            public string IdentityReference { get; set; } = "";
+            public AccessControlType AccessControlType { get; set; } = new AccessControlType();
+            public FileSystemRights FileSystemRights { get; set; } = new FileSystemRights();
+            public bool IsInherited { get; set; } = false;
+            public InheritanceFlags InheritanceFlags { get; set; } = new InheritanceFlags();
+            public PropagationFlags PropagationFlags { get; set; } = new PropagationFlags();
+            protected internal override IList<SharpSploitResultProperty> ResultProperties
             {
-                this.Name = Name;
+                get
+                {
+                    return new List<SharpSploitResultProperty> {
+                        new SharpSploitResultProperty { Name = "IdentityReference", Value = this.IdentityReference },
+                        new SharpSploitResultProperty { Name = "AccessControlType", Value = this.AccessControlType },
+                        new SharpSploitResultProperty { Name = "FileSystemRights", Value = this.FileSystemRights },
+                        new SharpSploitResultProperty { Name = "IsInherited", Value = this.IsInherited },
+                        new SharpSploitResultProperty { Name = "InheritanceFlags", Value = this.InheritanceFlags },
+                        new SharpSploitResultProperty { Name = "PropagationFlags", Value = this.PropagationFlags }
+                    };
+                }
             }
         }
     }

@@ -39,6 +39,7 @@
 * `GetHostname()` - Gets the hostname of the system.
 * `GetUsername()` - Gets the current Domain and username of the process running.
 * `GetCurrentDirectory()` - Gets the current working directory full path.
+* `GetDacl()` - Gets the Discretionary Access Control List (DACL) of a file or directory.
 * `GetDirectoryListing()` - Gets a directory listing of the current working directory.
 * `ChangeCurrentDirectory()` - Changes the current directory by appending a specified string to the current working directory.
 
@@ -63,6 +64,7 @@
 * `GetNetLocalGroupMembers()` - Gets a list of `LocalGroupMember`s from specified remote computer(s) for a specified group.
 * `GetNetLoggedOnUsers()` - Gets a list of `LoggedOnUser`s from specified remote computer(s).
 * `GetNetSessions()` - Gets a list of `SessionInfo`s from specified remote computer(s).
+* `GetNetShares()` - Gets a list of `ShareInfo`s from specified remote computer(s).
 
 ### SharpSploit.Enumeration.Keylogger
 
@@ -124,10 +126,31 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 
 * `DynamicAPIInvoke()` - Dynamically invokes a specified API call from a DLL on disk.
 * `DynamicFunctionInvoke()` - Dynamically invokes a function at a specified pointer.
-* `GetLibraryAddress()` - Helper function that calss `LoadLibrary` and `GetProcAddress` to obtain the pointer to a function from a DLL on disk.
+* `LoadModuleFromDisk()` - Recolves LdrLoadDll and uses that function to load a DLL from disk.
+* `GetLibraryAddress()` - Helper function that obtains the pointer to a function using in-memory export parsing.
+* `GetLoadedModuleAddress()` - Gets the base address of a module loaded by the current process.
+* `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
 
 ## SharpSploit.LateralMovement
 
 ### SharpSploit.LateralMovement.WMI
 
 * `WMIExecute()` - Execute a process on a remote system with Win32_Process Create4 with specified credentials.
+
+### SharpSploit.LateralMovement.DCOM
+
+* `DCOMExecute()` - Execute a command on a remote system using various DCOM methods.
+
+### SharpSploit.LateralMovement.SCM
+
+* `GetService()` - Gets a service on a remote machine.
+* `GetServices()` - Gets a list of all services on a remote machine.
+* `CreateService()` - Creates a service on a remote machine.
+* `StartService()` - Starts a service on a remote machine.
+* `StopService()` - Stops a service on a remote machine.
+* `DeleteService()` - Deletes a service on a remote machine.
+* `PSExec()` - Executes a command on a remote computer using a PSExec-like technique.
+
+### SharpSploit.LateralMovement.PowerShellRemoting
+
+* `InvokeCommand()` - Invoke a PowerShell command on a remote machine.

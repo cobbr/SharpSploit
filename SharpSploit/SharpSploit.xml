@@ -429,6 +429,11 @@
             SessionInfo represents a user with a session on a remote system.
             </summary>
         </member>
+        <member name="T:SharpSploit.Enumeration.Net.ShareInfo">
+            <summary>
+            ShareInfo represents a share on a remote system.
+            </summary>
+        </member>
         <member name="M:SharpSploit.Enumeration.Net.GetNetLocalGroups(SharpSploit.Enumeration.Domain.DomainObject,SharpSploit.Enumeration.Domain.Credential)">
             <summary>
             Gets a list of `LocalGroup`s from a specified DomainCompter.
@@ -560,6 +565,38 @@
             <param name="ComputerNames">ComputerNames to query for SessionInfos.</param>
             <param name="Credential">Credentials to authenticate to the ComputerNames.</param>
             <returns>List of SessionInfos.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(SharpSploit.Enumeration.Domain.DomainObject)">
+            <summary>
+            Gets a list of Shares from a DomainComputer.
+            </summary>
+            <param name="DomainComputer">DomainComputer to query for ShareInfo.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{SharpSploit.Enumeration.Domain.DomainObject})">
+            <summary>
+            Gets a list of Shares from a list of DomainComputers.
+            </summary>
+            <param name="DomainComputers">DomainComputers to query for ShareInfo.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.String)">
+            <summary>
+            Enumerates shared folders on a host using the Windows NetShareEnum API Call
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Net.GetNetShares(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Enumerates shared folders on a group of hosts using the Windows NetShareEnum API Call
+            </summary>
+            <param name="ComputerNames">The target computer.</param>
+            <returns>List of ShareInfo objects containing the list of shares.</returns>
+            <author>Scottie Austin (@checkymander)</author>
         </member>
         <member name="T:SharpSploit.Enumeration.GPO">
             <summary>
@@ -737,7 +774,15 @@
             Gets a directory listing of a directory.
             </summary>
             <param name="Path">The path of the directory to get a listing of.</param>
-            <returns>List of FileSystemEntryResults.</returns>
+            <returns>SharpSploitResultList of FileSystemEntryResults.</returns>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetDacl(System.String)">
+            <summary>
+            Gets a DACL of a file or directory.
+            </summary>
+            <param name="Path">The path of the file or directory to get a DACL for.</param>
+            <returns>List of DaclResults. NULL if not found.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
         </member>
         <member name="M:SharpSploit.Enumeration.Host.ChangeCurrentDirectory(System.String)">
             <summary>
@@ -753,6 +798,11 @@
         <member name="T:SharpSploit.Enumeration.Host.FileSystemEntryResult">
             <summary>
             FileSystemEntryResult represents a file on disk, used with the GetDirectoryListing() function.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Host.DaclResult">
+            <summary>
+            DaclResult represents a DACL of a file or directory on disk, used with the GetDacl() function.
             </summary>
         </member>
         <member name="T:SharpSploit.Enumeration.Keylogger">
@@ -1140,14 +1190,40 @@
             <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
             <returns>Object returned by the function. Must be unmarshalled by the caller.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String)">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.LoadModuleFromDisk(System.String)">
             <summary>
-            Helper for getting the pointer to a function from a DLL on disk.
+            Resolves LdrLoadDll and uses that function to load a DLL from disk.
             </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="DLLName">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
+            <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String,System.Boolean)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL loaded by the process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
             <param name="FunctionName">Name of the exported procedure.</param>
-            <returns>IntPtr handle to the function.</returns>
+            <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLoadedModuleAddress(System.String)">
+            <summary>
+            Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+            <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetExportAddress(System.IntPtr,System.String)">
+            <summary>
+            Given a module base address, resolve the address of a function by manually walking the module export table.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+            <returns>IntPtr for the desired function.</returns>
         </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
             <summary>
@@ -1409,6 +1485,117 @@
             a port of Steve Borosh (rvrshell)'s Invoke-DCOM implementation available
             here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
             </remarks>
+        </member>
+        <member name="T:SharpSploit.LateralMovement.PowerShellRemoting">
+            <summary>
+            PowerShellRemoting is a class for executing PowerShell commands remotely.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PowerShellRemoting.InvokeCommand(System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            Invoke a PowerShell command on a remote machine.
+            </summary>
+            <param name="ComputerName">ComputerName of remote system to execute process.</param>
+            <param name="Command">Command to execute on remote system.</param>
+            <param name="Domain">Domain for explicit credentials.</param>
+            <param name="Username">Username for explicit credentials.</param>
+            <param name="Password">Password for explicit credentials.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+            <remarks>
+            The return value is a little ambigious as the function won't return as long
+            as the command is still running on the remote target. Also, if execution fails
+            (e.g. because bad creds), it doesn't throw an error and it returns true regardless.
+            </remarks>
+        </member>
+        <member name="T:SharpSploit.LateralMovement.SCM">
+            <summary>
+            SCM is a class for interacting with the Service Control Manager on a target computer.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.GetService(System.String,System.String)">
+            <summary>
+            Get a service on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="DisplayName">The DisplayName of the service to retrieve.</param>
+            <returns>ServiceResult that represents the given service. NULL if not found</returns>
+            <author>Ryan Cobb (@cobbr_io)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.GetServices(System.String)">
+            <summary>
+            Get all services on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <returns>A SharpSploitResultList of ServiceResults. NULL if none found.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.CreateService(System.String,System.String,System.String,System.String)">
+            <summary>
+            Creates a new service on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="ServiceName">The short service name.</param>
+            <param name="ServiceDisplayName">The friendly display name.</param>
+            <param name="BinaryPath">The path to the Service executable.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.StartService(System.String,System.String)">
+            <summary>
+            Starts a service on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="DisplayName">The DisplayName of the service to retrieve.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.StopService(System.String,System.String)">
+            <summary>
+            Stops a service on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="DisplayName">The DisplayName of the service to stop.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.DeleteService(System.String,System.String)">
+            <summary>
+            Deletes a service on a remote computer.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="ServiceName">The short ServiceName of the service to delete.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.PSExec(System.String,System.String,System.String,System.String)">
+            <summary>
+            Execute a process on a remote computer using a PSExec-like technique.
+            </summary>
+            <param name="ComputerName">The ComputerName of the remote machine.</param>
+            <param name="ServiceName">The short ServiceName of the service to create.</param>
+            <param name="DisplayName">The DisplayName of the service to create.</param>
+            <param name="BinaryPath">The path to the Service Executable.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.CloseHandle(System.IntPtr)">
+            <summary>
+            Closes Service Handles.
+            </summary>
+            <param name="handle">The handle to close.</param>
+            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <author>
+            Daniel Duggan (@_RastaMouse)
+            </author>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.SCM.OpenServiceManager(System.String)">
+            <summary>
+            Opens the Service Control Manager on the target computer.
+            </summary>
+            <param name="ComputerName">The target computer.</param>
+            <returns>IntPtr. Returns a handle to the SCM.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
         </member>
         <member name="T:SharpSploit.LateralMovement.WMI">
             <summary>
