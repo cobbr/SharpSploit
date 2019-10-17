@@ -132,7 +132,11 @@ namespace SharpSploit.Enumeration
         private static int GetParentProcess(IntPtr Handle)
         {
             var basicProcessInformation = new Win32.NtDll.PROCESS_BASIC_INFORMATION();
-            Win32.NtDll.NtQueryInformationProcess(Handle, Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation, ref basicProcessInformation, Marshal.SizeOf(basicProcessInformation), out int returnLength);
+            IntPtr pProcInfo = Marshal.AllocHGlobal(Marshal.SizeOf(basicProcessInformation));
+            Marshal.StructureToPtr(basicProcessInformation, pProcInfo, true);
+            Win32.NtDll.NtQueryInformationProcess(Handle, Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation, pProcInfo, Marshal.SizeOf(basicProcessInformation), out int returnLength);
+            basicProcessInformation = (Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION));
+
             return basicProcessInformation.InheritedFromUniqueProcessId;
         }
 
