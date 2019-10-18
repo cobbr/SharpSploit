@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 
 using SharpSploit.Misc;
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Credentials
 {
@@ -92,7 +93,7 @@ namespace SharpSploit.Credentials
                     return "";
                 }
                 string stroutput = Marshal.PtrToStringUni(output);
-                Win32.Kernel32.LocalFree(output);
+                PInvoke.Win32.Kernel32.LocalFree(output);
                 return stroutput;
             }
             catch (Exception e)

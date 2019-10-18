@@ -1,6 +1,4 @@
-﻿using System;
-
-using SharpSploit.Execution;
+﻿using SharpSploit.Execution;
 
 namespace SharpSploit.LateralMovement
 {

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 
 using SharpSploit.Generic;
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.LateralMovement
 {
@@ -87,7 +88,7 @@ namespace SharpSploit.LateralMovement
         {
             bool success = false;
             IntPtr hManager = OpenServiceManager(ComputerName);
-            IntPtr hService = Win32.Advapi32.CreateService(hManager, ServiceName, ServiceDisplayName,
+            IntPtr hService = PInvoke.Win32.Advapi32.CreateService(hManager, ServiceName, ServiceDisplayName,
                 Win32.Advapi32.SERVICE_ACCESS.SERVICE_ALL_ACCESS,
                 Win32.Advapi32.SERVICE_TYPE.SERVICE_WIN32_OWN_PROCESS,
                 Win32.Advapi32.SERVICE_START.SERVICE_DEMAND_START,
@@ -184,8 +185,8 @@ namespace SharpSploit.LateralMovement
             try
             {
                 IntPtr hManager = OpenServiceManager(ComputerName);
-                IntPtr hService = Win32.Advapi32.OpenService(hManager, ServiceName, Win32.Advapi32.SERVICE_ACCESS.DELETE);
-                success = Win32.Advapi32.DeleteService(hService);
+                IntPtr hService = PInvoke.Win32.Advapi32.OpenService(hManager, ServiceName, Win32.Advapi32.SERVICE_ACCESS.DELETE);
+                success = PInvoke.Win32.Advapi32.DeleteService(hService);
                 CloseHandle(hService);
                 CloseHandle(hManager);
             }
@@ -278,7 +279,7 @@ namespace SharpSploit.LateralMovement
             var success = false;
             try
             {
-                success = Win32.Advapi32.CloseServiceHandle(handle);
+                success = PInvoke.Win32.Advapi32.CloseServiceHandle(handle);
             }
             catch (Exception e)
             {
@@ -298,7 +299,7 @@ namespace SharpSploit.LateralMovement
             var handle = IntPtr.Zero;
             try
             {
-                handle = Win32.Advapi32.OpenSCManager(ComputerName, null, Win32.Advapi32.SCM_ACCESS.SC_MANAGER_CREATE_SERVICE);
+                handle = PInvoke.Win32.Advapi32.OpenSCManager(ComputerName, null, Win32.Advapi32.SCM_ACCESS.SC_MANAGER_CREATE_SERVICE);
             }
             catch (Exception e)
             {

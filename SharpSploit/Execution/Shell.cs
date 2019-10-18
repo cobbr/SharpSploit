@@ -3,11 +3,11 @@
 // License: BSD 3-Clause
 
 using System;
+using System.Text;
 using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
 using System.Management.Automation;
-using System.Text;
 
 namespace SharpSploit.Execution
 {

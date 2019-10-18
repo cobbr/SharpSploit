@@ -9,8 +9,8 @@ using System.Net.Sockets;
 using System.Net.NetworkInformation;
 using System.Collections.Generic;
 
-using SharpSploit.Generic;
 using SharpSploit.Misc;
+using SharpSploit.Generic;
 
 namespace SharpSploit.Enumeration
 {

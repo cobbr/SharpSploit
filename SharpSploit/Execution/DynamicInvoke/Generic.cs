@@ -7,6 +7,8 @@ using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
+using Execute = SharpSploit.Execution;
+
 namespace SharpSploit.Execution.DynamicInvoke
 {
     /// <summary>
@@ -52,12 +54,12 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
         public static IntPtr LoadModuleFromDisk(string DLLPath)
         {
-            Execution.Win32.NtDll.UNICODE_STRING uModuleName = new Execution.Win32.NtDll.UNICODE_STRING();
+            Execute.Native.UNICODE_STRING uModuleName = new Execute.Native.UNICODE_STRING();
             Native.RtlInitUnicodeString(ref uModuleName, DLLPath);
 
             IntPtr hModule = IntPtr.Zero;
-            Execution.Win32.NtDll.NTSTATUS CallResult = Native.LdrLoadDll(IntPtr.Zero, 0, ref uModuleName, ref hModule);
-            if (CallResult != Execution.Win32.NtDll.NTSTATUS.Success || hModule == IntPtr.Zero)
+            Execute.Native.NTSTATUS CallResult = Native.LdrLoadDll(IntPtr.Zero, 0, ref uModuleName, ref hModule);
+            if (CallResult != Execute.Native.NTSTATUS.Success || hModule == IntPtr.Zero)
             {
                 return IntPtr.Zero;
             }

@@ -1247,8 +1247,8 @@
                 pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
             
              //  Invoke NtCreateThreadEx using the delegate
-             createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
-                 procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
+             createThread(ref threadHandle, Execute.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execute.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
+                 procHandle, startAddress, IntPtr.Zero, Execute.Native.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
              
              </example>
         </member>
@@ -1272,6 +1272,25 @@
             Uses DynamicInvocation to call the IsWow64Process Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
             </summary>
             <returns>Returns true if process is WOW64, and false if not (64-bit, or 32-bit on a 32-bit machine).</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Native">
+            <summary>
+            Native is a library of enums and structures for Native (NtDll) API functions.
+            </summary>
+            <remarks>
+            A majority of this library is adapted from signatures found at www.pinvoke.net.
+            </remarks>
+        </member>
+        <member name="T:SharpSploit.Execution.Native.NT_CREATION_FLAGS">
+            <summary>
+            NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Native.NTSTATUS">
+            <summary>
+            NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+            https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
+            </summary>
         </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
@@ -1310,6 +1329,32 @@
             </summary>
             <param name="funcName">Name of the function to get a pointer for.</param>
             <returns>Pointer to the function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.PlatformInvoke.Native.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,System.Boolean,System.Int32,System.Int32,System.Int32,System.IntPtr)">
+            <summary>
+            NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
+            for remote thread creation.
+            </summary>
+            <param name="threadHandle"></param>
+            <param name="desiredAccess"></param>
+            <param name="objectAttributes"></param>
+            <param name="processHandle"></param>
+            <param name="startAddress"></param>
+            <param name="parameter"></param>
+            <param name="creationFlags"></param>
+            <param name="stackZeroBits"></param>
+            <param name="sizeOfStack"></param>
+            <param name="maximumStackSize"></param>
+            <param name="attributeList"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.PlatformInvoke.Win32">
+            <summary>
+            Win32 is a library of PInvoke signatures for Win32 API functions.
+            </summary>
+            <remarks>
+            A majority of this library is adapted from signatures found at www.pinvoke.net.
+            </remarks>
         </member>
         <member name="T:SharpSploit.Execution.Shell">
             <summary>
@@ -1380,40 +1425,11 @@
         </member>
         <member name="T:SharpSploit.Execution.Win32">
             <summary>
-            Win32 is a library of PInvoke signatures for Win32 API functions.
+            Win32 is a library of enums and structures for Win32 API functions.
             </summary>
             <remarks>
             A majority of this library is adapted from signatures found at www.pinvoke.net.
             </remarks>
-        </member>
-        <member name="M:SharpSploit.Execution.Win32.NtDll.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,System.Boolean,System.Int32,System.Int32,System.Int32,System.IntPtr)">
-            <summary>
-            NTCreateThreadEx is an undocumented function. Created by Microsoft to be a universal, cross-session solution
-            for remote thread creation.
-            </summary>
-            <param name="threadHandle"></param>
-            <param name="desiredAccess"></param>
-            <param name="objectAttributes"></param>
-            <param name="processHandle"></param>
-            <param name="startAddress"></param>
-            <param name="parameter"></param>
-            <param name="creationFlags"></param>
-            <param name="stackZeroBits"></param>
-            <param name="sizeOfStack"></param>
-            <param name="maximumStackSize"></param>
-            <param name="attributeList"></param>
-            <returns></returns>
-        </member>
-        <member name="T:SharpSploit.Execution.Win32.NtDll.NT_CREATION_FLAGS">
-            <summary>
-            NT_CREATION_FLAGS is an undocumented enum. https://processhacker.sourceforge.io/doc/ntpsapi_8h_source.html
-            </summary>
-        </member>
-        <member name="T:SharpSploit.Execution.Win32.NtDll.NTSTATUS">
-            <summary>
-            NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
-            https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
-            </summary>
         </member>
         <member name="T:SharpSploit.Generic.GenericObjectResult">
             <summary>

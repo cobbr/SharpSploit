@@ -5,6 +5,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
+
 namespace SharpSploit.Execution
 {
     /// <summary>
@@ -31,7 +33,7 @@ namespace SharpSploit.Execution
                 Marshal.Copy(ShellCode, 0, ptr, ShellCode.Length);
 
                 uint flOldProtect = 0;
-                if (!Win32.Kernel32.VirtualProtect(ptr, (UIntPtr)ShellCode.Length, 0x40, out flOldProtect))
+                if (!PInvoke.Win32.Kernel32.VirtualProtect(ptr, (UIntPtr)ShellCode.Length, 0x40, out flOldProtect))
                 {
                     return false;
                 }

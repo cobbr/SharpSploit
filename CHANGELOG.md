@@ -14,12 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added SCM class, PowerShellRemoting class, Host.GetDacl function (credit @rasta-mouse)
 - Added NetShareEnum functionality for Share Enumeration (credit @checkymander)
 - Added in-memory export parsing (credit @b33f)
+- Added SharpSploit.Execution.PlatformInvoke namespace
 
 ### Changed
 - Improved DynamicInvoke library (credit @TheWover)
 - Removed GetProcessListing use of WMI to obtain ppid (credit @rasta-mouse)
 - Improved GetProcessListing to include ppid, architecture, owner, and sort by PID (credit @rasta-mouse)
 - Improved SharpSploitResultList ToString() display
+- Moved PInvoke function signatures to PlatformInvoke namespace, enums/structs shared between PlatformInvoke and DynamicInvoke
 
 ## [v1.4]
 ### Added

@@ -104,11 +104,27 @@ The `SharpSploit.Execution.ShellCode` class includes the following primary funct
 
 ### SharpSploit.Execution.Win32
 
-Win32 contains a large library of PInvoke signatures for Win32 API functions.
+Win32 contains a library of enums and structures for Win32 API functions that can be used with PlatformInvoke or DynamicInvoke function execution.
+
+### SharpSploit.Execution.Native
+
+Native contains a library of enums and structures for Native NT API functions that can be used PlatformInvoke or DynamicInvoke function execution.
+
+## SharpSploit.Execution.PlatformInvoke
+
+The `SharpSploit.Execution.PlatformInvoke` namespace contains classes for invoking unmanaged exported DLL functions from the Win32 API or the Native NT API.
+
+### SharpSploit.Execution.PlatformInvoke.Win32
+
+The `SharpSploit.Execution.PlatformInvoke.Win32` class contains a library of PlatformInvoke signatures for Win32 API functions.
+
+### SharpSploit.Execution.PlatformInvoke.Native
+
+The `SharpSploit.Execution.PlatformInvoke.Native` class contains a library of PlatformInvoke signatures for NT API functions.
 
 ## SharpSploit.Execution.DynamicInvoke
 
-The `SharpSploit.Execution.DynamicInvoke` namespaces contains classes for dynamically invoking unmanaged DLL functions.  Allows the user to call functions in Win32, API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, or many other use cases.
+The `SharpSploit.Execution.DynamicInvoke` namespace contains classes for dynamically invoking unmanaged DLL functions.  Allows the user to call functions in Win32, API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, or many other use cases.
 
 Function prototypes for delegates are much less forgiving than P/Invoke. Data types used as parameters must have exactly the same format in memory as the unmanaged function expects, whereas P/Invoke is forgiving and lets you use data types that are close but not the same. There is no existing library of delegates that is verified to be compatable with the Win32 and NT APIs. As such, the library of delegates in SharpSploit will be updated over time as they are discovered, tested, and used by SharpSploit commands.
 
@@ -118,7 +134,7 @@ The `SharpSploit.Execution.DyanmicInvoke.Win32` class contains a library of Dyan
 
 ### SharpSploit.Execution.DynamicInvoke.Native
 
-The `SharpSploit.Execution.DyanmicInvoke.Win32` class contains a library of DyanmicInvoke signatures for NT API functions.
+The `SharpSploit.Execution.DyanmicInvoke.Native` class contains a library of DyanmicInvoke signatures for NT API functions.
 
 ### SharpSploit.Execution.DynamicInvoke.Generic
 

