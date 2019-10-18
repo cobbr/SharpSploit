@@ -31,7 +31,7 @@ namespace SharpSploit.LateralMovement
 
             if(useCredentials)
             {
-                command += $@"$Credential = New-Object System.Management.Automation.PSCredential(""{Domain}\\{Username}"", (ConvertTo-SecureString ""{Password}"" -AsPlainText -Force)); ";
+                command += $@"$Credential = New-Object System.Management.Automation.PSCredential(""{Domain}\{Username}"", (ConvertTo-SecureString ""{Password}"" -AsPlainText -Force)); ";
             }
             command += $@"Invoke-Command -ComputerName {ComputerName} -ScriptBlock {{ {Command} }}";
             if (useCredentials)
