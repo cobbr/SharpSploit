@@ -1364,6 +1364,15 @@
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
             <returns>Output of the ShellCommand.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.Shell.ShellExecuteWithToken(System.String,System.String,System.IntPtr)">
+            <summary>
+            Execute a given command with a stolen token.
+            </summary>
+            <param name="ShellCommand">The shell command to execute, including any arguments.</param>
+            <param name="Path">The path of the directory from which to execute the shell command.</param>
+            <param name="TokenHandle">A handle to the stolen token.</param>
+            <returns></returns>
+        </member>
         <member name="T:SharpSploit.Execution.ShellCode">
             <summary>
             ShellCode includes a method for executing shellcode.
