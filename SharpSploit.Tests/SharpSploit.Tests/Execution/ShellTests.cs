@@ -6,7 +6,6 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SharpSploit.Execution;
-using SharpSploit.Credentials;
 using System.Security.Principal;
 using System.Diagnostics;
 
