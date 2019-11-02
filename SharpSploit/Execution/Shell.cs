@@ -203,25 +203,12 @@ namespace SharpSploit.Execution
                 Path,                                       // lpCurrentDirectory
                 ref StartupInfo,                            // lpStartupInfo
                 out ProcInfo);                              // lpProcessInfo
-            Debug.WriteLine(Marshal.GetLastWin32Error());
 
             if (CreateProcess)
             {
                 using (StreamReader reader = new StreamReader(ServerStream))
                 {
-                    try
-                    {
-                        Process NewProc = Process.GetProcessById((int)ProcInfo.dwProcessId);
-
-                        while (!NewProc.HasExited)
-                        {
-                            // Wait until exit
-                        }
-                    }
-                    catch
-                    {
-                        // Do nothing
-                    }
+                    Win32.Kernel32.WaitForSingleObject(ProcInfo.hProcess, 0xFFFFFFFF);
 
                     ClientStream.Close();
                     ClientStream.Dispose();

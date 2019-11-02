@@ -58,6 +58,7 @@ namespace SharpSploit.Tests.Execution
             Win32.Advapi32.DuplicateTokenEx(hToken, (uint)TokenAccessLevels.MaximumAllowed, ref sec, (Win32.WinNT._SECURITY_IMPERSONATION_LEVEL)TokenImpersonationLevel.Impersonation,
                 Win32.WinNT.TOKEN_TYPE.TokenImpersonation, out hStolenHandle);
             String output = Shell.ShellExecuteWithToken("whoami /priv", Environment.CurrentDirectory, hStolenHandle);
+            Debug.WriteLine(output);
             Assert.AreNotEqual(output, null);
             Assert.IsTrue(output.Length > 10);
         }
