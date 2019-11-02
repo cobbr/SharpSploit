@@ -190,16 +190,17 @@ namespace SharpSploit.Execution
 
             StartupInfo.wShowWindow = 0;
             StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESTDHANDLES | (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+            StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfo);
 
 
             bool CreateProcess = Win32.Advapi32.CreateProcessWithTokenW(
                 TokenHandle,                                // hToken
                 IntPtr.Zero,                                // dwLogonFlags
-                file,                                       // lpApplicationName
+                null,                                       // lpApplicationName
                 CommandLine,                                // lpCommandLine
                 (Win32.Advapi32.CREATION_FLAGS)IntPtr.Zero, // dwCreationFlags
                 IntPtr.Zero,                                // lpEnvironment
-                null,                                       // lpCurrentDirectory
+                Path,                                       // lpCurrentDirectory
                 ref StartupInfo,                            // lpStartupInfo
                 out ProcInfo);                              // lpProcessInfo
             Debug.WriteLine(Marshal.GetLastWin32Error());

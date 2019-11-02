@@ -529,7 +529,7 @@ namespace SharpSploit.Execution
                 out ProcessThreadsAPI._PROCESS_INFORMATION processInformation
             );
 
-            [DllImport("advapi32.dll", SetLastError = true)]
+            [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
             public static extern Boolean CreateProcessWithTokenW(
                 IntPtr hToken,
                 IntPtr dwLogonFlags,
