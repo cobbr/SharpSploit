@@ -49,15 +49,16 @@ namespace SharpSploit.Tests.Execution
 
 
         [TestMethod]
-        public void TestShellExecuteWithToken()
+        public void TestCreateProcessWithToken()
         {
             IntPtr hToken = IntPtr.Zero;
-            Win32.Kernel32.OpenProcessToken(Process.GetProcessById(3860).Handle, (uint)TokenAccessLevels.MaximumAllowed, out hToken);
+            // Assumes that we have a single explorer process running that we can access
+            Win32.Kernel32.OpenProcessToken(Process.GetProcessesByName("explorer")[0].Handle, (uint)TokenAccessLevels.MaximumAllowed, out hToken);
             IntPtr hStolenHandle = IntPtr.Zero;
             Win32.WinBase._SECURITY_ATTRIBUTES sec = new Win32.WinBase._SECURITY_ATTRIBUTES();
             Win32.Advapi32.DuplicateTokenEx(hToken, (uint)TokenAccessLevels.MaximumAllowed, ref sec, (Win32.WinNT._SECURITY_IMPERSONATION_LEVEL)TokenImpersonationLevel.Impersonation,
                 Win32.WinNT.TOKEN_TYPE.TokenImpersonation, out hStolenHandle);
-            String output = Shell.ShellExecuteWithToken("whoami /priv", Environment.CurrentDirectory, hStolenHandle);
+            String output = Shell.CreateProcessWithToken("whoami /priv", Environment.CurrentDirectory, hStolenHandle);
             Debug.WriteLine(output);
             Assert.AreNotEqual(output, null);
             Assert.IsTrue(output.Length > 10);

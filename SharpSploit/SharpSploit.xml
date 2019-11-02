@@ -1364,7 +1364,7 @@
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
             <returns>Output of the ShellCommand.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.ShellExecuteWithToken(System.String,System.String,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.Shell.CreateProcessWithToken(System.String,System.String,System.IntPtr)">
             <summary>
             Execute a given command with a stolen token.
             </summary>
