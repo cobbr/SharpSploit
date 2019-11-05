@@ -5,9 +5,14 @@
 using System;
 using System.Text;
 using System.Linq;
+using System.IO;
+using System.IO.Pipes;
 using System.Reflection;
 using System.Diagnostics;
 using System.Management.Automation;
+using System.Runtime.InteropServices;
+
+using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Execution
 {
@@ -31,7 +36,7 @@ namespace SharpSploit.Execution
         /// </remarks>
         public static string PowerShellExecute(string PowerShellCode, bool OutString = true, bool BypassLogging = true, bool BypassAmsi = true)
         {
-            if (PowerShellCode == null || PowerShellCode == "") return "";
+            if (string.IsNullOrEmpty(PowerShellCode)) { return ""; }
 
             using (PowerShell ps = PowerShell.Create())
             {
@@ -64,84 +69,193 @@ namespace SharpSploit.Execution
         }
 
         /// <summary>
-        /// Executes a specified Shell command, optionally with an alternative username and password.
-        /// Equates to `ShellExecuteWithPath(ShellCommand, "C:\\WINDOWS\\System32")`.
+        /// Creates a specificed process, optionally with an alternative username and password.
+        /// Equates to `ExecuteWithPath(ShellCommand, Environment.CurrentDirectory, false)`.
+        /// </summary>
+        /// <param name="Command">The Command to execute, including any arguments.</param>
+        /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+        /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+        /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+        /// <returns>Output of the created process.</returns>
+        public static string CreateProcess(string Command, string Username = "", string Domain = "", string Password = "")
+        {
+            return Execute(Command, false, Username, Domain, Password);
+        }
+
+        /// <summary>
+        /// Creates a specificed process, optionally with an alternative username and password.
+        /// Equates to `CreateProcess("cmd.exe /c " + ShellCommand)`.
+        /// </summary>
+        /// <param name="Command">The Command to execute, including any arguments.</param>
+        /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+        /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+        /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+        /// <returns>Output of the created process.</returns>
+        public static string CreateCmdProcess(string Command, string Username = "", string Domain = "", string Password = "")
+        {
+            return CreateProcess("cmd.exe /c " + Command, Username, Domain, Password);
+        }
+
+        /// <summary>
+        /// Executes a specified shell command, optionally with an alternative username and password.
+        /// Equates to `ExecuteWithPath(ShellCommand, Environment.CurrentDirectory)`.
         /// </summary>
         /// <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
         /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
         /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
         /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-        /// <returns>Ouput of the ShellCommand.</returns>
+        /// <returns>Empty string, no output is captured when UseShellExecute is true.</returns>
         public static string ShellExecute(string ShellCommand, string Username = "", string Domain = "", string Password = "")
         {
-            return ShellExecuteWithPath(ShellCommand, "C:\\WINDOWS\\System32\\", Username, Domain, Password);
+            return Execute(ShellCommand, true, Username, Domain, Password);
         }
 
         /// <summary>
-        /// Executes a specified Shell command using cmd.exe, optionally with an alternative username and password.
+        /// Executes a specified shell command, optionally with an alternative username and password.
         /// Equates to `ShellExecute("cmd.exe /c " + ShellCommand)`.
         /// </summary>
         /// <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
         /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
         /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
         /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-        /// <returns>Ouput of the ShellCommand.</returns>
+        /// <returns>Empty string, no output is captured when UseShellExecute is true.</returns>
         public static string ShellCmdExecute(string ShellCommand, string Username = "", string Domain = "", string Password = "")
         {
             return ShellExecute("cmd.exe /c " + ShellCommand, Username, Domain, Password);
         }
 
         /// <summary>
-        /// Executes a specified Shell command from a specified directory, optionally with an alternative username and password.
+        /// Executes a specified command, optionally with an alternative username and password.
         /// </summary>
-        /// <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
-        /// <param name="Path">The Path of the directory from which to execute the ShellCommand.</param>
+        /// <param name="Command">The ShellCommand to execute, including any arguments.</param>
+        /// <param name="UseShellExecute">Switch: true to use ShellExecute, false to use CreateProcess.</param>
         /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
         /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
         /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-        /// <returns>Output of the ShellCommand.</returns>
-        public static string ShellExecuteWithPath(string ShellCommand, string Path, string Username = "", string Domain = "", string Password = "")
+        /// <returns>Output of the command if UseShellExecute false, empty string if true.</returns>
+        public static string Execute(string Command, bool UseShellExecute = false, string Username = "", string Domain = "", string Password = "")
         {
-            if (ShellCommand == null || ShellCommand == "") return "";
+            return Execute(Command, Environment.CurrentDirectory, UseShellExecute, Username, Domain, Password);
+        }
 
-            string ShellCommandName = ShellCommand.Split(' ')[0];
+        /// <summary>
+        /// Executes a specified shell command from a specified directory, optionally with an alternative username and password.
+        /// </summary>
+        /// <param name="Command">The Command to execute, including any arguments.</param>
+        /// <param name="Path">The Path of the directory from which to execute the ShellCommand.</param>
+        /// <param name="UseShellExecute">Switch: true to use ShellExecute, false to use CreateProcess.</param>
+        /// <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+        /// <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+        /// <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+        /// <returns>Output of the command if UseShellExecute false, empty string if true.</returns>
+        public static string Execute(string Command, string Path, bool UseShellExecute = false, string Username = "", string Domain = "", string Password = "")
+        {
+            if (string.IsNullOrEmpty(Command)) { return ""; }
+
+            string ShellCommandName = Command.Split(' ')[0];
             string ShellCommandArguments = "";
-            if (ShellCommand.Contains(" "))
+            if (Command.Contains(" "))
             {
-                ShellCommandArguments = ShellCommand.Replace(ShellCommandName + " ", "");
+                ShellCommandArguments = Command.Replace(ShellCommandName + " ", "");
             }
 
-            Process shellProcess = new Process();
-            if (Username != "")
+            using (Process process = new Process())
             {
-                shellProcess.StartInfo.UserName = Username;
-                shellProcess.StartInfo.Domain = Domain;
-                System.Security.SecureString SecurePassword = new System.Security.SecureString();
-                foreach (char c in Password)
+                if (Username != "")
                 {
-                    SecurePassword.AppendChar(c);
+                    process.StartInfo.UserName = Username;
+                    process.StartInfo.Domain = Domain;
+                    System.Security.SecureString SecurePassword = new System.Security.SecureString();
+                    foreach (char c in Password)
+                    {
+                        SecurePassword.AppendChar(c);
+                    }
+                    process.StartInfo.Password = SecurePassword;
                 }
-                shellProcess.StartInfo.Password = SecurePassword;
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.WorkingDirectory = Path;
+                process.StartInfo.FileName = ShellCommandName;
+                process.StartInfo.Arguments = ShellCommandArguments;
+                process.StartInfo.UseShellExecute = UseShellExecute;
+                if (!process.StartInfo.UseShellExecute)
+                {
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    var output = new StringBuilder();
+                    process.OutputDataReceived += (sender, args) => { output.AppendLine(args.Data); };
+                    process.ErrorDataReceived += (sender, args) => { output.AppendLine(args.Data); };
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    process.WaitForExit();
+                    return output.ToString();
+                }
+                process.Start();
+                process.WaitForExit();
+                return "";
             }
-            shellProcess.StartInfo.FileName = ShellCommandName;
-            shellProcess.StartInfo.Arguments = ShellCommandArguments;
-            shellProcess.StartInfo.WorkingDirectory = Path;
-            shellProcess.StartInfo.UseShellExecute = false;
-            shellProcess.StartInfo.CreateNoWindow = true;
-            shellProcess.StartInfo.RedirectStandardOutput = true;
-            shellProcess.StartInfo.RedirectStandardError = true;
+        }
 
-            var output = new StringBuilder();
-            shellProcess.OutputDataReceived += (sender, args) => { output.AppendLine(args.Data); };
-            shellProcess.ErrorDataReceived += (sender, args) => { output.AppendLine(args.Data); };
+        /// <summary>
+        /// Creates a process with a specified impersonated token. Requires SeAssignPrimaryTokenPrivilege,
+        /// typically only available to adminsitrative users.
+        /// </summary>
+        /// <author>Calvin Hedler (@001SPARTaN)</author>
+        /// <param name="Command">The Command to execute, including any arguments.</param>
+        /// <param name="hToken">A handle to the impersonated token.</param>
+        /// <returns>Output of the created process.</returns>
+        public static string CreateProcessWithToken(string Command, IntPtr hToken)
+        {
+            return CreateProcessWithToken(Command, Environment.CurrentDirectory, hToken);
+        }
 
-            shellProcess.Start();
+        /// <summary>
+        /// Creates a process with a specified impersonated token. Requires SeAssignPrimaryTokenPrivilege,
+        /// typically only available to adminsitrative users.
+        /// </summary>
+        /// <author>Calvin Hedler (@001SPARTaN)</author>
+        /// <param name="Command">The command to execute, including any arguments.</param>
+        /// <param name="Path">The path of the directory from which to execute the shell command.</param>
+        /// <param name="hToken">A handle to the impersonated token.</param>
+        /// <returns>Output of the created process.</returns>
+        public static string CreateProcessWithToken(string Command, string Path, IntPtr hToken)
+        {
+            if (string.IsNullOrEmpty(Command)) { return ""; }
 
-            shellProcess.BeginOutputReadLine();
-            shellProcess.BeginErrorReadLine();
-            shellProcess.WaitForExit();
-
-            return output.ToString().TrimEnd();
+            using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
+            {
+                using (AnonymousPipeClientStream pipeClient = new AnonymousPipeClientStream(PipeDirection.Out, pipeServer.GetClientHandleAsString()))
+                {
+                    Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO
+                    {
+                        wShowWindow = 0,
+                        hStdOutput = pipeClient.SafePipeHandle.DangerousGetHandle(),
+                        hStdError = pipeClient.SafePipeHandle.DangerousGetHandle(),
+                        dwFlags = (uint)(Win32.ProcessThreadsAPI.STARTF.STARTF_USESTDHANDLES | Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW)
+                    };
+                    StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfo);
+                    
+                    if (!PInvoke.Win32.Advapi32.CreateProcessWithTokenW(
+                        hToken,                                                    // hToken
+                        Win32.Advapi32.LOGON_FLAGS.NONE,                           // dwLogonFlags
+                        null,                                                      // lpApplicationName
+                        Command,                                                   // lpCommandLine
+                        Win32.Advapi32.CREATION_FLAGS.NONE,                        // dwCreationFlags
+                        IntPtr.Zero,                                               // lpEnvironment
+                        Path,                                                      // lpCurrentDirectory
+                        ref StartupInfo,                                           // lpStartupInfo
+                        out Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo) // lpProcessInfo
+                    )
+                    {
+                        return $"Error: {Marshal.GetLastWin32Error().ToString()}";
+                    }
+                    PInvoke.Win32.Kernel32.WaitForSingleObject(ProcInfo.hProcess, 0xFFFFFFFF);
+                }
+                using (StreamReader reader = new StreamReader(pipeServer))
+                {
+                    return reader.ReadToEnd();
+                }
+            }
         }
     }
 }

@@ -91,8 +91,12 @@
 ### SharpSploit.Execution.Shell
 
 * `PowerShellExecute()` - Executes specified PowerShell code using System.Management.Automation.dll and bypasses AMSI, ScriptBlock Logging, and Module Logging (but not Transcription Logging).
-* `ShellExecute()` - Executes a specified Shell command, optionally with an alternative username and password. Equates to `ShellExecuteWithPath(ShellCommand, "C:\\WINDOWS\\System32")`
-* `ShellExecuteWithPath()` - Executes a specified Shell command from a specified directory, optoinally with an alternative username and password.
+* `CreateProcess()` - Creates a specified process, optionally with an alternative username and password. Uses the CreateProcess API and returns the output of the process.
+* `CreateCmdProcess()` - Creates a specified cmd.exe process, optionally with an alternative username and password. Uses the CreateProcess API and returns the output of the process.
+* `ShellExecute()` - Executes a specified shell command, optionally with an alternative username and password. Uses the ShellExecuteEx API and does not return the output of the command.
+* `ShellCmdExecute()` - Executes a specified cmd.exe shell command, optionally with an alternative username and password. Uses the ShellExecuteEx API and does not return the output of the command.
+* `Execute()` - Executes a specified command, optionally with an alternative username and password. May return the output of the command, depending upon the value of the UseShellExecute parameter.
+* `CreateProcessWithToken()` - Creates a specified process with an impersonated token. Uses the CreateProcessWithToken API and returns the output of the process. (Requires Admin)
 
 ### SharpSploit.Execution.ShellCode
 

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added NetShareEnum functionality for Share Enumeration (credit @checkymander)
 - Added in-memory export parsing (credit @b33f)
 - Added SharpSploit.Execution.PlatformInvoke namespace
+- Added CreateProcessWithToken function
 
 ### Changed
 - Improved DynamicInvoke library (credit @TheWover)
@@ -22,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved GetProcessListing to include ppid, architecture, owner, and sort by PID (credit @rasta-mouse)
 - Improved SharpSploitResultList ToString() display
 - Moved PInvoke function signatures to PlatformInvoke namespace, enums/structs shared between PlatformInvoke and DynamicInvoke
+- Updated powerkatz dlls, fixed LsaSecrets/LsaCache/SamDump mimikatz shortcuts
+- Update shell execution commands for configurable UseShellExecute property
 
 ## [v1.4]
 ### Added

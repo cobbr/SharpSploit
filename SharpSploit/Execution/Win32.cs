@@ -222,23 +222,47 @@ namespace SharpSploit.Execution
                 TOKEN_ADJUST_SESSIONID);
             public const UInt32 TOKEN_ALT = (TOKEN_ASSIGN_PRIMARY | TOKEN_DUPLICATE | TOKEN_IMPERSONATE | TOKEN_QUERY);
 
-            //https://msdn.microsoft.com/en-us/library/windows/desktop/ms682434(v=vs.85).aspx
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms682434(v=vs.85).aspx
             [Flags]
-            public enum CREATION_FLAGS
+            public enum CREATION_FLAGS : uint
             {
-                NONE = 0x0,
-                CREATE_DEFAULT_ERROR_MODE = 0x04000000,
-                CREATE_NEW_CONSOLE = 0x00000010,
-                CREATE_NEW_PROCESS_GROUP = 0x00000200,
-                CREATE_SEPARATE_WOW_VDM = 0x00000800,
+                NONE = 0x00000000,
+                DEBUG_PROCESS = 0x00000001,
+                DEBUG_ONLY_THIS_PROCESS = 0x00000002,
                 CREATE_SUSPENDED = 0x00000004,
+                DETACHED_PROCESS = 0x00000008,
+                CREATE_NEW_CONSOLE = 0x00000010,
+                NORMAL_PRIORITY_CLASS = 0x00000020,
+                IDLE_PRIORITY_CLASS = 0x00000040,
+                HIGH_PRIORITY_CLASS = 0x00000080,
+                REALTIME_PRIORITY_CLASS = 0x00000100,
+                CREATE_NEW_PROCESS_GROUP = 0x00000200,
                 CREATE_UNICODE_ENVIRONMENT = 0x00000400,
-                EXTENDED_STARTUPINFO_PRESENT = 0x00080000
+                CREATE_SEPARATE_WOW_VDM = 0x00000800,
+                CREATE_SHARED_WOW_VDM = 0x00001000,
+                CREATE_FORCEDOS = 0x00002000,
+                BELOW_NORMAL_PRIORITY_CLASS = 0x00004000,
+                ABOVE_NORMAL_PRIORITY_CLASS = 0x00008000,
+                INHERIT_PARENT_AFFINITY = 0x00010000,
+                INHERIT_CALLER_PRIORITY = 0x00020000,
+                CREATE_PROTECTED_PROCESS = 0x00040000,
+                EXTENDED_STARTUPINFO_PRESENT = 0x00080000,
+                PROCESS_MODE_BACKGROUND_BEGIN = 0x00100000,
+                PROCESS_MODE_BACKGROUND_END = 0x00200000,
+                CREATE_BREAKAWAY_FROM_JOB = 0x01000000,
+                CREATE_PRESERVE_CODE_AUTHZ_LEVEL = 0x02000000,
+                CREATE_DEFAULT_ERROR_MODE = 0x04000000,
+                CREATE_NO_WINDOW = 0x08000000,
+                PROFILE_USER = 0x10000000,
+                PROFILE_KERNEL = 0x20000000,
+                PROFILE_SERVER = 0x40000000,
+                CREATE_IGNORE_SYSTEM_DEFAULT = 0x80000000
             }
 
             [Flags]
             public enum LOGON_FLAGS
             {
+                NONE = 0x00000000,
                 LOGON_WITH_PROFILE = 0x00000001,
                 LOGON_NETCREDENTIALS_ONLY = 0x00000002
             }
@@ -508,6 +532,7 @@ namespace SharpSploit.Execution
 
             public enum _SECURITY_IMPERSONATION_LEVEL
             {
+                None,
                 SecurityAnonymous,
                 SecurityIdentification,
                 SecurityImpersonation,
@@ -694,7 +719,7 @@ namespace SharpSploit.Execution
 
             // http://www.pinvoke.net/default.aspx/Enums.ACCESS_MASK
             [Flags]
-            public enum ACCESS_MASK : UInt32
+            public enum ACCESS_MASK : uint
             {
                 DELETE = 0x00010000,
                 READ_CONTROL = 0x00020000,
@@ -744,7 +769,21 @@ namespace SharpSploit.Execution
 
         public class ProcessThreadsAPI
         {
-            //https://msdn.microsoft.com/en-us/library/windows/desktop/ms686331(v=vs.85).aspx
+            [Flags]
+            internal enum STARTF : uint
+            {
+                STARTF_USESHOWWINDOW = 0x00000001,
+                STARTF_USESIZE = 0x00000002,
+                STARTF_USEPOSITION = 0x00000004,
+                STARTF_USECOUNTCHARS = 0x00000008,
+                STARTF_USEFILLATTRIBUTE = 0x00000010,
+                STARTF_RUNFULLSCREEN = 0x00000020,
+                STARTF_FORCEONFEEDBACK = 0x00000040,
+                STARTF_FORCEOFFFEEDBACK = 0x00000080,
+                STARTF_USESTDHANDLES = 0x00000100,
+            }
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/ms686331(v=vs.85).aspx
             [StructLayout(LayoutKind.Sequential)]
             public struct _STARTUPINFO
             {

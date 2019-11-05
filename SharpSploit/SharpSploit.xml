@@ -97,7 +97,7 @@
             at https://github.com/0xbadjuju/Tokenvator).
             </remarks>
         </member>
-        <member name="M:SharpSploit.Credentials.Tokens.#ctor">
+        <member name="M:SharpSploit.Credentials.Tokens.#ctor(System.Boolean)">
             <summary>
             Creates the Tokens class, attempts to obtain the current process' token, and obtain the SeDebugPrivilege.
             </summary>
@@ -1376,38 +1376,93 @@
             logging bypass goes to Lee Christensen (@_tifkin).
             </remarks>
         </member>
+        <member name="M:SharpSploit.Execution.Shell.CreateProcess(System.String,System.String,System.String,System.String)">
+            <summary>
+            Creates a specificed process, optionally with an alternative username and password.
+            Equates to `ExecuteWithPath(ShellCommand, Environment.CurrentDirectory, false)`.
+            </summary>
+            <param name="Command">The Command to execute, including any arguments.</param>
+            <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+            <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+            <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+            <returns>Output of the created process.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Shell.CreateCmdProcess(System.String,System.String,System.String,System.String)">
+            <summary>
+            Creates a specificed process, optionally with an alternative username and password.
+            Equates to `CreateProcess("cmd.exe /c " + ShellCommand)`.
+            </summary>
+            <param name="Command">The Command to execute, including any arguments.</param>
+            <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+            <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+            <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+            <returns>Output of the created process.</returns>
+        </member>
         <member name="M:SharpSploit.Execution.Shell.ShellExecute(System.String,System.String,System.String,System.String)">
             <summary>
-            Executes a specified Shell command, optionally with an alternative username and password.
-            Equates to `ShellExecuteWithPath(ShellCommand, "C:\\WINDOWS\\System32")`.
+            Executes a specified shell command, optionally with an alternative username and password.
+            Equates to `ExecuteWithPath(ShellCommand, Environment.CurrentDirectory)`.
             </summary>
             <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
             <param name="Username">Optional alternative username to execute ShellCommand as.</param>
             <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-            <returns>Ouput of the ShellCommand.</returns>
+            <returns>Empty string, no output is captured when UseShellExecute is true.</returns>
         </member>
         <member name="M:SharpSploit.Execution.Shell.ShellCmdExecute(System.String,System.String,System.String,System.String)">
             <summary>
-            Executes a specified Shell command using cmd.exe, optionally with an alternative username and password.
+            Executes a specified shell command, optionally with an alternative username and password.
             Equates to `ShellExecute("cmd.exe /c " + ShellCommand)`.
             </summary>
             <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
             <param name="Username">Optional alternative username to execute ShellCommand as.</param>
             <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-            <returns>Ouput of the ShellCommand.</returns>
+            <returns>Empty string, no output is captured when UseShellExecute is true.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.ShellExecuteWithPath(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:SharpSploit.Execution.Shell.Execute(System.String,System.Boolean,System.String,System.String,System.String)">
             <summary>
-            Executes a specified Shell command from a specified directory, optionally with an alternative username and password.
+            Executes a specified command, optionally with an alternative username and password.
             </summary>
-            <param name="ShellCommand">The ShellCommand to execute, including any arguments.</param>
-            <param name="Path">The Path of the directory from which to execute the ShellCommand.</param>
+            <param name="Command">The ShellCommand to execute, including any arguments.</param>
+            <param name="UseShellExecute">Switch: true to use ShellExecute, false to use CreateProcess.</param>
             <param name="Username">Optional alternative username to execute ShellCommand as.</param>
             <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
             <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
-            <returns>Output of the ShellCommand.</returns>
+            <returns>Output of the command if UseShellExecute false, empty string if true.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Shell.Execute(System.String,System.String,System.Boolean,System.String,System.String,System.String)">
+            <summary>
+            Executes a specified shell command from a specified directory, optionally with an alternative username and password.
+            </summary>
+            <param name="Command">The Command to execute, including any arguments.</param>
+            <param name="Path">The Path of the directory from which to execute the ShellCommand.</param>
+            <param name="UseShellExecute">Switch: true to use ShellExecute, false to use CreateProcess.</param>
+            <param name="Username">Optional alternative username to execute ShellCommand as.</param>
+            <param name="Domain">Optional alternative Domain of the username to execute ShellCommand as.</param>
+            <param name="Password">Optional password to authenticate the username to execute the ShellCommand as.</param>
+            <returns>Output of the command if UseShellExecute false, empty string if true.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Shell.CreateProcessWithToken(System.String,System.IntPtr)">
+            <summary>
+            Creates a process with a specified impersonated token. Requires SeAssignPrimaryTokenPrivilege,
+            typically only available to adminsitrative users.
+            </summary>
+            <author>Calvin Hedler (@001SPARTaN)</author>
+            <param name="Command">The Command to execute, including any arguments.</param>
+            <param name="hToken">A handle to the impersonated token.</param>
+            <returns>Output of the created process.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Shell.CreateProcessWithToken(System.String,System.String,System.IntPtr)">
+            <summary>
+            Creates a process with a specified impersonated token. Requires SeAssignPrimaryTokenPrivilege,
+            typically only available to adminsitrative users.
+            </summary>
+            <author>Calvin Hedler (@001SPARTaN)</author>
+            <param name="Command">The command to execute, including any arguments.</param>
+            <param name="Path">The path of the directory from which to execute the shell command.</param>
+            <param name="hToken">A handle to the impersonated token.</param>
+            <returns>Output of the created process.</returns>
         </member>
         <member name="T:SharpSploit.Execution.ShellCode">
             <summary>

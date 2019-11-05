@@ -375,15 +375,15 @@ namespace SharpSploit.Execution.PlatformInvoke
                 out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION processInformation
             );
 
-            [DllImport("advapi32.dll", SetLastError = true)]
-            public static extern Boolean CreateProcessWithTokenW(
+            [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+            public static extern bool CreateProcessWithTokenW(
                 IntPtr hToken,
                 Execute.Win32.Advapi32.LOGON_FLAGS dwLogonFlags,
-                IntPtr lpApplicationName,
-                IntPtr lpCommandLine,
+                string lpApplicationName,
+                string lpCommandLine,
                 Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
                 IntPtr lpEnvironment,
-                IntPtr lpCurrentDirectory,
+                string lpCurrentDirectory,
                 ref Execute.Win32.ProcessThreadsAPI._STARTUPINFO lpStartupInfo,
                 out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInfo
             );
