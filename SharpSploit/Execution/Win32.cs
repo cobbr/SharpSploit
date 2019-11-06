@@ -532,7 +532,6 @@ namespace SharpSploit.Execution
 
             public enum _SECURITY_IMPERSONATION_LEVEL
             {
-                None,
                 SecurityAnonymous,
                 SecurityIdentification,
                 SecurityImpersonation,

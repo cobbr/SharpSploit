@@ -64,22 +64,26 @@ namespace SharpSploit.Tests.Execution
         public void TestCreateProcessWithToken()
         {
             // Assumes that we have a single explorer process running that we can access
-            PInvoke.Win32.Kernel32.OpenProcessToken(Process.GetProcessesByName("explorer")[0].Handle, (uint)TokenAccessLevels.MaximumAllowed, out IntPtr hToken);
+            PInvoke.Win32.Kernel32.OpenProcessToken(
+                Process.GetProcessesByName("notepad")[0].Handle,
+                (uint)TokenAccessLevels.MaximumAllowed,
+                out IntPtr hToken
+            );
             Win32.WinBase._SECURITY_ATTRIBUTES sec = new Win32.WinBase._SECURITY_ATTRIBUTES();
             PInvoke.Win32.Advapi32.DuplicateTokenEx(
                 hToken,
                 (uint)TokenAccessLevels.MaximumAllowed,
                 ref sec,
-                (Win32.WinNT._SECURITY_IMPERSONATION_LEVEL)TokenImpersonationLevel.Impersonation,
+                Win32.WinNT._SECURITY_IMPERSONATION_LEVEL.SecurityImpersonation,
                 Win32.WinNT.TOKEN_TYPE.TokenImpersonation,
-                out IntPtr hStolenHandle
+                out IntPtr hProcessToken
             );
-            string output = Shell.CreateProcessWithToken("whoami /priv", Environment.CurrentDirectory, hStolenHandle);
+            
+            string output = Shell.CreateProcessWithToken("whoami /all", @"C:\Windows\System32", hProcessToken);
             Console.WriteLine(output);
             Assert.AreNotEqual(null, output);
             Assert.IsTrue(output.Length > 10);
             Assert.IsTrue(output.Contains("PRIVILEGES INFORMATION"));
-
         }
 
         [TestMethod]

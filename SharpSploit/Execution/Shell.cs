@@ -7,8 +7,10 @@ using System.Text;
 using System.Linq;
 using System.IO;
 using System.IO.Pipes;
+using System.Threading;
 using System.Reflection;
 using System.Diagnostics;
+using System.ComponentModel;
 using System.Management.Automation;
 using System.Runtime.InteropServices;
 
@@ -181,7 +183,7 @@ namespace SharpSploit.Execution
                 {
                     process.StartInfo.RedirectStandardOutput = true;
                     process.StartInfo.RedirectStandardError = true;
-                    var output = new StringBuilder();
+                    StringBuilder output = new StringBuilder();
                     process.OutputDataReceived += (sender, args) => { output.AppendLine(args.Data); };
                     process.ErrorDataReceived += (sender, args) => { output.AppendLine(args.Data); };
                     process.Start();
@@ -224,6 +226,7 @@ namespace SharpSploit.Execution
 
             using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
             {
+                Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
                 using (AnonymousPipeClientStream pipeClient = new AnonymousPipeClientStream(PipeDirection.Out, pipeServer.GetClientHandleAsString()))
                 {
                     Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO
@@ -236,24 +239,30 @@ namespace SharpSploit.Execution
                     StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfo);
                     
                     if (!PInvoke.Win32.Advapi32.CreateProcessWithTokenW(
-                        hToken,                                                    // hToken
-                        Win32.Advapi32.LOGON_FLAGS.NONE,                           // dwLogonFlags
-                        null,                                                      // lpApplicationName
-                        Command,                                                   // lpCommandLine
-                        Win32.Advapi32.CREATION_FLAGS.NONE,                        // dwCreationFlags
-                        IntPtr.Zero,                                               // lpEnvironment
-                        Path,                                                      // lpCurrentDirectory
-                        ref StartupInfo,                                           // lpStartupInfo
-                        out Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo) // lpProcessInfo
+                        hToken,                             // hToken
+                        Win32.Advapi32.LOGON_FLAGS.NONE,    // dwLogonFlags
+                        null,                               // lpApplicationName
+                        Command,                            // lpCommandLine
+                        Win32.Advapi32.CREATION_FLAGS.NONE, // dwCreationFlags
+                        IntPtr.Zero,                        // lpEnvironment
+                        Path,                               // lpCurrentDirectory
+                        ref StartupInfo,                    // lpStartupInfo
+                        out ProcInfo)                       // lpProcessInfo
                     )
                     {
-                        return $"Error: {Marshal.GetLastWin32Error().ToString()}";
+                        return $"Error: {new Win32Exception(Marshal.GetLastWin32Error()).Message}";
                     }
-                    PInvoke.Win32.Kernel32.WaitForSingleObject(ProcInfo.hProcess, 0xFFFFFFFF);
                 }
                 using (StreamReader reader = new StreamReader(pipeServer))
                 {
-                    return reader.ReadToEnd();
+                    Thread t = new Thread(() =>
+                    {
+                        PInvoke.Win32.Kernel32.WaitForSingleObject(ProcInfo.hProcess, 0xFFFFFFFF);
+                    });
+                    t.Start();
+                    string output =  reader.ReadToEnd();
+                    t.Join();
+                    return output;
                 }
             }
         }
