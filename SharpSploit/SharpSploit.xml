@@ -1225,6 +1225,20 @@
             <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
             <returns>IntPtr for the desired function.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleFromDisk(System.String)">
+            <summary>
+            Maps a DLL from disk into a Section.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="DLLName">Path of the file on disk.</param>
+            <returns>Pointer to the mapped DLL in memory.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleFromMemory(System.Byte[])">
+            <summary>
+            
+            </summary>
+            <param name="module"></param>
+        </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
             <summary>
             Contains function prototypes and wrapper functions for dynamically invoking NT API Calls.

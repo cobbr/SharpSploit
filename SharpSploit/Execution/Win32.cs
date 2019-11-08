@@ -282,6 +282,9 @@ namespace SharpSploit.Execution
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern short GetKeyState(int nVirtKey);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern int MessageBox(IntPtr hWnd, String text, String caption, int options);
         }
 
         public static class Netapi32
@@ -1287,7 +1290,12 @@ namespace SharpSploit.Execution
                 WINSTA_READSCREEN = 0x00000200,
                 WINSTA_ALL_ACCESS = 0x0000037F,
 
-                SECTION_ALL_ACCESS = 0x10000000,
+                SECTION_ALL_ACCESS = STANDARD_RIGHTS_REQUIRED |
+                    SECTION_QUERY |
+                    SECTION_MAP_WRITE |
+                    SECTION_MAP_READ |
+                    SECTION_MAP_EXECUTE |
+                    SECTION_EXTEND_SIZE,
                 SECTION_QUERY = 0x0001,
                 SECTION_MAP_WRITE = 0x0002,
                 SECTION_MAP_READ = 0x0004,

@@ -54,7 +54,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retVal;
         }
 
-        private static class Delegates
+        public static class Delegates
         {
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate IntPtr OpenProcess(
@@ -66,6 +66,19 @@ namespace SharpSploit.Execution.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate bool IsWow64Process(
                 System.IntPtr hProcess, ref bool lpSystemInfo
+            );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate int MessageBox(
+                IntPtr hWnd, String text, String caption, int options
+            );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool VirtualProtect(
+                IntPtr lpAddress,
+                int dwSize,
+                uint flNewProtect,
+                out uint lpflOldProtect
             );
         }
     }
