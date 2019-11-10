@@ -292,7 +292,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 for (int i = 0; i < NumberOfNames; i++)
                 {
                     String FunctionName = Marshal.PtrToStringAnsi((IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4))));
-                    if (GenerateUniqueAPIHash(FunctionName.ToLower(), Key).ToLower() == FunctionHash.ToLower())
+                    if (GenerateUniqueAPIHash(FunctionName, Key).ToLower() == FunctionHash.ToLower())
                     {
                         Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
                         Int32 FunctionRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + FunctionsRVA + (4 * (FunctionOrdinal - OrdinalBase))));
