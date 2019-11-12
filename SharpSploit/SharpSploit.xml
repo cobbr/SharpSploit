@@ -1233,12 +1233,6 @@
             <param name="DLLName">Path of the file on disk.</param>
             <returns>Pointer to the mapped DLL in memory.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleFromMemory(System.Byte[])">
-            <summary>
-            
-            </summary>
-            <param name="module"></param>
-        </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
             <summary>
             Contains function prototypes and wrapper functions for dynamically invoking NT API Calls.

@@ -150,10 +150,14 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Int32 NamesRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x20));
                 Int32 OrdinalsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x24));
 
+                IntPtr namesAbsolute = (IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA)));
+
                 // Loop the array of export name RVA's
                 for (int i = 0; i < NumberOfNames; i++)
                 {
-                    String FunctionName = Marshal.PtrToStringAnsi((IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4))));
+                    IntPtr absoluteAddr = (IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4)));
+
+                    String FunctionName = Marshal.PtrToStringAnsi(absoluteAddr);
                     if (FunctionName.ToLower() == ExportName.ToLower())
                     {
                         Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
@@ -198,11 +202,11 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             //Convert module length to a ulong so that we can pass it into NtCreateSection.
             ulong maxSize = unchecked((ulong)(moduleSize - long.MinValue));
-            
+
             ulong size = 0;
 
             //Create a new Section with the FileHandle.
-            Execution.Win32.NtDll.NTSTATUS statusCreate = Native.NtCreateSection(ref hSection, (uint) Execution.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS, IntPtr.Zero, ref size,
+            Execution.Win32.NtDll.NTSTATUS statusCreate = Native.NtCreateSection(ref hSection, (uint)Execution.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS, IntPtr.Zero, ref size,
                 Execution.Win32.WinNT.PAGE_READONLY, Execution.Win32.WinNT.SEC_IMAGE, hModule);
 
             if (statusCreate != Execution.Win32.NtDll.NTSTATUS.Success)
@@ -222,57 +226,6 @@ namespace SharpSploit.Execution.DynamicInvoke
                 return IntPtr.Zero;
             else
                 return hMapping;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="module"></param>
-        public static IntPtr MapModuleFromMemory(byte[] module)
-        {
-            //Check architecture of current process
-            //use appropriate directory to poll files from
-
-
-            //Check the architecture of the current process.
-            string path = @"C:\Windows\System32";
-
-            if (IntPtr.Size == 8)
-                path = @"C:\Windows\SysWOW64";
-
-            string[] files = Directory.GetFiles(path);
-            List<string> usableFiles = new List<string>();
-
-            //Look for files larger or equal in size to the target module
-            foreach(string file in files)
-            {
-                FileInfo fileInfo = new FileInfo(file);
-
-                if (fileInfo.Length >= module.Length)
-                    usableFiles.Add(file);
-            }
-
-            //Pick a random file in the list of usable files
-            Random r = new Random();
-            int rInt = r.Next(0, usableFiles.Count);
-
-            //Map the selected DLL to memory
-            IntPtr hModule = MapModuleFromDisk(usableFiles[rInt]);
-
-            //TODO: change the permissions so that we can write to it.
-
-            //TODO: Unmap the section
-
-            //TODO: Remap the section. This resets the permissions, I think.
-
-            uint oldProtect;
-
-            Execution.Win32.Kernel32.VirtualProtect(hModule, (UIntPtr) module.Length, Execution.Win32.WinNT.PAGE_EXECUTE_WRITECOPY, out oldProtect);
-
-            //Overwrite the loaded DLL with the module.
-            Marshal.Copy(module, 0, hModule, module.Length);
-
-            return hModule;
         }
     }
 }
