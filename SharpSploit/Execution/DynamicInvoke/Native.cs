@@ -145,7 +145,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
         public static bool ProcessWow64Information(IntPtr hProcess)
         {
-            UInt32 processInformationClass = (UInt32)Execute.Native.PROCESSINFOCLASS.ProcessWow64Information;
+            Execute.Native.PROCESSINFOCLASS processInformationClass = Execute.Native.PROCESSINFOCLASS.ProcessWow64Information;
             IntPtr pProcInfo = Marshal.AllocHGlobal(IntPtr.Size);
             RtlZeroMemory(pProcInfo, IntPtr.Size);
             int processInformationLength = IntPtr.Size;
@@ -175,7 +175,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
         public static Execute.Native.PROCESS_BASIC_INFORMATION ProcessBasicInformation(IntPtr hProcess)
         {
-            UInt32 processInformationClass = (UInt32)Execute.Native.PROCESSINFOCLASS.ProcessBasicInformation;
+            Execute.Native.PROCESSINFOCLASS processInformationClass = Execute.Native.PROCESSINFOCLASS.ProcessBasicInformation;
             Execute.Native.PROCESS_BASIC_INFORMATION PBI = new Execute.Native.PROCESS_BASIC_INFORMATION();
             IntPtr pProcInfo = Marshal.AllocHGlobal(Marshal.SizeOf(PBI));
             RtlZeroMemory(pProcInfo, Marshal.SizeOf(PBI));
@@ -277,6 +277,164 @@ namespace SharpSploit.Execution.DynamicInvoke
             return ThreadHandle;
         }
 
+        public static IntPtr NtAllocateVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, IntPtr ZeroBits, ref IntPtr RegionSize, UInt32 AllocationType, UInt32 Protect)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                ProcessHandle, BaseAddress, ZeroBits, RegionSize, AllocationType, Protect
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtAllocateVirtualMemory", typeof(DELEGATES.NtAllocateVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                if (retValue == Execute.Native.NTSTATUS.AccessDenied)
+                {
+                    // STATUS_ACCESS_DENIED
+                    throw new UnauthorizedAccessException("Access is denied.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.AlreadyCommitted)
+                {
+                    // STATUS_ALREADY_COMMITTED
+                    throw new InvalidOperationException("The specified address range is already committed.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.CommitmentLimit)
+                {
+                    // STATUS_COMMITMENT_LIMIT
+                    throw new InvalidOperationException("Your system is low on virtual memory.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.ConflictingAddresses)
+                {
+                    // STATUS_CONFLICTING_ADDRESSES
+                    throw new InvalidOperationException("The specified address range conflicts with the address space.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InsufficientResources)
+                {
+                    // STATUS_INSUFFICIENT_RESOURCES
+                    throw new InvalidOperationException("Insufficient system resources exist to complete the API call.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InvalidHandle)
+                {
+                    // STATUS_INVALID_HANDLE
+                    throw new InvalidOperationException("An invalid HANDLE was specified.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InvalidPageProtection)
+                {
+                    // STATUS_INVALID_PAGE_PROTECTION
+                    throw new InvalidOperationException("The specified page protection was not valid.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.NoMemory)
+                {
+                    // STATUS_NO_MEMORY
+                    throw new InvalidOperationException("Not enough virtual memory or paging file quota is available to complete the specified operation.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.ObjectTypeMismatch)
+                {
+                    // STATUS_OBJECT_TYPE_MISMATCH
+                    throw new InvalidOperationException("There is a mismatch between the type of object that is required by the requested operation and the type of object that is specified in the request.");
+                }
+                else
+                {
+                    // STATUS_PROCESS_IS_TERMINATING == 0xC000010A
+                    throw new InvalidOperationException("An attempt was made to duplicate an object handle into or out of an exiting process.");
+                }
+            } else
+            {
+                BaseAddress = (IntPtr)funcargs[1];
+                return BaseAddress;
+            }
+        }
+
+        public static void NtFreeVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, ref IntPtr RegionSize, UInt32 FreeType)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                ProcessHandle, BaseAddress, RegionSize, FreeType
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtFreeVirtualMemory", typeof(DELEGATES.NtFreeVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                if (retValue == Execute.Native.NTSTATUS.AccessDenied)
+                {
+                    // STATUS_ACCESS_DENIED
+                    throw new UnauthorizedAccessException("Access is denied.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InvalidHandle)
+                {
+                    // STATUS_INVALID_HANDLE
+                    throw new InvalidOperationException("An invalid HANDLE was specified.");
+                }
+                else
+                {
+                    // STATUS_OBJECT_TYPE_MISMATCH == 0xC0000024
+                    throw new InvalidOperationException("There is a mismatch between the type of object that is required by the requested operation and the type of object that is specified in the request.");
+                }
+            }
+        }
+
+        public static String GetFilenameFromMemoryPointer(IntPtr hProc, IntPtr pMem)
+        {
+            // Alloc buffer for result struct
+            IntPtr pBase = IntPtr.Zero;
+            IntPtr RegionSize = (IntPtr)0x500;
+            IntPtr pAlloc = NtAllocateVirtualMemory(hProc, ref pBase, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Prepare NtQueryVirtualMemory parameters
+            Execute.Native.MEMORYINFOCLASS mic = Execute.Native.MEMORYINFOCLASS.MemorySectionName;
+            UInt32 MemoryInformationLength = 0x500;
+            UInt32 Retlen = 0;
+
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProc, pMem, mic, pAlloc, MemoryInformationLength, Retlen
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtQueryVirtualMemory", typeof(DELEGATES.NtQueryVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                // Free allocation
+                NtFreeVirtualMemory(hProc, ref pAlloc, ref RegionSize, Execution.Win32.Kernel32.MEM_RELEASE);
+
+                if (retValue == Execute.Native.NTSTATUS.AccessDenied)
+                {
+                    // STATUS_ACCESS_DENIED
+                    throw new UnauthorizedAccessException("Access is denied.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.AccessViolation)
+                {
+                    // STATUS_ACCESS_VIOLATION
+                    throw new InvalidOperationException("The specified base address is an invalid virtual address.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InfoLengthMismatch)
+                {
+                    // STATUS_INFO_LENGTH_MISMATCH
+                    throw new InvalidOperationException("The MemoryInformation buffer is larger than MemoryInformationLength.");
+                }
+                else if (retValue == Execute.Native.NTSTATUS.InvalidParameter)
+                {
+                    // STATUS_INVALID_PARAMETER
+                    throw new InvalidOperationException("The specified base address is outside the range of accessible addresses.");
+                }
+                else
+                {
+                    // STATUS_INVALID_PARAMETER == 0xC0000141
+                    // This status is returned if the pointer is not backed by a file on disk
+                    return String.Empty;
+                }
+            } else
+            {
+                Execute.Native.UNICODE_STRING sn = (Execute.Native.UNICODE_STRING)Marshal.PtrToStructure(pAlloc, typeof(Execute.Native.UNICODE_STRING));
+                String FilePath = Marshal.PtrToStringUni(sn.Buffer);
+
+                // Free allocation
+                NtFreeVirtualMemory(hProc, ref pAlloc, ref RegionSize, Execution.Win32.Kernel32.MEM_RELEASE);
+                return FilePath;
+            }
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -362,7 +520,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 NtQueryInformationProcess(
                 IntPtr processHandle,
-                UInt32 processInformationClass,
+                Execute.Native.PROCESSINFOCLASS processInformationClass,
                 IntPtr processInformation,
                 int processInformationLength,
                 ref UInt32 returnLength);
@@ -388,6 +546,31 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Execute.Win32.Kernel32.ThreadAccess DesiredAccess,
                 ref Execute.Native.OBJECT_ATTRIBUTES ObjectAttributes,
                 ref Execute.Native.CLIENT_ID ClientId);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtAllocateVirtualMemory(
+                IntPtr ProcessHandle,
+                ref IntPtr BaseAddress,
+                IntPtr ZeroBits,
+                ref IntPtr RegionSize,
+                UInt32 AllocationType,
+                UInt32 Protect);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtFreeVirtualMemory(
+                IntPtr ProcessHandle,
+                ref IntPtr BaseAddress,
+                ref IntPtr RegionSize,
+                UInt32 FreeType);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtQueryVirtualMemory(
+                IntPtr ProcessHandle,
+                IntPtr BaseAddress,
+                Execute.Native.MEMORYINFOCLASS MemoryInformationClass,
+                IntPtr MemoryInformation,
+                UInt32 MemoryInformationLength,
+                ref UInt32 ReturnLength);
         }
     }
 }

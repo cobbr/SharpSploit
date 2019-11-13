@@ -52,6 +52,14 @@ namespace SharpSploit.Execution
             public IntPtr UniqueThread;
         }
 
+        public enum MEMORYINFOCLASS : int
+        {
+            MemoryBasicInformation = 0,
+            MemoryWorkingSetList,
+            MemorySectionName,
+            MemoryBasicVlmInformation
+        }
+
         public enum PROCESSINFOCLASS : int
         {
             ProcessBasicInformation = 0, // 0, q: PROCESS_BASIC_INFORMATION, PROCESS_EXTENDED_BASIC_INFORMATION
@@ -336,6 +344,7 @@ namespace SharpSploit.Execution
             PrivilegedInstruction = 0xc0000096,
             TooManyPagingFiles = 0xc0000097,
             FileInvalid = 0xc0000098,
+            InsufficientResources = 0xc000009a,
             InstanceNotAvailable = 0xc00000ab,
             PipeNotAvailable = 0xc00000ac,
             InvalidPipeState = 0xc00000ad,
@@ -368,6 +377,7 @@ namespace SharpSploit.Execution
             InvalidParameter10 = 0xc00000f8,
             InvalidParameter11 = 0xc00000f9,
             InvalidParameter12 = 0xc00000fa,
+            ProcessIsTerminating = 0xc000010a,
             MappedFileSizeZero = 0xc000011e,
             TooManyOpenedFiles = 0xc000011f,
             Cancelled = 0xc0000120,
@@ -396,6 +406,7 @@ namespace SharpSploit.Execution
             OrdinalNotFound = 0xc0000138,
             EntryPointNotFound = 0xc0000139,
             ControlCExit = 0xc000013a,
+            InvalidAddress = 0xc0000141,
             PortNotSet = 0xc0000353,
             DebuggerInactive = 0xc0000354,
             CallbackBypass = 0xc0000503,
