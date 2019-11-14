@@ -150,8 +150,6 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Int32 NamesRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x20));
                 Int32 OrdinalsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x24));
 
-                IntPtr namesAbsolute = (IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA)));
-
                 // Loop the array of export name RVA's
                 for (int i = 0; i < NumberOfNames; i++)
                 {
