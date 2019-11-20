@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added in-memory export parsing (credit @b33f)
 - Added SharpSploit.Execution.PlatformInvoke namespace
 - Added CreateProcessWithToken function
+- Added DynamicInvoke.Generic.GetLibraryAddress() and DynamicInvoke.Generic.GetExportAddress() by ordinal (credit @b33f)
+- Added DynamicInvoke.Generic.GetLibraryAddress() and DynamicInvoke.Generic.GetExportAddress() by MD5 hash (credit @b33f)
+- Added DynamicInvoke.Native.NtAllocateVirtualMemory, NtFreeVirtualMemory, NtQueryVirtualMemory, GetFilenameFromMemoryPointer (credit @b33f)
 
 ### Changed
 - Improved DynamicInvoke library (credit @TheWover)

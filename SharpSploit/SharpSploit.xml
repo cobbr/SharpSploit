@@ -1208,6 +1208,27 @@
             <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
             <returns>IntPtr for the desired function.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.Int16,System.Boolean)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL loaded by the process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
+            <param name="Ordinal">Ordinal of the exported procedure.</param>
+            <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String,System.Int64,System.Boolean)">
+            <summary>
+            Helper for getting the pointer to a function from a DLL loaded by the process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll" or "C:\Windows\System32\ntdll.dll").</param>
+            <param name="FunctionHash">Hash of the exported procedure.</param>
+            <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
+            <param name="CanLoadFromDisk">Optional, indicates if the function can try to load the DLL from disk if it is not found in the loaded module list.</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLoadedModuleAddress(System.String)">
             <summary>
             Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
@@ -1216,6 +1237,15 @@
             <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
             <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetAPIHash(System.String,System.Int64)">
+            <summary>
+            Generate an HMAC-MD5 hash of the supplied string using an Int64 as the key. This is useful for unique hash based API lookups.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="APIName">API name to hash.</param>
+            <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
+            <returns>string, the computed MD5 hash value.</returns>
+        </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetExportAddress(System.IntPtr,System.String)">
             <summary>
             Given a module base address, resolve the address of a function by manually walking the module export table.
@@ -1223,6 +1253,25 @@
             <author>Ruben Boonen (@FuzzySec)</author>
             <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
             <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetExportAddress(System.IntPtr,System.Int16)">
+            <summary>
+            Given a module base address, resolve the address of a function by manually walking the module export table.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetExportAddress(System.IntPtr,System.String,System.Int64)">
+            <summary>
+            Given a module base address, resolve the address of a function by manually walking the module export table.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="FunctionHash">Hash of the exported procedure.</param>
+            <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
             <returns>IntPtr for the desired function.</returns>
         </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">

@@ -149,6 +149,7 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `LoadModuleFromDisk()` - Recolves LdrLoadDll and uses that function to load a DLL from disk.
 * `GetLibraryAddress()` - Helper function that obtains the pointer to a function using in-memory export parsing.
 * `GetLoadedModuleAddress()` - Gets the base address of a module loaded by the current process.
+* `GetAPIHash()` - Gets a HMAC-MD5 hash for unique hash based API lookups.
 * `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
 
 ## SharpSploit.LateralMovement
