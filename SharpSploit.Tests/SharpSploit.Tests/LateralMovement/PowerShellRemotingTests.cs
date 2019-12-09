@@ -2,7 +2,6 @@
 // Project: SharpSploit (https://github.com/cobbr/SharpSploit)
 // License: BSD 3-Clause
 
-using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SharpSploit.LateralMovement;
@@ -15,13 +14,15 @@ namespace SharpSploit.Tests.LateralMovement
         [TestMethod]
         public void TestInvokeCommand()
         {
-            string FileName = Path.GetTempFileName();
-            bool result = PowerShellRemoting.InvokeCommand("localhost", $@"'test' | Out-File '{FileName}'");
-            Assert.IsTrue(result);
-            System.Threading.Thread.Sleep(2000);
-            string text = File.ReadAllText(FileName);
-            Assert.AreEqual("test", text);
-            File.Delete(FileName);
+            var result = PowerShellRemoting.InvokeCommand("dc1", "whoami; hostname");
+            Assert.IsTrue(!string.IsNullOrEmpty(result));
+        }
+
+        [TestMethod]
+        public void TestInvokeCommandWCredentials()
+        {
+            var result = PowerShellRemoting.InvokeCommand("dc1", "whoami; hostname", "DEV", "rasta", "Passw0rd!");
+            Assert.IsTrue(!string.IsNullOrEmpty(result));
         }
     }
 }

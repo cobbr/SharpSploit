@@ -1620,12 +1620,10 @@
             <param name="Domain">Domain for explicit credentials.</param>
             <param name="Username">Username for explicit credentials.</param>
             <param name="Password">Password for explicit credentials.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <returns>String. Results of the PowerShell command.</returns>
             <author>Daniel Duggan (@_RastaMouse)</author>
             <remarks>
-            The return value is a little ambigious as the function won't return as long
-            as the command is still running on the remote target. Also, if execution fails
-            (e.g. because bad creds), it doesn't throw an error and it returns true regardless.
+            The function won't return as long as the command is still running on the remote target.
             </remarks>
         </member>
         <member name="T:SharpSploit.LateralMovement.SCM">
