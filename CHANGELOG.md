@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved PInvoke function signatures to PlatformInvoke namespace, enums/structs shared between PlatformInvoke and DynamicInvoke
 - Updated powerkatz dlls, fixed LsaSecrets/LsaCache/SamDump mimikatz shortcuts
 - Update shell execution commands for configurable UseShellExecute property
+- Updated PowerShellRemoting to return command output (credit @rasta-mouse)
 
 ## [v1.4]
 ### Added
