@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [v1.5] - 2019-12-27
 ### Added
 - Added Evasion namespace, Amsi class, PatchAmsiScanBuffer function (credit @rasta-mouse)
 - Added Is64Bit Utility property (credit @rasta-mouse)
@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added NetShareEnum functionality for Share Enumeration (credit @checkymander)
 - Added in-memory export parsing (credit @b33f)
 - Added SharpSploit.Execution.PlatformInvoke namespace
-- Added CreateProcessWithToken function
+- Added CreateProcessWithToken function (credit @001SPARTaN)
 - Added DynamicInvoke.Generic.GetLibraryAddress() and DynamicInvoke.Generic.GetExportAddress() by ordinal (credit @b33f)
 - Added DynamicInvoke.Generic.GetLibraryAddress() and DynamicInvoke.Generic.GetExportAddress() by MD5 hash (credit @b33f)
 - Added DynamicInvoke.Native.NtAllocateVirtualMemory, NtFreeVirtualMemory, NtQueryVirtualMemory, GetFilenameFromMemoryPointer (credit @b33f)
@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update shell execution commands for configurable UseShellExecute property
 - Updated PowerShellRemoting to return command output (credit @rasta-mouse)
 
-## [v1.4]
+## [v1.4] - 2019-08-05
 ### Added
 - Added GetDirectoryListing of a specific path
 - Added stderr to output of ShellExecute functions
@@ -77,3 +77,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v1.1]: https://github.com/cobbr/SharpSploit/compare/v1.0...v1.1
 [v1.2]: https://github.com/cobbr/SharpSploit/compare/v1.1...v1.2
 [v1.3]: https://github.com/cobbr/SharpSploit/compare/v1.2...v1.3
+[v1.4]: https://github.com/cobbr/SharpSploit/compare/v1.3...v1.4
+[v1.5]: https://github.com/cobbr/SharpSploit/compare/v1.4...v1.5
