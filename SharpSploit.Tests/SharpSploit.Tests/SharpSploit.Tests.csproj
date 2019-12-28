@@ -69,6 +69,7 @@
     <Compile Include="LateralMovement\SCMTests.cs" />
     <Compile Include="LateralMovement\WMITests.cs" />
     <Compile Include="Persistence\AutorunTests.cs" />
+    <Compile Include="Pivoting\RPortFwdTests.cs" />
     <Compile Include="Persistence\StartupTests.cs" />
     <Compile Include="Persistence\WMITests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

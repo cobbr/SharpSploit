@@ -1826,6 +1826,30 @@
             <param name="ProcessName">Specifies the process name when the ProcessStart trigger is selected. Defaults to notepad.exe.</param>
             <param name="ScriptingEngine">Specifies the scripting engine when the ActiveScript consumer is selected. Defaults to VBScript.</param>
         </member>
+        <member name="M:SharpSploit.Pivoting.ReversePortForwarding.AddReversePortForward(System.String,System.String,System.String)">
+            <summary>
+            Creates a new Reverse Port Forward.
+            </summary>
+            <param name="BindPort">The port to bind on the local system.</param>
+            <param name="ForwardAddress">The IP Address or DNS name to forward traffic to.</param>
+            <param name="ForwardPort">The port to forward traffic to.</param>
+            <returns>Bool.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.Pivoting.ReversePortForwarding.DeleteReversePortForward(System.String)">
+            <summary>
+            Deletes an active Reverse Port Forward.
+            </summary>
+            <param name="BindPort">The bind port of the Reverse Port Forward.</param>
+            <returns>Bool.</returns>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
+        <member name="M:SharpSploit.Pivoting.ReversePortForwarding.FlushReversePortFowards">
+            <summary>
+            Delete all active Reverse Port Forwards.
+            </summary>
+            <author>Daniel Duggan (@_RastaMouse)</author>
+        </member>
         <member name="T:SharpSploit.PrivilegeEscalation.Exchange">
             <summary>
             Exchange is a class for abusing Microsoft Exchange for privilege escalation.
