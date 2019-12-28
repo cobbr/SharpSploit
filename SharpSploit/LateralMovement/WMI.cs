@@ -23,10 +23,10 @@ namespace SharpSploit.LateralMovement
         /// <param name="Command">Command to execute on remote system.</param>
         /// <param name="Username">Username to authenticate as to the remote system.</param>
         /// <param name="Password">Password to authenticate the user.</param>
-        /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
-        public static SharpSploitResultList<WmiResult> WMIExecute(string ComputerName, string Command, string Username = "", string Password = "")
+        /// <returns>SharpSploitResultList of WmiExecuteResult.</returns>
+        public static SharpSploitResultList<WmiExecuteResult> WMIExecute(string ComputerName, string Command, string Username = "", string Password = "")
         {
-            SharpSploitResultList<WmiResult> wmiResult = new SharpSploitResultList<WmiResult>();
+            SharpSploitResultList<WmiExecuteResult> wmiExecuteResult = new SharpSploitResultList<WmiExecuteResult>();
 
             ConnectionOptions options = new ConnectionOptions();
             if ((Username != null && Username != "") && Password != null)
@@ -48,7 +48,7 @@ namespace SharpSploit.LateralMovement
 
                 ManagementBaseObject outParams = wmiProcess.InvokeMethod("Create", inParams, null);
 
-                wmiResult.Add(new WmiResult
+                wmiExecuteResult.Add(new WmiExecuteResult
                 {
                     ReturnValue = outParams["returnValue"].ToString(),
                     ProcessID = outParams["processId"].ToString()
@@ -58,7 +58,7 @@ namespace SharpSploit.LateralMovement
             {
                 Console.Error.WriteLine("WMI Exception:" + e.Message);
             }
-            return wmiResult;
+            return wmiExecuteResult;
         }
 
         /// <summary>
@@ -69,12 +69,12 @@ namespace SharpSploit.LateralMovement
         /// <param name="Username">Username to authenticate as to the remote system.</param>
         /// <param name="Password">Password to authenticate the user.</param>
         /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
-        public static List<SharpSploitResultList<WmiResult>> WMIExecute(List<string> ComputerNames, string Command, string Username, string Password)
+        public static List<SharpSploitResultList<WmiExecuteResult>> WMIExecute(List<string> ComputerNames, string Command, string Username, string Password)
         {
             return ComputerNames.Select(CN => WMIExecute(CN, Command, Username, Password)).ToList();
         }
 
-        public sealed class WmiResult : SharpSploitResult
+        public sealed class WmiExecuteResult : SharpSploitResult
         {
             public string ReturnValue { get; set; } = "";
             public string ProcessID { get; set; } = "";
