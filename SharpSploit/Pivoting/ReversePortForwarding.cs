@@ -12,6 +12,9 @@ using SharpSploit.Generic;
 
 namespace SharpSploit.Pivoting
 {
+    /// <summary>
+    /// ReversePortForwarding is a class that allows the addition and removal of Reverse Port Forwards.
+    /// </summary>
     public class ReversePortForwarding
     {
         public class ReversePortForward
@@ -128,6 +131,11 @@ namespace SharpSploit.Pivoting
             return success;
         }
 
+        /// <summary>
+        /// Returns a list of active Reverse Port Forwards.
+        /// </summary>
+        /// <returns>A SharpSploitResultList of ReversePortFwdResult</returns>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
         public static SharpSploitResultList<ReversePortFwdResult> ListReversePortForwards()
         {
             var reversePortForwards = new SharpSploitResultList<ReversePortFwdResult>();
