@@ -1341,6 +1341,24 @@
             https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
             </summary>
         </member>
+        <member name="M:SharpSploit.Execution.SMBExec.NetBIOSSessionService(System.Int32,System.Int32)">
+            <summary>
+            SMBExec contains all of the functions used to manually create SMB Packet Structures for Pass the Hash attacks.
+            </summary>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.Execution.WMIExec.RPCBind(System.Int32,System.Byte[],System.Byte[],System.Byte[],System.Byte[],System.Byte[])">
+            <summary>
+            WMIExec contains all of the functions used to manually create SMB Packet Structures for Pass the Hash attacks.
+            </summary>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
         <member name="T:SharpSploit.Execution.PE">
             <summary>
             PE is a library for loading PEs in memory. It currently only work for the Mimikatz PE, not for arbitrary PEs.
@@ -1604,6 +1622,118 @@
             Credit for the DCOM lateral movement techniques goes to Matt Nelson (@enigma0x3). This is
             a port of Steve Borosh (rvrshell)'s Invoke-DCOM implementation available
             here: https://github.com/rvrsh3ll/Misc-Powershell-Scripts/blob/master/Invoke-DCOM.ps1
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.WMIAdminCheck(System.String,System.String,System.String,System.String)">
+            <summary>
+            Determines if a username and hash has administrative privilege on a target
+            </summary>
+            <param name="username">The Username to query.</param>
+            <param name="hash">The NTLM hash for the user</param>
+            <param name="domain">The logon domain for the user</param>
+            <param name="target">The target to query.</param>
+            <returns>True for Admin, False for not.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.WMIExecute(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Execute a command against multiple targets using Pass the Hash and WMI
+            </summary>
+            <param name="username">The username to log on as.</param>
+            <param name="hash">The NTLM hash for the user.</param>
+            <param name="domain">The logon domain for the user.</param>
+            <param name="targets">The target computers to run the command on.</param>
+            <param name="command">The Command to execute on the target</param>
+            <param name="sleep">Sleeptime between actions. Set this if getting unknown failures. (default=15). </param>
+            <param name="AdminCheck">Check if user is an Admin on the target only.</param>
+            <param name="debug">Include debug information in the output</param>
+            <returns>Returns a string containing execution results.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.WMIExecute(System.String,System.String,System.String,System.String,System.String,System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+            Execute a command against a target using Pass the Hash and WMI
+            </summary>
+            <param name="username">The username to log on as.</param>
+            <param name="hash">The NTLM hash for the user.</param>
+            <param name="domain">The logon domain for the user.</param>
+            <param name="target">The target computers to run the command on.</param>
+            <param name="command">The Command to execute on the target.</param>
+            <param name="sleep">Sleeptime between actions. Set this if getting unknown failures. (default=15). </param>
+            <param name="AdminCheck">Check if user is an Admin on the target only.</param>
+            <param name="debug">Include debug information in the output.</param>
+            <returns>Returns a string containing execution results.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.SMBAdminCheck(System.String,System.String,System.String,System.String)">
+            <summary>
+            Determines if a username and hash has administrative privilege on a target
+            </summary>
+            <param name="username">The Username to query.</param>
+            <param name="hash">The NTLM hash for the user</param>
+            <param name="domain">The logon domain for the user</param>
+            <param name="target">The target to query.</param>
+            <returns>True for Admin, False for not.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.SMBExecute(System.String,System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Int32,System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Execute a command against multiple targets using Pass the Hash and SMB
+            </summary>
+            <param name="username">The username to log on as.</param>
+            <param name="hash">The NTLM hash for the user.</param>
+            <param name="domain">The logon domain for the user.</param>
+            <param name="targets">The target computers to run the command on.</param>
+            <param name="command">The Command to execute on the target</param>
+            <param name="sleep">Sleeptime between actions. Set this if getting unknown failures. (default=15). </param>
+            <param name="ServiceName">The name to give the SMB service for execution.</param>
+            <param name="AdminCheck">Check only if user is Admin on targets.</param>
+            <param name="ComSpec">Append %COMSPEC% /C to command. (default=true)</param>
+            <param name="ForceSMB1">Force usage of SMBv1.</param>
+            <param name="debug">Include debug information in the output.</param>
+            <returns>Returns a string containing execution results.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
+            </remarks>
+        </member>
+        <member name="M:SharpSploit.LateralMovement.PassTheHash.SMBExecute(System.String,System.String,System.String,System.String,System.String,System.Int32,System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Execute a command against multiple targets using Pass the Hash and SMB
+            </summary>
+            <param name="username">The username to log on as.</param>
+            <param name="hash">The NTLM hash for the user.</param>
+            <param name="domain">The logon domain for the user.</param>
+            <param name="target">The target computer to run the command on.</param>
+            <param name="command">The Command to execute on the target</param>
+            <param name="sleep">Sleeptime between actions. Set this if getting unknown failures. (default=15). </param>
+            <param name="ServiceName">The name to give the SMB service for execution.</param>
+            <param name="AdminCheck">Check only if user is Admin on targets.</param>
+            <param name="ComSpec">Append %COMSPEC% /C to command. (default=true)</param>
+            <param name="ForceSMB1">Force usage of SMBv1.</param>
+            <param name="debug">Include debug information in the output.</param>
+            <returns>Returns a string containing execution results.</returns>
+            <author>Scottie Austin (@checkymander)</author>
+            <remarks>
+            Based Heavily on Kevin Robertsons Invoke-TheHash toolset (Found
+            at https://github.com/Kevin-Robertson/Invoke-TheHash)
             </remarks>
         </member>
         <member name="T:SharpSploit.LateralMovement.PowerShellRemoting">

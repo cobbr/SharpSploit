@@ -85,20 +85,11 @@ namespace SharpSploit.Misc
         {
             get { return IntPtr.Size == 8; }
         }
-        public static byte[] CombineByteArray(byte[] a, byte[] b)
-        {
-            byte[] c = new byte[a.Length + b.Length];
-            Buffer.BlockCopy(a, 0, c, 0, a.Length);
-            Buffer.BlockCopy(b, 0, c, a.Length, b.Length);
-            return c;
-        }
 
         public static ushort DataLength(int length_start, byte[] string_extract_data)
         {
             byte[] bytes = { string_extract_data[length_start], string_extract_data[length_start + 1] };
             ushort string_length = BitConverter.ToUInt16(GetByteRange(string_extract_data, length_start, length_start + 1), 0);
-            //string_length = ConvertToUint16(array[arraystart to arraystart +1
-
             return string_length;
         }
         public static byte[] GetByteRange(byte[] array, int start, int end)

@@ -1,6 +1,7 @@
 ﻿using SharpSploit.Misc;
 using System;
 using System.Collections.Specialized;
+using System.Linq;
 using System.Text;
 
 namespace SharpSploit.Execution
@@ -294,12 +295,11 @@ namespace SharpSploit.Execution
             byte[] packet_target_unicode = Encoding.Unicode.GetBytes(packet_target);
             byte[] packet_target_length = BitConverter.GetBytes(packet_target.Length + 1);
             double bytesize = (Math.Truncate((double)packet_target_unicode.Length / 8 + 1) * 8) - packet_target_unicode.Length;
-            byte[] nulls = new byte[Convert.ToInt32(bytesize)];
-            packet_target_unicode = Utilities.CombineByteArray(packet_target_unicode, nulls);
+            packet_target_unicode = packet_target_unicode.Concat(new byte[Convert.ToInt32(bytesize)]).ToArray();
             byte[] packet_cntdata = BitConverter.GetBytes(packet_target_unicode.Length + 720);
             byte[] packet_size = BitConverter.GetBytes(packet_target_unicode.Length + 680);
             byte[] packet_total_size = BitConverter.GetBytes(packet_target_unicode.Length + 664);
-            byte[] packet_private_header = Utilities.CombineByteArray((BitConverter.GetBytes(packet_target_unicode.Length + 40)), new byte[] { 0x00, 0x00, 0x00, 0x00 });
+            byte[] packet_private_header = BitConverter.GetBytes(packet_target_unicode.Length + 40).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
             byte[] packet_property_data_size = BitConverter.GetBytes(packet_target_unicode.Length + 56);
 
             OrderedDictionary packet_DCOMRemoteCreateInstance = new OrderedDictionary();

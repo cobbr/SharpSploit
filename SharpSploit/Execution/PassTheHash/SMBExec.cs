@@ -1,7 +1,7 @@
 ﻿using SharpSploit.Misc;
 using System;
 using System.Collections.Specialized;
-
+using System.Linq;
 
 namespace SharpSploit.Execution
 {
@@ -235,7 +235,8 @@ namespace SharpSploit.Execution
 
             if (message_ID.Length == 4)
             {
-                message_ID = Utilities.CombineByteArray(message_ID, new byte[] { 0x00, 0x00, 0x00, 0x00 });
+                message_ID = message_ID.Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
+                //message_ID = Utilities.CombineByteArray(message_ID, new byte[] { 0x00, 0x00, 0x00, 0x00 });
             }
 
             OrderedDictionary packet_SMB2Header = new OrderedDictionary();
@@ -636,11 +637,10 @@ namespace SharpSploit.Execution
             Random r = new Random();
             byte[] packet_referent_init = new byte[2];
             r.NextBytes(packet_referent_init);
-            byte[] nulls = { 0x00, 0x00 };
-            byte[] packet_referent_ID1 = Utilities.CombineByteArray(packet_referent_init, nulls);
+            byte[] packet_referent_ID1 = packet_referent_init.Concat(new byte[] { 0x00, 0x00 }).ToArray();
             byte[] packet_referent_init2 = new byte[2];
             r.NextBytes(packet_referent_init2);
-            byte[] packet_referent_ID2 = Utilities.CombineByteArray(packet_referent_init2, nulls);
+            byte[] packet_referent_ID2 = packet_referent_init2.Concat(new byte[] { 0x00, 0x00 }).ToArray();
 
 
             OrderedDictionary packet_SCMOpenSCManagerW = new OrderedDictionary();
