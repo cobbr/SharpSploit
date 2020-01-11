@@ -426,6 +426,81 @@ namespace SharpSploit.Execution.DynamicInvoke
             return FilePath;
         }
 
+        public static UInt32 NtProtectVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, ref IntPtr RegionSize, UInt32 NewProtect)
+        {
+            // Craft an array for the arguments
+            UInt32 OldProtect = 0;
+            object[] funcargs =
+            {
+                ProcessHandle, BaseAddress, RegionSize, NewProtect, OldProtect
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtProtectVirtualMemory", typeof(DELEGATES.NtProtectVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed to change memory protection, " + retValue);
+            }
+
+
+            OldProtect = (UInt32)funcargs[4];
+            return OldProtect;
+        }
+
+        public static UInt32 NtWriteVirtualMemory(IntPtr ProcessHandle, IntPtr BaseAddress, IntPtr Buffer, UInt32 BufferLength)
+        {
+            // Craft an array for the arguments
+            UInt32 BytesWritten = 0;
+            object[] funcargs =
+            {
+                ProcessHandle, BaseAddress, Buffer, BufferLength, BytesWritten
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtWriteVirtualMemory", typeof(DELEGATES.NtWriteVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed to write memory, " + retValue);
+            }
+
+
+            BytesWritten = (UInt32)funcargs[4];
+            return BytesWritten;
+        }
+
+        public static IntPtr LdrGetProcedureAddress(IntPtr hModule, IntPtr FunctionName, IntPtr Ordinal, ref IntPtr FunctionAddress)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hModule, FunctionName, Ordinal, FunctionAddress
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"LdrGetProcedureAddress", typeof(DELEGATES.LdrGetProcedureAddress), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed get procedure address, " + retValue);
+            }
+
+            FunctionAddress = (IntPtr)funcargs[3];
+            return FunctionAddress;
+        }
+
+        public static void RtlGetVersion(ref Execution.Native.OSVERSIONINFOEX VersionInformation)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                VersionInformation
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlGetVersion", typeof(DELEGATES.RtlGetVersion), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed get procedure address, " + retValue);
+            }
+
+            VersionInformation = (Execution.Native.OSVERSIONINFOEX)funcargs[0];
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -562,6 +637,39 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr MemoryInformation,
                 UInt32 MemoryInformationLength,
                 ref UInt32 ReturnLength);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtProtectVirtualMemory(
+                IntPtr ProcessHandle,
+                ref IntPtr BaseAddress,
+                ref IntPtr RegionSize,
+                UInt32 NewProtect,
+                ref UInt32 OldProtect);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtWriteVirtualMemory(
+                IntPtr ProcessHandle,
+                IntPtr BaseAddress,
+                IntPtr Buffer,
+                UInt32 BufferLength,
+                ref UInt32 BytesWritten);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 RtlUnicodeStringToAnsiString(
+                ref Execute.Native.ANSI_STRING DestinationString,
+                ref Execute.Native.UNICODE_STRING SourceString,
+                bool AllocateDestinationString);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 LdrGetProcedureAddress(
+                IntPtr hModule,
+                IntPtr FunctionName,
+                IntPtr Ordinal,
+                ref IntPtr FunctionAddress);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 RtlGetVersion(
+                ref Execution.Native.OSVERSIONINFOEX VersionInformation);
         }
     }
 }

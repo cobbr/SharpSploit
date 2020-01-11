@@ -19,6 +19,14 @@ namespace SharpSploit.Execution
             public IntPtr Buffer;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct ANSI_STRING
+        {
+            public UInt16 Length;
+            public UInt16 MaximumLength;
+            public IntPtr Buffer;
+        }
+
         public struct PROCESS_BASIC_INFORMATION
         {
             public IntPtr ExitStatus;
@@ -50,6 +58,23 @@ namespace SharpSploit.Execution
         {
             public IntPtr UniqueProcess;
             public IntPtr UniqueThread;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct OSVERSIONINFOEX
+        {
+            public uint OSVersionInfoSize;
+            public uint MajorVersion;
+            public uint MinorVersion;
+            public uint BuildNumber;
+            public uint PlatformId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
+            public string CSDVersion;
+            public ushort ServicePackMajor;
+            public ushort ServicePackMinor;
+            public ushort SuiteMask;
+            public byte ProductType;
+            public byte Reserved;
         }
 
         public enum MEMORYINFOCLASS : int
