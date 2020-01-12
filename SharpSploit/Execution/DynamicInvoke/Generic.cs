@@ -1103,5 +1103,109 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Call export
             return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
         }
+
+        /// <summary>
+        /// Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="FunctionName">The name of the function to search for (e.g. "NtAlertResumeThread").</param>
+        /// <returns>IntPtr, Syscall stub</returns>
+        public static IntPtr GetSyscallStub(string FunctionName)
+        {
+            // Verify process & architecture
+            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Generating Syscall stubs is not supported for WOW64.");
+            }
+
+            // Find the path for ntdll by looking at the currently loaded module
+            String NtdllPath = String.Empty;
+            ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
+            foreach (ProcessModule Mod in ProcModules)
+            {
+                if (Mod.FileName.ToLower().EndsWith("ntdll.dll"))
+                {
+                    NtdllPath = Mod.FileName;
+                }
+            }
+
+            // Alloc module into memory for parsing
+            IntPtr ModlePointer = FileToMemoryPointer(NtdllPath);
+
+            // Fetch PE meta data
+            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
+
+            // Alloc PE image memory -> RW
+            IntPtr BaseAddress = IntPtr.Zero;
+            IntPtr RegionSize = IntPtr.Zero;
+            UInt32 SizeOfHeaders = 0;
+            if (PEINFO.Is32Bit)
+            {
+                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
+                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
+            }
+            else
+            {
+                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
+            }
+            IntPtr pImage = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Write PE header to memory
+            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, ModlePointer, SizeOfHeaders);
+
+            // Write sections to memory
+            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
+            {
+                // Calculate offsets
+                IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
+                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
+
+                // Write data
+                BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
+                if (BytesWritten != ish.SizeOfRawData)
+                {
+                    throw new InvalidOperationException("Failed to write to memory.");
+                }
+            }
+
+            // Get Ptr to function
+            IntPtr pFunc = GetExportAddress(pImage, FunctionName);
+            if (pFunc == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to resolve ntdll export.");
+            }
+
+            // Alloc memory for call stub
+            BaseAddress = IntPtr.Zero;
+            RegionSize = (IntPtr)0x50;
+            IntPtr pCallStub = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Write call stub
+            BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pCallStub, pFunc, 0x50);
+            if (BytesWritten != 0x50)
+            {
+                throw new InvalidOperationException("Failed to write to memory.");
+            }
+
+            // Change call stub permissions
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref pCallStub, ref RegionSize, Execution.Win32.WinNT.PAGE_EXECUTE_READ);
+
+            // Free temporary allocations
+            Marshal.FreeHGlobal(ModlePointer);
+            if (PEINFO.Is32Bit)
+            {
+                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
+            }
+            else
+            {
+                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+            }
+
+            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, SharpSploit.Execution.Win32.Kernel32.MEM_RELEASE);
+
+            return pCallStub;
+        }
     }
 }

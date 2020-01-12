@@ -501,6 +501,26 @@ namespace SharpSploit.Execution.DynamicInvoke
             VersionInformation = (Execution.Native.OSVERSIONINFOEX)funcargs[0];
         }
 
+        public static UInt32 NtReadVirtualMemory(IntPtr ProcessHandle, IntPtr BaseAddress, IntPtr Buffer, UInt32 NumberOfBytesToRead)
+        {
+            // Craft an array for the arguments
+            UInt32 NumberOfBytesRead = 0;
+            object[] funcargs =
+            {
+                ProcessHandle, BaseAddress, Buffer, NumberOfBytesToRead, NumberOfBytesRead
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtReadVirtualMemory", typeof(DELEGATES.NtReadVirtualMemory), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed to read memory, " + retValue);
+            }
+
+
+            NumberOfBytesRead = (UInt32)funcargs[4];
+            return NumberOfBytesRead;
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -670,6 +690,14 @@ namespace SharpSploit.Execution.DynamicInvoke
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 RtlGetVersion(
                 ref Execution.Native.OSVERSIONINFOEX VersionInformation);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtReadVirtualMemory(
+                IntPtr ProcessHandle,
+                IntPtr BaseAddress,
+                IntPtr Buffer,
+                UInt32 NumberOfBytesToRead,
+                ref UInt32 NumberOfBytesRead);
         }
     }
 }
