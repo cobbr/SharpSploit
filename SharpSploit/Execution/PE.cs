@@ -668,5 +668,18 @@ namespace SharpSploit.Execution
             [FieldOffset(0x10)]
             public int ValueCount;
         }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LDR_DATA_TABLE_ENTRY
+        {
+            public Native.LIST_ENTRY InLoadOrderLinks;
+            public Native.LIST_ENTRY InMemoryOrderLinks;
+            public Native.LIST_ENTRY InInitializationOrderLinks;
+            public IntPtr DllBase;
+            public IntPtr EntryPoint;
+            public UInt32 SizeOfImage;
+            public Native.UNICODE_STRING FullDllName;
+            public Native.UNICODE_STRING BaseDllName;
+        }
     }
 }

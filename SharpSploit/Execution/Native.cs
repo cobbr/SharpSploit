@@ -77,6 +77,13 @@ namespace SharpSploit.Execution
             public byte Reserved;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LIST_ENTRY
+        {
+            public IntPtr Flink;
+            public IntPtr Blink;
+        }
+
         public enum MEMORYINFOCLASS : int
         {
             MemoryBasicInformation = 0,

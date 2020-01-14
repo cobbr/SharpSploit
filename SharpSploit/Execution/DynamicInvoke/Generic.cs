@@ -153,7 +153,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
+        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function uses the Process class in Net.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
@@ -170,6 +170,61 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function parses the _PEB_LDR_DATA structure.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+        /// <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
+        public static IntPtr GetPebLdrModuleEntry(string DLLName)
+        {
+            // Get _PEB pointer
+            Execute.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
+
+            // Set function variables
+            Boolean Is32Bit = false;
+            UInt32 LdrDataOffset = 0;
+            UInt32 InLoadOrderModuleListOffset = 0;
+            if (IntPtr.Size == 4)
+            {
+                Is32Bit = true;
+                LdrDataOffset = 0xc;
+                InLoadOrderModuleListOffset = 0xC;
+            } else
+            {
+                LdrDataOffset = 0x18;
+                InLoadOrderModuleListOffset = 0x10;
+            }
+
+            // Get module InLoadOrderModuleList -> _LIST_ENTRY
+            IntPtr PEB_LDR_DATA = Marshal.ReadIntPtr((IntPtr)((UInt64)pbi.PebBaseAddress + LdrDataOffset));
+            IntPtr pInLoadOrderModuleList = (IntPtr)((UInt64)PEB_LDR_DATA + InLoadOrderModuleListOffset);
+            Execution.Native.LIST_ENTRY le = (Execution.Native.LIST_ENTRY)Marshal.PtrToStructure(pInLoadOrderModuleList, typeof(Execution.Native.LIST_ENTRY));
+
+            // Loop entries
+            IntPtr flink = le.Flink;
+            IntPtr hModule = IntPtr.Zero;
+            while (true)
+            {
+                Execution.PE.LDR_DATA_TABLE_ENTRY dte = (Execution.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execution.PE.LDR_DATA_TABLE_ENTRY));
+                if (dte.InLoadOrderLinks.Flink == le.Blink)
+                {
+                    break;
+                }
+
+                // Match module name
+                if ((Marshal.PtrToStringUni(dte.FullDllName.Buffer)).ToLower().EndsWith(DLLName.ToLower()))
+                {
+                    hModule = dte.DllBase;
+                }
+            
+                // Move Ptr
+                flink = dte.InLoadOrderLinks.Flink;
+            }
+
+            return hModule;
         }
 
         /// <summary>
