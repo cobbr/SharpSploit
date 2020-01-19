@@ -49,8 +49,11 @@ namespace SharpSploit.Execution.DynamicInvoke
                 SectionHandle, DesiredAccess, ObjectAttributes, MaximumSize, SectionPageProtection, AllocationAttributes, FileHandle
             };
 
-            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection",
-                typeof(DELEGATES.NtCreateSection), ref funcargs);
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateSection", typeof(DELEGATES.NtCreateSection), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Unable to create section, " + retValue);
+            }
 
             // Update the modified variables
             SectionHandle = (IntPtr) funcargs[0];
@@ -80,7 +83,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             IntPtr ZeroBits,
             IntPtr CommitSize,
             IntPtr SectionOffset,
-            ref uint ViewSize,
+            ref ulong ViewSize,
             uint InheritDisposition,
             uint AllocationType,
             uint Win32Protect)
@@ -94,10 +97,14 @@ namespace SharpSploit.Execution.DynamicInvoke
             };
 
             Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtMapViewOfSection", typeof(DELEGATES.NtMapViewOfSection), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success && retValue != Execute.Native.NTSTATUS.ImageNotAtBase)
+            {
+                throw new InvalidOperationException("Unable to map view of section, " + retValue);
+            }
 
             // Update the modified variables.
             BaseAddress = (IntPtr) funcargs[2];
-            ViewSize = (uint) funcargs[6];
+            ViewSize = (ulong) funcargs[6];
 
             return retValue;
         }
@@ -521,6 +528,25 @@ namespace SharpSploit.Execution.DynamicInvoke
             return NumberOfBytesRead;
         }
 
+        public static IntPtr NtOpenFile(ref IntPtr FileHandle, Execute.Win32.Kernel32.FileAccessFlags DesiredAccess, ref Execute.Native.OBJECT_ATTRIBUTES ObjAttr, ref Execute.Native.IO_STATUS_BLOCK IoStatusBlock, Execute.Win32.Kernel32.FileShareFlags ShareAccess, Execute.Win32.Kernel32.FileOpenFlags OpenOptions)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                FileHandle, DesiredAccess, ObjAttr, IoStatusBlock, ShareAccess, OpenOptions
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtOpenFile", typeof(DELEGATES.NtOpenFile), ref funcargs);
+            if (retValue != Execute.Native.NTSTATUS.Success)
+            {
+                throw new InvalidOperationException("Failed to open file, " + retValue);
+            }
+
+
+            FileHandle = (IntPtr)funcargs[0];
+            return FileHandle;
+        }
+
         /// <summary>
         /// Holds delegates for API calls in the NT Layer.
         /// Must be public so that they may be used with SharpSploit.Execution.DynamicInvoke.Generic.DynamicFunctionInvoke
@@ -580,7 +606,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr ZeroBits,
                 IntPtr CommitSize,
                 IntPtr SectionOffset,
-                out uint ViewSize,
+                out ulong ViewSize,
                 uint InheritDisposition,
                 uint AllocationType,
                 uint Win32Protect);
@@ -698,6 +724,15 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr Buffer,
                 UInt32 NumberOfBytesToRead,
                 ref UInt32 NumberOfBytesRead);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate UInt32 NtOpenFile(
+                ref IntPtr FileHandle,
+                Execute.Win32.Kernel32.FileAccessFlags DesiredAccess,
+                ref Execute.Native.OBJECT_ATTRIBUTES ObjAttr,
+                ref Execute.Native.IO_STATUS_BLOCK IoStatusBlock,
+                Execute.Win32.Kernel32.FileShareFlags ShareAccess,
+                Execute.Win32.Kernel32.FileOpenFlags OpenOptions);
         }
     }
 }

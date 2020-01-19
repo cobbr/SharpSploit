@@ -47,10 +47,17 @@ namespace SharpSploit.Execution
         {
             public Int32 Length;
             public IntPtr RootDirectory;
-            public IntPtr ObjectName;
+            public IntPtr ObjectName; // -> UNICODE_STRING
             public uint Attributes;
             public IntPtr SecurityDescriptor;
             public IntPtr SecurityQualityOfService;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct IO_STATUS_BLOCK
+        {
+            public IntPtr Status;
+            public IntPtr Information;
         }
 
         [StructLayout(LayoutKind.Sequential)]

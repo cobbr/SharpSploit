@@ -606,6 +606,7 @@ namespace SharpSploit.Execution
         [StructLayout(LayoutKind.Sequential)]
         public struct PE_MANUAL_MAP
         {
+            public String DecoyModule;
             public IntPtr ModuleBase;
             public PE_META_DATA PEINFO;
         }
