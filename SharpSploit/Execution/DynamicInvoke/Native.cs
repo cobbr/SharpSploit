@@ -14,9 +14,15 @@ namespace SharpSploit.Execution.DynamicInvoke
     /// </summary>
     public class Native
     {
-        public static Execute.Native.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle, Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
-            IntPtr objectAttributes, IntPtr processHandle, IntPtr startAddress, IntPtr parameter,
-            bool createSuspended, int stackZeroBits, int sizeOfStack, int maximumStackSize,
+        public static Execute.Native.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle,
+            Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
+            IntPtr objectAttributes, IntPtr processHandle,
+            IntPtr startAddress,
+            IntPtr parameter,
+            bool createSuspended,
+            int stackZeroBits,
+            int sizeOfStack,
+            int maximumStackSize,
             IntPtr attributeList)
         {
             // Craft an array for the arguments
@@ -26,11 +32,68 @@ namespace SharpSploit.Execution.DynamicInvoke
                 sizeOfStack, maximumStackSize, attributeList
             };
 
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
+                typeof(DELEGATES.NtCreateThreadEx), ref funcargs);
+
             // Update the modified variables
             threadHandle = (IntPtr)funcargs[0];
 
-            return (Execute.Native.NTSTATUS) Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThreadEx",
-                typeof(DELEGATES.NtCreateThreadEx), ref funcargs);
+            return retValue;
+        }
+
+        public static Execute.Native.NTSTATUS NtCreateThread(
+                ref IntPtr threadHandle,
+                Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
+                IntPtr objectAttributes,
+                IntPtr processHandle,
+                ref Execution.Native.CLIENT_ID clientID,
+                Execution.Native.THREADCONTEXT context,
+                ref Execution.Native.STACKINFO stack,
+                bool createSuspended)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                threadHandle, desiredAccess, objectAttributes, processHandle, clientID, context, stack, createSuspended
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThread",
+                typeof(DELEGATES.NtCreateThread), ref funcargs);
+
+            // Update the modified variables
+            threadHandle = (IntPtr)funcargs[0];
+            clientID = (Execution.Native.CLIENT_ID)funcargs[4];
+            stack = (Execution.Native.STACKINFO)funcargs[6];
+
+            return retValue;
+        }
+
+        public static Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,
+                IntPtr ThreadSecurityDescriptor,
+                bool CreateSuspended,
+                IntPtr ZeroBits,
+                IntPtr MaximumStackSize,
+                IntPtr CommittedStackSize,
+                IntPtr StartAddress,
+                IntPtr Parameter,
+                ref IntPtr Thread,
+                IntPtr ClientId)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                Process, ThreadSecurityDescriptor, CreateSuspended, ZeroBits, 
+                MaximumStackSize, CommittedStackSize, StartAddress, Parameter,
+                Thread, ClientId
+            };
+
+            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"RtlCreateUserThread",
+                typeof(DELEGATES.RtlCreateUserThread), ref funcargs);
+
+            // Update the modified variables
+            Thread = (IntPtr)funcargs[8];
+
+            return retValue;
         }
 
         public static Execute.Native.NTSTATUS NtCreateSection(
@@ -582,6 +645,29 @@ namespace SharpSploit.Execution.DynamicInvoke
                 int sizeOfStack,
                 int maximumStackSize,
                 IntPtr attributeList);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execute.Native.NTSTATUS NtCreateThread(
+                out IntPtr threadHandle,
+                Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
+                IntPtr objectAttributes,
+                IntPtr processHandle,
+                out Execution.Native.CLIENT_ID clientID,
+                Execution.Native.THREADCONTEXT context,
+                out Execution.Native.STACKINFO stack,
+                bool createSuspended);
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,
+                IntPtr ThreadSecurityDescriptor,
+                bool CreateSuspended,
+                IntPtr ZeroBits,
+                IntPtr MaximumStackSize,
+                IntPtr CommittedStackSize,
+                IntPtr StartAddress,
+                IntPtr Parameter,
+                ref IntPtr Thread,
+                IntPtr ClientId);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate Execute.Native.NTSTATUS NtCreateSection(

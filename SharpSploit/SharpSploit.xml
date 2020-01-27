@@ -1198,6 +1198,14 @@
             <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
             <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
         </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleFromDisk(System.String)">
+            <summary>
+            Maps a DLL from disk into a Section.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLPath">Full path fo the DLL on disk.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
+        </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String,System.Boolean)">
             <summary>
             Helper for getting the pointer to a function from a DLL loaded by the process.
@@ -1231,7 +1239,15 @@
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLoadedModuleAddress(System.String)">
             <summary>
-            Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
+            Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function uses the Process class in Net.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+            <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetPebLdrModuleEntry(System.String)">
+            <summary>
+            Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function parses the _PEB_LDR_DATA structure.
             </summary>
             <author>Ruben Boonen (@FuzzySec)</author>
             <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
@@ -1273,6 +1289,173 @@
             <param name="FunctionHash">Hash of the exported procedure.</param>
             <param name="Key">64-bit integer to initialize the keyed hash object (e.g. 0xabc or 0x1122334455667788).</param>
             <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetNativeExportAddress(System.IntPtr,System.String)">
+            <summary>
+            Given a module base address, resolve the address of a function by calling LdrGetProcedureAddress.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetNativeExportAddress(System.IntPtr,System.Int16)">
+            <summary>
+            Given a module base address, resolve the address of a function by calling LdrGetProcedureAddress.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+            <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
+            <returns>IntPtr for the desired function.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.FileToMemoryPointer(System.String)">
+            <summary>
+            Allocate file to memory, either from disk or from a byte array.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="FilePath">Full path to the module on disk.</param>
+            <returns>IntPtr base address of the allocated file.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.FileToMemoryPointer(System.Byte[])">
+            <summary>
+            Allocate file to memory, either from disk or from a byte array.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="FileByteArray">Full byte array of the module.</param>
+            <returns>IntPtr base address of the allocated file.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetPeMetaData(System.IntPtr)">
+            <summary>
+            Retrieve PE header information from the module base pointer.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="pModule">Pointer to the module base.</param>
+            <returns>PE.PE_META_DATA</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.RelocateModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Relocate module in memory.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetApiSetMapping">
+            <summary>
+            Resolve host DLL for API Set DLL.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.RewriteModuleIAT(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Rewrite IAT for manually mapped module.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.SetModuleSectionPermissions(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Set correct module section permissions.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.String)">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModulePath">Full path to the module on disk.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.Byte[])">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleByteArray">Full byte array of the module.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.FindDecoyModule(System.Int64)">
+            <summary>
+            Locate a module with a minimum size which can be used for overloading.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="MinSize">Minimum module byte size.</param>
+            <returns>String, either a full path for the candidate module or String.Empty</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemoryAddress(System.Byte[],System.IntPtr)">
+            <summary>
+            Manually map module into current process starting at the specified base address.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="ModuleByteArray">Full byte array of the module.</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.OverloadModule(System.String,System.String)">
+            <summary>
+            Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="PayloadPath">Full path to the payload module on disk.</param>
+            <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.OverloadModule(System.Byte[],System.String)">
+            <summary>
+            Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="PayloadByteArray">Full byte array for the payload module.</param>
+            <param name="DecoyModule">Optional, full path the decoy module to overload in memory.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedPEModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Call a manually mapped PE by its EntryPoint.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[])">
+            <summary>
+            Call a manually mapped DLL by Export.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+            <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+            <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <returns>Void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetSyscallStub(System.String)">
+            <summary>
+            Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="FunctionName">The name of the function to search for (e.g. "NtAlertResumeThread").</param>
+            <returns>IntPtr, Syscall stub</returns>
         </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Native">
             <summary>
@@ -1321,6 +1504,221 @@
             Uses DynamicInvocation to call the IsWow64Process Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
             </summary>
             <returns>Returns true if process is WOW64, and false if not (64-bit, or 32-bit on a 32-bit machine).</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.AllocationTechnique">
+            <summary>
+            Base class for allocation techniques.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.AllocationTechnique.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            Informs objects using this technique whether or not it supports the type of a particular payload.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">A payload.</param>
+            <returns>Whether or not the payload is of a supported type for this strategy.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.AllocationTechnique.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SharpSploit.Execution.Injection.AllocationTechnique.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process,System.IntPtr)" -->
+        <member name="M:SharpSploit.Execution.Injection.AllocationTechnique.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
+            <summary>
+            Allocate the payload to the target process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The payload to allocate to the target process.</param>
+            <param name="process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.SectionMapAlloc">
+            <summary>
+            Allocates a payload to a target process using locally-written, remotely-copied shared memory sections.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            States whether the payload is supported.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">Payload that will be allocated.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            Update when new types of payloads are added.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
+            <summary>
+            Allocate the payload to the target process. Handles unknown payload types.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The payload to allocate to the target process.</param>
+            <param name="process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
+            <summary>
+            Allocate the payload to the target process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The PIC payload to allocate to the target process.</param>
+            <param name="process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.CreateSection(System.UInt64,System.UInt32)">
+            <summary>
+            Creates a new Section.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="size">Max size of the Section.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.MapSection(System.IntPtr,System.IntPtr,System.UInt32,System.IntPtr,System.UInt64)">
+            <summary>
+            Maps a view of a section to the target process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="procHandle">Handle the process that the section will be mapped to.</param>
+            <param name="sectionHandle">Handle to the section.</param>
+            <param name="protection">What permissions to use on the view.</param>
+            <param name="addr">Optional parameter to specify the address of where to map the view.</param>
+            <param name="sizeData">Size of the view to map. Must be smaller than the max Section size.</param>
+            <returns>A struct containing address and size of the mapped view.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.SectionMapAlloc.SectionDetails">
+            <summary>
+            Holds the data returned from NtMapViewOfSection.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.UnmapSection(System.IntPtr,System.IntPtr)">
+            <summary>
+            Unmaps a view of a section from a process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="hProc">Process to which the view has been mapped.</param>
+            <param name="baseAddr">Address of the view (relative to the target process)</param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.ExecutionTechnique">
+            <summary>
+            Base class for Injection strategies.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            Informs objects using this technique whether or not it supports the type of a particular payload.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">A payload.</param>
+            <returns>Whether or not the payload is of a supported type for this strategy.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,System.Diagnostics.Process)">
+            <summary>
+            
+            </summary>
+            <param name="payload"></param>
+            <param name="alloc"></param>
+            <param name="process"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,System.IntPtr,System.Diagnostics.Process)">
+            <summary>
+            
+            </summary>
+            <param name="payload"></param>
+            <param name="baseAddr"></param>
+            <param name="process"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique)">
+            <summary>
+            
+            </summary>
+            <param name="payload"></param>
+            <param name="alloc"></param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.RemoteThreadCreate">
+            <summary>
+            RemoteThread variant that simply creates a thread in a remote process at a specified address using NtCreateThreadEx.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            States whether the payload is supported.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">Payload that will be allocated.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            Update when new types of payloads are added.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,System.Diagnostics.Process)">
+            <summary>
+            Only ever called if the user passed in a Payload type without an Inject overload.
+            </summary>
+            <param name="payload"></param>
+            <param name="alloc"></param>
+            <param name="process"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PICPayload,System.IntPtr,System.Diagnostics.Process)">
+            <summary>
+            Create a thread in the remote process.
+            </summary>
+            <param name="payload"></param>
+            <param name="baseAddr"></param>
+            <param name="process"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.GetHandle">
+            <summary>
+            Get the handle of the created thread. Will return IntPtr.Zero if the payload has not been injected yet.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.PayloadType">
+            <summary>
+            Base class for all types of payloads.
+            Variants are responsible for specifying what types of payloads they support.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.PICPayload">
+            <summary>
+            Represents payloads that are position-independant-code.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.PayloadTypeNotSupported">
+            <summary>
+            Exception thrown when a the type of a payload is not supported by a injection variant.
+            </summary>
         </member>
         <member name="T:SharpSploit.Execution.Native">
             <summary>
@@ -1728,7 +2126,7 @@
             <param name="Command">Command to execute on remote system.</param>
             <param name="Username">Username to authenticate as to the remote system.</param>
             <param name="Password">Password to authenticate the user.</param>
-            <returns>Bool. True if execution succeeds, false otherwise.</returns>
+            <returns>SharpSploitResultList of WmiExecuteResult.</returns>
         </member>
         <member name="M:SharpSploit.LateralMovement.WMI.WMIExecute(System.Collections.Generic.List{System.String},System.String,System.String,System.String)">
             <summary>
