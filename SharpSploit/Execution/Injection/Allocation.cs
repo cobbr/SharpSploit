@@ -103,6 +103,20 @@ namespace SharpSploit.Execution.Injection
         }
 
         /// <summary>
+        /// Constructor allowing options as arguments.
+        /// </summary>
+        public SectionMapAlloc(uint localPerms = Win32.WinNT.PAGE_EXECUTE_READWRITE, uint remotePerms = Win32.WinNT.PAGE_EXECUTE_READWRITE, uint atts = Win32.WinNT.SEC_COMMIT)
+        {
+
+            DefineSupportedPayloadTypes();
+
+            //Set options
+            localSectionPermissions = localPerms;
+            remoteSectionPermissions = remotePerms;
+            sectionAttributes = atts;
+        }
+
+        /// <summary>
         /// States whether the payload is supported.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>

@@ -114,8 +114,8 @@ namespace SharpSploit.Execution.Injection
     public class RemoteThreadCreate : ExecutionTechnique
     {
         //Publically accessible options
-        public bool suspended;
-        public APIS api;
+        public bool suspended = false;
+        public APIS api = APIS.NtCreateThreadEx;
 
         public enum APIS : int
         {
@@ -135,6 +135,18 @@ namespace SharpSploit.Execution.Injection
         {
             DefineSupportedPayloadTypes();
 
+        }
+
+        /// <summary>
+        /// Constructor allowing options as arguments.
+        /// </summary>
+        public RemoteThreadCreate(bool susp = false, APIS varAPI = APIS.NtCreateThreadEx)
+        {
+            DefineSupportedPayloadTypes();
+
+            //Set options
+            suspended = susp;
+            api = varAPI;
         }
 
         /// <summary>
@@ -190,8 +202,6 @@ namespace SharpSploit.Execution.Injection
         /// <returns></returns>
         public bool Inject(PICPayload payload, IntPtr baseAddr, System.Diagnostics.Process process)
         {
-
-            //TODO: Account for API option
 
             IntPtr threadHandle = new IntPtr();
 

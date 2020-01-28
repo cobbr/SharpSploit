@@ -1544,6 +1544,11 @@
             Default constructor.
             </summary>
         </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.#ctor(System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Constructor allowing options as arguments.
+            </summary>
+        </member>
         <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
             <summary>
             States whether the payload is supported.
@@ -1632,28 +1637,31 @@
         </member>
         <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,System.Diagnostics.Process)">
             <summary>
-            
+            Inject and execute a payload in the target process using a specific allocation technique.
             </summary>
-            <param name="payload"></param>
-            <param name="alloc"></param>
-            <param name="process"></param>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The type of payload to execute.</param>
+            <param name="alloc">The allocation tpe to use.</param>
+            <param name="process">The target process.</param>
             <returns></returns>
         </member>
         <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,System.IntPtr,System.Diagnostics.Process)">
             <summary>
-            
+            Execute a payload in the target process at a specified address.
             </summary>
-            <param name="payload"></param>
-            <param name="baseAddr"></param>
-            <param name="process"></param>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The type of payload to execute.</param>
+            <param name="baseAddr">The base address of the payload.</param>
+            <param name="process">The target process.</param>
             <returns></returns>
         </member>
         <member name="M:SharpSploit.Execution.Injection.ExecutionTechnique.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique)">
             <summary>
-            
+            Execute a payload in the current process using a specific allocation technique.
             </summary>
-            <param name="payload"></param>
-            <param name="alloc"></param>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The type of payload to execute.</param>
+            <param name="alloc">The allocation technique to use.</param>
             <returns></returns>
         </member>
         <member name="T:SharpSploit.Execution.Injection.RemoteThreadCreate">
@@ -1664,6 +1672,11 @@
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.#ctor">
             <summary>
             Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.#ctor(System.Boolean,SharpSploit.Execution.Injection.RemoteThreadCreate.APIS)">
+            <summary>
+            Constructor allowing options as arguments.
             </summary>
         </member>
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
@@ -1679,29 +1692,49 @@
             Internal method for setting the supported payload types. Used in constructors.
             Update when new types of payloads are added.
             </summary>
+            <author>The Wover (@TheRealWover)</author>
         </member>
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,System.Diagnostics.Process)">
             <summary>
             Only ever called if the user passed in a Payload type without an Inject overload.
             </summary>
-            <param name="payload"></param>
-            <param name="alloc"></param>
-            <param name="process"></param>
+            <author>The Wover (@TheRealWover)</author>
             <returns></returns>
         </member>
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PICPayload,System.IntPtr,System.Diagnostics.Process)">
             <summary>
             Create a thread in the remote process.
             </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="payload">The shellcode payload to execute in the target process.</param>
+            <param name="baseAddr">The address of the shellcode in the target process.</param>
+            <param name="process">The target process to inject into.</param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.Injector">
+            <summary>
+            Baase class for injectors.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.Injector.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,SharpSploit.Execution.Injection.ExecutionTechnique,System.Diagnostics.Process)">
+            <summary>
+             Inject a payload into a target process using a specified allocation and execution technique.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
             <param name="payload"></param>
-            <param name="baseAddr"></param>
+            <param name="allocation"></param>
+            <param name="execution"></param>
             <param name="process"></param>
             <returns></returns>
         </member>
-        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.GetHandle">
+        <member name="M:SharpSploit.Execution.Injection.Injector.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,SharpSploit.Execution.Injection.ExecutionTechnique)">
             <summary>
-            Get the handle of the created thread. Will return IntPtr.Zero if the payload has not been injected yet.
+            Inject a payload into the current process using a specified allocation and execution technique.
             </summary>
+            <param name="payload"></param>
+            <param name="allocation"></param>
+            <param name="execution"></param>
             <returns></returns>
         </member>
         <member name="T:SharpSploit.Execution.Injection.PayloadType">
@@ -1709,16 +1742,19 @@
             Base class for all types of payloads.
             Variants are responsible for specifying what types of payloads they support.
             </summary>
+            <author>The Wover (@TheRealWover)</author>
         </member>
         <member name="T:SharpSploit.Execution.Injection.PICPayload">
             <summary>
             Represents payloads that are position-independant-code.
             </summary>
+            <author>The Wover (@TheRealWover)</author>
         </member>
         <member name="T:SharpSploit.Execution.Injection.PayloadTypeNotSupported">
             <summary>
             Exception thrown when a the type of a payload is not supported by a injection variant.
             </summary>
+            <author>The Wover (@TheRealWover)</author>
         </member>
         <member name="T:SharpSploit.Execution.Native">
             <summary>

@@ -9,7 +9,7 @@ namespace SharpSploit.Execution.Injection
     public static class Injector
     {
         /// <summary>
-        /// 
+        ///  Inject a payload into a target process using a specified allocation and execution technique.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="payload"></param>
@@ -22,10 +22,8 @@ namespace SharpSploit.Execution.Injection
             return execution.Inject(payload, allocation, process);
         }
 
-        //Used for Execution techniques that do not take a Process as a parameter.
-        //Can be used for local injection, or for Execution primitives that rely on process creation.
         /// <summary>
-        /// I
+        /// Inject a payload into the current process using a specified allocation and execution technique.
         /// </summary>
         /// <param name="payload"></param>
         /// <param name="allocation"></param>

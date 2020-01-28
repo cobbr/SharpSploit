@@ -9,6 +9,7 @@ namespace SharpSploit.Execution.Injection
     /// Base class for all types of payloads.
     /// Variants are responsible for specifying what types of payloads they support.
     /// </summary>
+    /// <author>The Wover (@TheRealWover)</author>
     public abstract class PayloadType
     {
         //Byte array containing the payload.
@@ -31,6 +32,7 @@ namespace SharpSploit.Execution.Injection
     /// <summary>
     /// Represents payloads that are position-independant-code.
     /// </summary>
+    /// <author>The Wover (@TheRealWover)</author>
     public class PICPayload : PayloadType
     {
         //Declares the constructor as equivalent to that of the base class.
@@ -41,6 +43,7 @@ namespace SharpSploit.Execution.Injection
     /// <summary>
     /// Exception thrown when a the type of a payload is not supported by a injection variant.
     /// </summary>
+    /// <author>The Wover (@TheRealWover)</author>
     public class PayloadTypeNotSupported : Exception
     {
         public PayloadTypeNotSupported()
