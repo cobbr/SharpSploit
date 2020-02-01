@@ -41,33 +41,6 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
-        public static Execute.Native.NTSTATUS NtCreateThread(
-                ref IntPtr threadHandle,
-                Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
-                IntPtr objectAttributes,
-                IntPtr processHandle,
-                ref Execution.Native.CLIENT_ID clientID,
-                Execution.Native.THREADCONTEXT context,
-                ref Execution.Native.STACKINFO stack,
-                bool createSuspended)
-        {
-            // Craft an array for the arguments
-            object[] funcargs =
-            {
-                threadHandle, desiredAccess, objectAttributes, processHandle, clientID, context, stack, createSuspended
-            };
-
-            Execute.Native.NTSTATUS retValue = (Execute.Native.NTSTATUS)Generic.DynamicAPIInvoke(@"ntdll.dll", @"NtCreateThread",
-                typeof(DELEGATES.NtCreateThread), ref funcargs);
-
-            // Update the modified variables
-            threadHandle = (IntPtr)funcargs[0];
-            clientID = (Execution.Native.CLIENT_ID)funcargs[4];
-            stack = (Execution.Native.STACKINFO)funcargs[6];
-
-            return retValue;
-        }
-
         public static Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,
                 IntPtr ThreadSecurityDescriptor,
                 bool CreateSuspended,
@@ -645,17 +618,6 @@ namespace SharpSploit.Execution.DynamicInvoke
                 int sizeOfStack,
                 int maximumStackSize,
                 IntPtr attributeList);
-
-            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execute.Native.NTSTATUS NtCreateThread(
-                out IntPtr threadHandle,
-                Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
-                IntPtr objectAttributes,
-                IntPtr processHandle,
-                out Execution.Native.CLIENT_ID clientID,
-                Execution.Native.THREADCONTEXT context,
-                out Execution.Native.STACKINFO stack,
-                bool createSuspended);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,

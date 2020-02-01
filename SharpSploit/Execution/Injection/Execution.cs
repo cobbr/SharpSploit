@@ -109,7 +109,7 @@ namespace SharpSploit.Execution.Injection
 
     
     /// <summary>
-    /// RemoteThread variant that simply creates a thread in a remote process at a specified address using NtCreateThreadEx.
+    /// Executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
     /// </summary>
     public class RemoteThreadCreate : ExecutionTechnique
     {
@@ -120,7 +120,7 @@ namespace SharpSploit.Execution.Injection
         public enum APIS : int
         {
             NtCreateThreadEx = 0,
-            //NtCreateThread = 1,
+            //NtCreateThread = 1, //Not implemented
             RtlCreateUserThread = 2,
             CreateRemoteThread = 3
         };
@@ -238,8 +238,6 @@ namespace SharpSploit.Execution.Injection
                 else
                     return false;
             }
-
-                
 
             //If successful, return the handle to the new thread. Otherwise return NULL
             if (result == Native.NTSTATUS.Unsuccessful)

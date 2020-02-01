@@ -3,13 +3,13 @@
 namespace SharpSploit.Execution.Injection
 {
     /// <summary>
-    /// Baase class for injectors.
+    /// Provides static functions for performing injection using a combination of Allocation and Execution components.
     /// </summary>
     /// <author>The Wover (@TheRealWover)</author>
     public static class Injector
     {
         /// <summary>
-        ///  Inject a payload into a target process using a specified allocation and execution technique.
+        /// Inject a payload into a target process using a specified allocation and execution technique.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="payload"></param>

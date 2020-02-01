@@ -1334,7 +1334,7 @@
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.RelocateModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
             <summary>
-            Relocate module in memory.
+            Relocates a module in memory.
             </summary>
             <author>Ruben Boonen (@FuzzySec)</author>
             <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
@@ -1384,7 +1384,7 @@
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.FindDecoyModule(System.Int64)">
             <summary>
-            Locate a module with a minimum size which can be used for overloading.
+            Locate a signed module with a minimum size which can be used for overloading.
             </summary>
             <author>The Wover (@TheRealWover)</author>
             <param name="MinSize">Minimum module byte size.</param>
@@ -1401,7 +1401,7 @@
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.OverloadModule(System.String,System.String)">
             <summary>
-            Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+            Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that
             module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
             </summary>
             <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
@@ -1666,7 +1666,7 @@
         </member>
         <member name="T:SharpSploit.Execution.Injection.RemoteThreadCreate">
             <summary>
-            RemoteThread variant that simply creates a thread in a remote process at a specified address using NtCreateThreadEx.
+            Executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
             </summary>
         </member>
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.#ctor">
@@ -1713,13 +1713,13 @@
         </member>
         <member name="T:SharpSploit.Execution.Injection.Injector">
             <summary>
-            Baase class for injectors.
+            Provides static functions for performing injection using a combination of Allocation and Execution components.
             </summary>
             <author>The Wover (@TheRealWover)</author>
         </member>
         <member name="M:SharpSploit.Execution.Injection.Injector.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,SharpSploit.Execution.Injection.ExecutionTechnique,System.Diagnostics.Process)">
             <summary>
-             Inject a payload into a target process using a specified allocation and execution technique.
+            Inject a payload into a target process using a specified allocation and execution technique.
             </summary>
             <author>The Wover (@TheRealWover)</author>
             <param name="payload"></param>
