@@ -14,7 +14,8 @@ namespace SharpSploit.Execution.DynamicInvoke
     /// </summary>
     public class Native
     {
-        public static Execute.Native.NTSTATUS NtCreateThreadEx(ref IntPtr threadHandle,
+        public static Execute.Native.NTSTATUS NtCreateThreadEx(
+            ref IntPtr threadHandle,
             Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
             IntPtr objectAttributes, IntPtr processHandle,
             IntPtr startAddress,
@@ -41,7 +42,8 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retValue;
         }
 
-        public static Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,
+        public static Execute.Native.NTSTATUS RtlCreateUserThread(
+                IntPtr Process,
                 IntPtr ThreadSecurityDescriptor,
                 bool CreateSuspended,
                 IntPtr ZeroBits,
@@ -620,7 +622,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr attributeList);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
-            public delegate Execute.Native.NTSTATUS RtlCreateUserThread(IntPtr Process,
+            public delegate Execute.Native.NTSTATUS RtlCreateUserThread(
+                IntPtr Process,
                 IntPtr ThreadSecurityDescriptor,
                 bool CreateSuspended,
                 IntPtr ZeroBits,
