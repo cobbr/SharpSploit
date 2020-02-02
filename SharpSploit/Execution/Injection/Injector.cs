@@ -17,7 +17,7 @@ namespace SharpSploit.Execution.Injection
         /// <param name="execution"></param>
         /// <param name="process"></param>
         /// <returns></returns>
-        public static bool Inject (PayloadType payload, AllocationTechnique allocation, ExecutionTechnique execution, Process process)
+        public static bool Inject(PayloadType payload, AllocationTechnique allocation, ExecutionTechnique execution, Process process)
         {
             return execution.Inject(payload, allocation, process);
         }
