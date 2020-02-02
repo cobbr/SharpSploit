@@ -158,11 +158,12 @@ namespace SharpSploit.Execution.Injection
         }
 
         /// <summary>
-        /// Allocate the payload to the target process.
+        /// Allocate the payload in the target process.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="payload">The PIC payload to allocate to the target process.</param>
         /// <param name="process">The target process.</param>
+        /// <param name="preferredAddress">The preferred address at which to allocate the payload in the target process.</param>
         /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
         public IntPtr Allocate(PICPayload payload, System.Diagnostics.Process process, IntPtr preferredAddress)
         {
@@ -204,6 +205,7 @@ namespace SharpSploit.Execution.Injection
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="size">Max size of the Section.</param>
+        /// <param name="allocationAttributes">Section attributes (eg. Win32.WinNT.SEC_COMMIT).</param>
         /// <returns></returns>
         private static IntPtr CreateSection(ulong size, uint allocationAttributes)
         {
