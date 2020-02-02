@@ -150,14 +150,14 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `MapModuleFromDisk()` - Maps a module from disk into a Section using `NtCreateSection`.
 * `GetLibraryAddress()` - Helper function that obtains the pointer to a function using in-memory export parsing.
 * `GetLoadedModuleAddress()` - Gets the base address of a module loaded by the current process.
-* `GetPebLdrModuleEntry()` - Helper for getting the base address of a module loaded by the current process. This base address could be passed to `GetProcAddress`/`LdrGetProcedureAddress` or it could be used for manual export parsing.
+* `GetPebLdrModuleEntry()` - Helper for getting the base address of a module loaded by the current process. This base address could be passed to `GetProcAddress`/`GetNativeExportAddress`/`LdrGetProcedureAddress` or it could be used for manual export parsing.
 * `GetAPIHash()` - Gets a HMAC-MD5 hash for unique hash based API lookups.
 * `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
 * `GetNativeExportAddress()` - Given a module base address, resolve the address of a function by calling `LdrGetProcedureAddress`.
 * `FileToMemoryPointer()` - Allocate file to memory, either from disk or from a byte array.
 * `GetPeMetaData()` - Retrieve PE header information from the module base pointer.
 * `RelocateModule()` - Relocates a module in memory.
-* `GetApiSetMapping()` - Resolve host DLL for API Set DLL.
+* `GetApiSetMapping()` - Resolve host DLL for API Set DLL (Win10+).
 * `RewriteModuleIAT()` - Rewrite IAT for manually mapped module.
 * `SetModuleSectionPermissions()` - Set correct module section permissions.
 * `MapModuleToMemory()` - Manually map module into current process.
