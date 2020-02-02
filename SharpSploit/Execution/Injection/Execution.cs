@@ -177,6 +177,9 @@ namespace SharpSploit.Execution.Injection
         /// Only ever called if the user passed in a Payload type without an Inject overload.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="payload">Payload type.</param>
+        /// <param name="alloc">Allocation technique.</param>
+        /// <param name="process">The target process.</param>
         /// <returns></returns>
         public bool Inject(PayloadType payload, AllocationTechnique alloc, System.Diagnostics.Process process)
         {
