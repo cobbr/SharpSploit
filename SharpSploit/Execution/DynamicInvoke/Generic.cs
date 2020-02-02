@@ -619,7 +619,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Relocate module in memory.
+        /// Relocates a module in memory.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
@@ -1121,7 +1121,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Locate a module with a minimum size which can be used for overloading.
+        /// Locate a signed module with a minimum size which can be used for overloading.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="MinSize">Minimum module byte size.</param>
@@ -1256,7 +1256,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+        /// Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that
         /// module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
         /// </summary>
         /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>

@@ -34,6 +34,29 @@ namespace SharpSploit.Execution.DynamicInvoke
                 typeof(Delegates.OpenProcess), ref funcargs);
         }
 
+        public static IntPtr CreateRemoteThread(IntPtr hProcess,
+                IntPtr lpThreadAttributes,
+                uint dwStackSize,
+                IntPtr lpStartAddress,
+                IntPtr lpParameter,
+                uint dwCreationFlags,
+                ref IntPtr lpThreadId)
+        {
+            //Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId
+            };
+
+            IntPtr retValue = (IntPtr)Generic.DynamicAPIInvoke(@"kernel32.dll", @"CreateRemoteThread",
+                typeof(Delegates.CreateRemoteThread), ref funcargs);
+
+            // Update the modified variables
+            lpThreadId = (IntPtr)funcargs[6];
+
+            return retValue;
+        }
+
         /// <summary>
         /// Uses DynamicInvocation to call the IsWow64Process Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process
         /// </summary>
@@ -57,6 +80,15 @@ namespace SharpSploit.Execution.DynamicInvoke
 
         private static class Delegates
         {
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate IntPtr CreateRemoteThread(IntPtr hProcess,
+                IntPtr lpThreadAttributes,
+                uint dwStackSize,
+                IntPtr lpStartAddress,
+                IntPtr lpParameter,
+                uint dwCreationFlags,
+                out IntPtr lpThreadId);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate IntPtr OpenProcess(
                 Execute.Win32.Kernel32.ProcessAccessFlags dwDesiredAccess,
