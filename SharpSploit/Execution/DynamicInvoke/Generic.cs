@@ -5,14 +5,14 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Linq;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Runtime.InteropServices;
 
 using Execute = SharpSploit.Execution;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
-using System.Linq;
 
 namespace SharpSploit.Execution.DynamicInvoke
 {
@@ -92,29 +92,55 @@ namespace SharpSploit.Execution.DynamicInvoke
             IntPtr pObjectName = Marshal.AllocHGlobal(Marshal.SizeOf(ObjectName));
             Marshal.StructureToPtr(ObjectName, pObjectName, true);
 
-            Execution.Native.OBJECT_ATTRIBUTES oa = new Execute.Native.OBJECT_ATTRIBUTES();
-            oa.Length = Marshal.SizeOf(oa);
-            oa.ObjectName = pObjectName;
-            oa.Attributes = 0x40; // OBJ_CASE_INSENSITIVE
+            Execute.Native.OBJECT_ATTRIBUTES objectAttributes = new Execute.Native.OBJECT_ATTRIBUTES();
+            objectAttributes.Length = Marshal.SizeOf(objectAttributes);
+            objectAttributes.ObjectName = pObjectName;
+            objectAttributes.Attributes = 0x40; // OBJ_CASE_INSENSITIVE
 
-            Execution.Native.IO_STATUS_BLOCK iob = new Execute.Native.IO_STATUS_BLOCK();
+            Execute.Native.IO_STATUS_BLOCK ioStatusBlock = new Execute.Native.IO_STATUS_BLOCK();
 
             IntPtr hFile = IntPtr.Zero;
-            Native.NtOpenFile(ref hFile, Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_DATA | Execute.Win32.Kernel32.FileAccessFlags.FILE_EXECUTE | Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_ATTRIBUTES | Execute.Win32.Kernel32.FileAccessFlags.SYNCHRONIZE, ref oa, ref iob, Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_READ | Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_DELETE, Execute.Win32.Kernel32.FileOpenFlags.FILE_SYNCHRONOUS_IO_NONALERT | Execute.Win32.Kernel32.FileOpenFlags.FILE_NON_DIRECTORY_FILE);
+            Native.NtOpenFile(
+                ref hFile,
+                Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_DATA |
+                Execute.Win32.Kernel32.FileAccessFlags.FILE_EXECUTE |
+                Execute.Win32.Kernel32.FileAccessFlags.FILE_READ_ATTRIBUTES |
+                Execute.Win32.Kernel32.FileAccessFlags.SYNCHRONIZE,
+                ref objectAttributes, ref ioStatusBlock,
+                Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_READ |
+                Execute.Win32.Kernel32.FileShareFlags.FILE_SHARE_DELETE,
+                Execute.Win32.Kernel32.FileOpenFlags.FILE_SYNCHRONOUS_IO_NONALERT |
+                Execute.Win32.Kernel32.FileOpenFlags.FILE_NON_DIRECTORY_FILE
+            );
 
             // Create section from hFile
             IntPtr hSection = IntPtr.Zero;
             ulong MaxSize = 0;
-            Execution.Native.NTSTATUS ret = Native.NtCreateSection(ref hSection, (UInt32)Execution.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS, IntPtr.Zero, ref MaxSize, Execution.Win32.WinNT.PAGE_READONLY, Execution.Win32.WinNT.SEC_IMAGE, hFile);
+            Execute.Native.NTSTATUS ret = Native.NtCreateSection(
+                ref hSection,
+                (UInt32)Execute.Win32.WinNT.ACCESS_MASK.SECTION_ALL_ACCESS,
+                IntPtr.Zero,
+                ref MaxSize,
+                Execute.Win32.WinNT.PAGE_READONLY,
+                Execute.Win32.WinNT.SEC_IMAGE,
+                hFile
+            );
 
             // Map view of file
             IntPtr pBaseAddress = IntPtr.Zero;
-            Native.NtMapViewOfSection(hSection, (IntPtr)(-1), ref pBaseAddress, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref MaxSize, 0x2, 0x0, Execution.Win32.WinNT.PAGE_READWRITE);
+            Native.NtMapViewOfSection(
+                hSection, (IntPtr)(-1), ref pBaseAddress,
+                IntPtr.Zero, IntPtr.Zero, IntPtr.Zero,
+                ref MaxSize, 0x2, 0x0,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
 
             // Prepare return object
-            PE.PE_MANUAL_MAP SecMapObject = new PE.PE_MANUAL_MAP();
-            SecMapObject.PEINFO = GetPeMetaData(pBaseAddress);
-            SecMapObject.ModuleBase = pBaseAddress;
+            PE.PE_MANUAL_MAP SecMapObject = new PE.PE_MANUAL_MAP
+            {
+                PEINFO = GetPeMetaData(pBaseAddress),
+                ModuleBase = pBaseAddress
+            };
 
             return SecMapObject;
         }
@@ -202,7 +228,9 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function uses the Process class in Net.
+        /// Helper for getting the base address of a module loaded by the current process. This base
+        /// address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for
+        /// manual export parsing. This function uses the .NET System.Diagnostics.Process class.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
@@ -217,12 +245,13 @@ namespace SharpSploit.Execution.DynamicInvoke
                     return Mod.BaseAddress;
                 }
             }
-
             return IntPtr.Zero;
         }
 
         /// <summary>
-        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing. This function parses the _PEB_LDR_DATA structure.
+        /// Helper for getting the base address of a module loaded by the current process. This base
+        /// address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for
+        /// manual export parsing. This function parses the _PEB_LDR_DATA structure.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
@@ -233,7 +262,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             Execute.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
 
             // Set function variables
-            Boolean Is32Bit = false;
+            bool Is32Bit = false;
             UInt32 LdrDataOffset = 0;
             UInt32 InLoadOrderModuleListOffset = 0;
             if (IntPtr.Size == 4)
@@ -241,7 +270,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Is32Bit = true;
                 LdrDataOffset = 0xc;
                 InLoadOrderModuleListOffset = 0xC;
-            } else
+            }
+            else
             {
                 LdrDataOffset = 0x18;
                 InLoadOrderModuleListOffset = 0x10;
@@ -250,27 +280,23 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Get module InLoadOrderModuleList -> _LIST_ENTRY
             IntPtr PEB_LDR_DATA = Marshal.ReadIntPtr((IntPtr)((UInt64)pbi.PebBaseAddress + LdrDataOffset));
             IntPtr pInLoadOrderModuleList = (IntPtr)((UInt64)PEB_LDR_DATA + InLoadOrderModuleListOffset);
-            Execution.Native.LIST_ENTRY le = (Execution.Native.LIST_ENTRY)Marshal.PtrToStructure(pInLoadOrderModuleList, typeof(Execution.Native.LIST_ENTRY));
+            Execute.Native.LIST_ENTRY le = (Execute.Native.LIST_ENTRY)Marshal.PtrToStructure(pInLoadOrderModuleList, typeof(Execute.Native.LIST_ENTRY));
 
             // Loop entries
             IntPtr flink = le.Flink;
             IntPtr hModule = IntPtr.Zero;
-            while (true)
+            Execute.PE.LDR_DATA_TABLE_ENTRY dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+            while (dte.InLoadOrderLinks.Flink != le.Blink)
             {
-                Execution.PE.LDR_DATA_TABLE_ENTRY dte = (Execution.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execution.PE.LDR_DATA_TABLE_ENTRY));
-                if (dte.InLoadOrderLinks.Flink == le.Blink)
-                {
-                    break;
-                }
-
                 // Match module name
-                if ((Marshal.PtrToStringUni(dte.FullDllName.Buffer)).ToLower().EndsWith(DLLName.ToLower()))
+                if (Marshal.PtrToStringUni(dte.FullDllName.Buffer).EndsWith(DLLName, StringComparison.OrdinalIgnoreCase))
                 {
                     hModule = dte.DllBase;
                 }
             
                 // Move Ptr
                 flink = dte.InLoadOrderLinks.Flink;
+                dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
             }
 
             return hModule;
@@ -493,10 +519,12 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>IntPtr for the desired function.</returns>
         public static IntPtr GetNativeExportAddress(IntPtr ModuleBase, string ExportName)
         {
-            Execution.Native.ANSI_STRING aFunc = new Execution.Native.ANSI_STRING();
-            aFunc.Length = (ushort)ExportName.Length;
-            aFunc.MaximumLength = (ushort)(ExportName.Length + 2);
-            aFunc.Buffer = Marshal.StringToCoTaskMemAnsi(ExportName);
+            Execute.Native.ANSI_STRING aFunc = new Execute.Native.ANSI_STRING
+            {
+                Length = (ushort)ExportName.Length,
+                MaximumLength = (ushort)(ExportName.Length + 2),
+                Buffer = Marshal.StringToCoTaskMemAnsi(ExportName)
+            };
 
             IntPtr pAFunc = Marshal.AllocHGlobal(Marshal.SizeOf(aFunc));
             Marshal.StructureToPtr(aFunc, pAFunc, true);
@@ -527,40 +555,29 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Allocate file to memory, either from disk or from a byte array.
+        /// Allocate file to memory from disk
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
-        /// <param name="FilePath">Full path to the module on disk.</param>
+        /// <param name="FilePath">Full path to the file to be alloacted.</param>
         /// <returns>IntPtr base address of the allocated file.</returns>
-        public static IntPtr FileToMemoryPointer(string FilePath)
+        public static IntPtr AllocateFileToMemory(string FilePath)
         {
             if (!File.Exists(FilePath))
             {
                 throw new InvalidOperationException("Filepath not found.");
             }
 
-            Byte[] bFile = { };
-            try
-            {
-                bFile = File.ReadAllBytes(FilePath);
-            }
-            catch
-            {
-                throw new UnauthorizedAccessException("Access is denied.");
-            }
-
-            IntPtr pFile = Marshal.AllocHGlobal(bFile.Length);
-            Marshal.Copy(bFile, 0, pFile, bFile.Length);
-            return pFile;
+            byte[] bFile = File.ReadAllBytes(FilePath);
+            return AllocateBytesToMemory(bFile);
         }
 
         /// <summary>
-        /// Allocate file to memory, either from disk or from a byte array.
+        /// Allocate a byte array to memory
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
-        /// <param name="FileByteArray">Full byte array of the module.</param>
+        /// <param name="FileByteArray">Byte array to be allocated.</param>
         /// <returns>IntPtr base address of the allocated file.</returns>
-        public static IntPtr FileToMemoryPointer(byte[] FileByteArray)
+        public static IntPtr AllocateBytesToMemory(byte[] FileByteArray)
         {
             IntPtr pFile = Marshal.AllocHGlobal(FileByteArray.Length);
             Marshal.Copy(FileByteArray, 0, pFile, FileByteArray.Length);
@@ -610,8 +627,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                     SectionArray[i] = (PE.IMAGE_SECTION_HEADER)Marshal.PtrToStructure(SectionPtr, typeof(PE.IMAGE_SECTION_HEADER));
                 }
                 PeMetaData.Sections = SectionArray;
-
-            } catch
+            }
+            catch
             {
                 throw new InvalidOperationException("Invalid module base specified.");
             }
@@ -624,27 +641,18 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>Void</returns>
+        /// <returns>void</returns>
         public static void RelocateModule(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
         {
-            PE.IMAGE_DATA_DIRECTORY idd = new PE.IMAGE_DATA_DIRECTORY();
-            Int64 ImageDelta = 0;
-            if (PEINFO.Is32Bit)
-            {
-                idd = PEINFO.OptHeader32.BaseRelocationTable;
-                ImageDelta = (Int64)((UInt64)ModuleMemoryBase - PEINFO.OptHeader32.ImageBase);
-            }
-            else
-            {
-                idd = PEINFO.OptHeader64.BaseRelocationTable;
-                ImageDelta = (Int64)((UInt64)ModuleMemoryBase - PEINFO.OptHeader64.ImageBase);
-            }
+            PE.IMAGE_DATA_DIRECTORY idd = PEINFO.Is32Bit ? PEINFO.OptHeader32.BaseRelocationTable : PEINFO.OptHeader64.BaseRelocationTable;
+            Int64 ImageDelta = PEINFO.Is32Bit ? (Int64)((UInt64)ModuleMemoryBase - PEINFO.OptHeader32.ImageBase) :
+                                                (Int64)((UInt64)ModuleMemoryBase - PEINFO.OptHeader64.ImageBase);
 
             // Ptr for the base reloc table
             IntPtr pRelocTable = (IntPtr)((UInt64)ModuleMemoryBase + idd.VirtualAddress);
-
+            Int32 nextRelocTableBlock = -1;
             // Loop reloc blocks
-            while (true)
+            while (nextRelocTableBlock != 0)
             {
                 PE.IMAGE_BASE_RELOCATION ibr = new PE.IMAGE_BASE_RELOCATION();
                 ibr = (PE.IMAGE_BASE_RELOCATION)Marshal.PtrToStructure(pRelocTable, typeof(PE.IMAGE_BASE_RELOCATION));
@@ -663,11 +671,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                     UInt16 RelocPatch = (UInt16)(RelocValue & 0xfff);
 
                     // Perform relocation
-                    if (RelocType == 0) // IMAGE_REL_BASED_ABSOLUTE (skip reloc)
-                    {
-                        continue;
-                    }
-                    else
+                    if (RelocType != 0) // IMAGE_REL_BASED_ABSOLUTE (0 -> skip reloc)
                     {
                         try
                         {
@@ -682,7 +686,8 @@ namespace SharpSploit.Execution.DynamicInvoke
                                 Int64 OriginalPtr = Marshal.ReadInt64(pPatch);
                                 Marshal.WriteInt64(pPatch, (OriginalPtr + ImageDelta));
                             }
-                        } catch
+                        }
+                        catch
                         {
                             throw new InvalidOperationException("Memory access violation.");
                         }
@@ -691,10 +696,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
                 // Check for next block
                 pRelocTable = (IntPtr)((UInt64)pRelocTable + ibr.SizeOfBlock);
-                if (Marshal.ReadInt32(pRelocTable) == 0)
-                {
-                    break;
-                }
+                nextRelocTableBlock = Marshal.ReadInt32(pRelocTable);
             }
         }
 
@@ -705,35 +707,26 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
         public static Dictionary<string, string> GetApiSetMapping()
         {
-            Execution.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
-            UInt32 ApiSetMapOffset = 0;
-            if (IntPtr.Size == 4)
-            {
-                ApiSetMapOffset = 0x38;
-            } else
-            {
-                ApiSetMapOffset = 0x68;
-            }
+            Execute.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
+            UInt32 ApiSetMapOffset = IntPtr.Size == 4 ? (UInt32)0x38 : 0x68;
 
             // Create mapping dictionary
             Dictionary<string, string> ApiSetDict = new Dictionary<string, string>();
 
             IntPtr pApiSetNamespace = Marshal.ReadIntPtr((IntPtr)((UInt64)pbi.PebBaseAddress + ApiSetMapOffset));
-            PE.ApiSetNamespace Namespace = new PE.ApiSetNamespace();
-            Namespace = (PE.ApiSetNamespace)Marshal.PtrToStructure(pApiSetNamespace, typeof(PE.ApiSetNamespace));
+            PE.ApiSetNamespace Namespace = (PE.ApiSetNamespace)Marshal.PtrToStructure(pApiSetNamespace, typeof(PE.ApiSetNamespace));
             for (var i = 0; i < Namespace.Count; i++)
             {
                 PE.ApiSetNamespaceEntry SetEntry = new PE.ApiSetNamespaceEntry();
                 SetEntry = (PE.ApiSetNamespaceEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry))), typeof(PE.ApiSetNamespaceEntry));
-                String ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2) + ".dll";
+                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2) + ".dll";
 
                 PE.ApiSetValueEntry SetValue = new PE.ApiSetValueEntry();
                 SetValue = (PE.ApiSetValueEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset), typeof(PE.ApiSetValueEntry));
-                String ApiSetValue = String.Empty;
+                string ApiSetValue = string.Empty;
                 if (SetValue.ValueCount != 0)
                 {
                     ApiSetValue = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset), SetValue.ValueCount/2);
-
                 }
 
                 // Add pair to dict
@@ -750,24 +743,16 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>Void</returns>
+        /// <returns>void</returns>
         public static void RewriteModuleIAT(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
         {
-            PE.IMAGE_DATA_DIRECTORY idd = new PE.IMAGE_DATA_DIRECTORY();
-            if (PEINFO.Is32Bit)
-            {
-                idd = PEINFO.OptHeader32.ImportTable;
-            }
-            else
-            {
-                idd = PEINFO.OptHeader64.ImportTable;
-            }
+            PE.IMAGE_DATA_DIRECTORY idd = PEINFO.Is32Bit ? PEINFO.OptHeader32.ImportTable : PEINFO.OptHeader64.ImportTable;
 
             // Ptr for the base import directory
             IntPtr pImportTable = (IntPtr)((UInt64)ModuleMemoryBase + idd.VirtualAddress);
 
             // Get API Set mapping dictionary if on Win10+
-            Execution.Native.OSVERSIONINFOEX OSVersion = new Execution.Native.OSVERSIONINFOEX();
+            Execute.Native.OSVERSIONINFOEX OSVersion = new Execution.Native.OSVERSIONINFOEX();
             Native.RtlGetVersion(ref OSVersion);
             Dictionary<string, string> ApiSetDict = new Dictionary<string, string>();
             if (OSVersion.MajorVersion >= 10)
@@ -776,17 +761,16 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             // Loop IID's
-            Execution.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR iid = new Execution.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR();
-            for (int i = 0; true; i++)
+            int counter = 0;
+            Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR iid = new Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR();
+            iid = (Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR) Marshal.PtrToStructure(
+                (IntPtr)((UInt64)pImportTable + (uint)(Marshal.SizeOf(iid) * counter)),
+                typeof(Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR)
+            );
+            while (iid.Name != 0)
             {
-                iid = (Execution.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure((IntPtr)((UInt64)pImportTable + (uint)(Marshal.SizeOf(iid) * i)), typeof(Execution.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR));
-                if (iid.Name == 0)
-                {
-                    break;
-                }
-
                 // Get DLL
-                String DllName = String.Empty;
+                string DllName = string.Empty;
                 try
                 {
                     DllName = Marshal.PtrToStringAnsi((IntPtr)((UInt64)ModuleMemoryBase + iid.Name));
@@ -794,22 +778,18 @@ namespace SharpSploit.Execution.DynamicInvoke
                 catch { }
 
                 // Loop imports
-                if (DllName != String.Empty)
+                if (DllName == string.Empty)
+                {
+                    throw new InvalidOperationException("Failed to read DLL name.");
+                }
+                else
                 {
                     // API Set DLL?
-                    if (OSVersion.MajorVersion >= 10)
+                    if (OSVersion.MajorVersion >= 10 && (DllName.StartsWith("api-") || DllName.StartsWith("ext-")) &&
+                        ApiSetDict.ContainsKey(DllName) && ApiSetDict[DllName].Length > 0)
                     {
-                        if (DllName.StartsWith("api-") || DllName.StartsWith("ext-"))
-                        {
-                            if (ApiSetDict.ContainsKey(DllName))
-                            {
-                                if (ApiSetDict[DllName].Length > 0)
-                                {
-                                    // Not all API set DLL's have a registered host mapping
-                                    DllName = ApiSetDict[DllName];
-                                }
-                            }
-                        }
+                        // Not all API set DLL's have a registered host mapping
+                        DllName = ApiSetDict[DllName];
                     }
                     
                     // Check and / or load DLL
@@ -827,10 +807,10 @@ namespace SharpSploit.Execution.DynamicInvoke
                     if (PEINFO.Is32Bit)
                     {
                         PE.IMAGE_THUNK_DATA32 oft_itd = new PE.IMAGE_THUNK_DATA32();
-                        for (int y = 0; true; y++)
+                        for (int i = 0; true; i++)
                         {
-                            oft_itd = (PE.IMAGE_THUNK_DATA32)Marshal.PtrToStructure((IntPtr)((UInt64)ModuleMemoryBase + iid.OriginalFirstThunk + (UInt32)(y * (sizeof(UInt32)))), typeof(PE.IMAGE_THUNK_DATA32));
-                            IntPtr ft_itd = (IntPtr)((UInt64)ModuleMemoryBase + iid.FirstThunk + (UInt64)(y * (sizeof(UInt32))));
+                            oft_itd = (PE.IMAGE_THUNK_DATA32)Marshal.PtrToStructure((IntPtr)((UInt64)ModuleMemoryBase + iid.OriginalFirstThunk + (UInt32)(i * (sizeof(UInt32)))), typeof(PE.IMAGE_THUNK_DATA32));
+                            IntPtr ft_itd = (IntPtr)((UInt64)ModuleMemoryBase + iid.FirstThunk + (UInt64)(i * (sizeof(UInt32))));
                             if (oft_itd.AddressOfData == 0)
                             {
                                 break;
@@ -855,13 +835,14 @@ namespace SharpSploit.Execution.DynamicInvoke
                                 Marshal.WriteInt32(ft_itd, pFunc.ToInt32());
                             }
                         }
-                    } else
+                    }
+                    else
                     {
                         PE.IMAGE_THUNK_DATA64 oft_itd = new PE.IMAGE_THUNK_DATA64();
-                        for (int y = 0; true; y++)
+                        for (int i = 0; true; i++)
                         {
-                            oft_itd = (PE.IMAGE_THUNK_DATA64)Marshal.PtrToStructure((IntPtr)((UInt64)ModuleMemoryBase + iid.OriginalFirstThunk + (UInt64)(y * (sizeof(UInt64)))), typeof(PE.IMAGE_THUNK_DATA64));
-                            IntPtr ft_itd = (IntPtr)((UInt64)ModuleMemoryBase + iid.FirstThunk + (UInt64)(y * (sizeof(UInt64))));
+                            oft_itd = (PE.IMAGE_THUNK_DATA64)Marshal.PtrToStructure((IntPtr)((UInt64)ModuleMemoryBase + iid.OriginalFirstThunk + (UInt64)(i * (sizeof(UInt64)))), typeof(PE.IMAGE_THUNK_DATA64));
+                            IntPtr ft_itd = (IntPtr)((UInt64)ModuleMemoryBase + iid.FirstThunk + (UInt64)(i * (sizeof(UInt64))));
                             if (oft_itd.AddressOfData == 0)
                             {
                                 break;
@@ -887,9 +868,11 @@ namespace SharpSploit.Execution.DynamicInvoke
                             }
                         }
                     }
-                } else
-                {
-                    throw new InvalidOperationException("Failed to read DLL name.");
+                    counter++;
+                    iid = (Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR)Marshal.PtrToStructure(
+                        (IntPtr)((UInt64)pImportTable + (uint)(Marshal.SizeOf(iid) * counter)),
+                        typeof(Execute.Win32.Kernel32.IMAGE_IMPORT_DESCRIPTOR)
+                    );
                 }
             }
         }
@@ -900,47 +883,39 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>Void</returns>
+        /// <returns>void</returns>
         public static void SetModuleSectionPermissions(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
         {
             // Apply RO to the module header
-            IntPtr BaseOfCode = IntPtr.Zero;
-            if (PEINFO.Is32Bit)
-            {
-                BaseOfCode = (IntPtr)PEINFO.OptHeader32.BaseOfCode;
-            }
-            else
-            {
-                BaseOfCode = (IntPtr)PEINFO.OptHeader64.BaseOfCode;
-            }
-            Native.NtProtectVirtualMemory((IntPtr)(-1), ref ModuleMemoryBase, ref BaseOfCode, Execution.Win32.WinNT.PAGE_READONLY);
+            IntPtr BaseOfCode = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.BaseOfCode : (IntPtr)PEINFO.OptHeader64.BaseOfCode;
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref ModuleMemoryBase, ref BaseOfCode, Execute.Win32.WinNT.PAGE_READONLY);
 
             // Apply section permissions
             foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
             {
-                Boolean isRead = (ish.Characteristics & PE.DataSectionFlags.MEM_READ) != 0;
-                Boolean isWrite = (ish.Characteristics & PE.DataSectionFlags.MEM_WRITE) != 0;
-                Boolean isExecute = (ish.Characteristics & PE.DataSectionFlags.MEM_EXECUTE) != 0;
+                bool isRead = (ish.Characteristics & PE.DataSectionFlags.MEM_READ) != 0;
+                bool isWrite = (ish.Characteristics & PE.DataSectionFlags.MEM_WRITE) != 0;
+                bool isExecute = (ish.Characteristics & PE.DataSectionFlags.MEM_EXECUTE) != 0;
                 uint flNewProtect = 0;
                 if (isRead & !isWrite & !isExecute)
                 {
-                    flNewProtect = Execution.Win32.WinNT.PAGE_READONLY;
+                    flNewProtect = Execute.Win32.WinNT.PAGE_READONLY;
                 }
                 else if (isRead & isWrite & !isExecute)
                 {
-                    flNewProtect = Execution.Win32.WinNT.PAGE_READWRITE;
+                    flNewProtect = Execute.Win32.WinNT.PAGE_READWRITE;
                 }
                 else if (isRead & isWrite & isExecute)
                 {
-                    flNewProtect = Execution.Win32.WinNT.PAGE_EXECUTE_READWRITE;
+                    flNewProtect = Execute.Win32.WinNT.PAGE_EXECUTE_READWRITE;
                 }
                 else if (isRead & !isWrite & isExecute)
                 {
-                    flNewProtect = Execution.Win32.WinNT.PAGE_EXECUTE_READ;
+                    flNewProtect = Execute.Win32.WinNT.PAGE_EXECUTE_READ;
                 }
                 else if (!isRead & !isWrite & isExecute)
                 {
-                    flNewProtect = Execution.Win32.WinNT.PAGE_EXECUTE;
+                    flNewProtect = Execute.Win32.WinNT.PAGE_EXECUTE;
                 }
                 else
                 {
@@ -965,86 +940,45 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static PE.PE_MANUAL_MAP MapModuleToMemory(string ModulePath)
         {
             // Verify process & architecture
-            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
             if (IntPtr.Size == 4 && isWOW64)
             {
                 throw new InvalidOperationException("Manual mapping in WOW64 is not supported.");
             }
 
             // Alloc module into memory for parsing
-            IntPtr ModlePointer = FileToMemoryPointer(ModulePath);
-
-            // Fetch PE meta data
-            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
-
-            // Check module matches the process architecture
-            if ((PEINFO.Is32Bit && IntPtr.Size == 8) || (!PEINFO.Is32Bit && IntPtr.Size == 4))
-            {
-                Marshal.FreeHGlobal(ModlePointer);
-                throw new InvalidOperationException("The module architecture does not match the process architecture.");
-            }
-
-            // Alloc PE image memory -> RW
-            IntPtr BaseAddress = IntPtr.Zero;
-            IntPtr RegionSize = IntPtr.Zero;
-            UInt32 SizeOfHeaders = 0;
-            if (PEINFO.Is32Bit)
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
-            }
-            else
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
-            }
-            IntPtr pImage = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
-
-            // Write PE header to memory
-            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, ModlePointer, SizeOfHeaders);
-
-            // Write sections to memory
-            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
-            {
-                // Calculate offsets
-                IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
-                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
-
-                // Write data
-                BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
-                if (BytesWritten != ish.SizeOfRawData)
-                {
-                    throw new InvalidOperationException("Failed to write to memory.");
-                }
-            }
-
-            // Perform relocations
-            RelocateModule(PEINFO, pImage);
-
-            // Rewrite IAT
-            RewriteModuleIAT(PEINFO, pImage);
-
-            // Set memory protections
-            SetModuleSectionPermissions(PEINFO, pImage);
-
-            // Free temp HGlobal
-            Marshal.FreeHGlobal(ModlePointer);
-
-            // Prepare return object
-            PE.PE_MANUAL_MAP ManMapObject = new PE.PE_MANUAL_MAP();
-            ManMapObject.ModuleBase = pImage;
-            ManMapObject.PEINFO = PEINFO;
-
-            return ManMapObject;
+            IntPtr pModule = AllocateFileToMemory(ModulePath);
+            return MapModuleToMemory(pModule);
         }
 
         /// <summary>
         /// Manually map module into current process.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
-        /// <param name="ModuleByteArray">Full byte array of the module.</param>
+        /// <param name="Module">Full byte array of the module.</param>
         /// <returns>PE_MANUAL_MAP object</returns>
-        public static PE.PE_MANUAL_MAP MapModuleToMemory(byte[] ModuleByteArray)
+        public static PE.PE_MANUAL_MAP MapModuleToMemory(byte[] Module)
+        {
+            // Verify process & architecture
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Manual mapping in WOW64 is not supported.");
+            }
+
+            // Alloc module into memory for parsing
+            IntPtr pModule = AllocateBytesToMemory(Module);
+            return MapModuleToMemory(pModule);
+        }
+
+        /// <summary>
+        /// Manually map module into current process starting at the specified base address.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+        /// <param name="Module">Full byte array of the module.</param>
+        /// <param name="pImage">Address in memory to map module to.</param>
+        /// <returns>PE_MANUAL_MAP object</returns>
+        public static PE.PE_MANUAL_MAP MapModuleToMemory(byte[] Module, IntPtr pImage)
         {
             // Verify process & architecture
             Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
@@ -1054,43 +988,80 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             // Alloc module into memory for parsing
-            IntPtr ModlePointer = FileToMemoryPointer(ModuleByteArray);
+            IntPtr pModule = AllocateBytesToMemory(Module);
 
+            return MapModuleToMemory(pModule, pImage);
+        }
+
+        /// <summary>
+        /// Manually map module into current process.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="pModule">Pointer to the module base.</param>
+        /// <returns>PE_MANUAL_MAP object</returns>
+        public static PE.PE_MANUAL_MAP MapModuleToMemory(IntPtr pModule)
+        {
             // Fetch PE meta data
-            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
+            PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
 
             // Check module matches the process architecture
             if ((PEINFO.Is32Bit && IntPtr.Size == 8) || (!PEINFO.Is32Bit && IntPtr.Size == 4))
             {
-                Marshal.FreeHGlobal(ModlePointer);
+                Marshal.FreeHGlobal(pModule);
                 throw new InvalidOperationException("The module architecture does not match the process architecture.");
             }
 
             // Alloc PE image memory -> RW
             IntPtr BaseAddress = IntPtr.Zero;
-            IntPtr RegionSize = IntPtr.Zero;
-            UInt32 SizeOfHeaders = 0;
-            if (PEINFO.Is32Bit)
+            IntPtr RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+            IntPtr pImage = Native.NtAllocateVirtualMemory(
+                (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
+                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
+            return MapModuleToMemory(pModule, pImage, PEINFO);
+        }
+
+        /// <summary>
+        /// Manually map module into current process.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="pModule">Pointer to the module base.</param>
+        /// <param name="pImage">Pointer to the PEINFO image.</param>
+        /// <returns>PE_MANUAL_MAP object</returns>
+        public static PE.PE_MANUAL_MAP MapModuleToMemory(IntPtr pModule, IntPtr pImage)
+        {
+            PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
+            return MapModuleToMemory(pModule, pImage, PEINFO);
+        }
+
+        /// <summary>
+        /// Manually map module into current process.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="pModule">Pointer to the module base.</param>
+        /// <param name="pImage">Pointer to the PEINFO image.</param>
+        /// <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
+        /// <returns>PE_MANUAL_MAP object</returns>
+        public static PE.PE_MANUAL_MAP MapModuleToMemory(IntPtr pModule, IntPtr pImage, PE.PE_META_DATA PEINFO)
+        {
+            // Check module matches the process architecture
+            if ((PEINFO.Is32Bit && IntPtr.Size == 8) || (!PEINFO.Is32Bit && IntPtr.Size == 4))
             {
-                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
+                Marshal.FreeHGlobal(pModule);
+                throw new InvalidOperationException("The module architecture does not match the process architecture.");
             }
-            else
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
-            }
-            IntPtr pImage = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
 
             // Write PE header to memory
-            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, ModlePointer, SizeOfHeaders);
+            UInt32 SizeOfHeaders = PEINFO.Is32Bit ? PEINFO.OptHeader32.SizeOfHeaders : PEINFO.OptHeader64.SizeOfHeaders;
+            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, pModule, SizeOfHeaders);
 
             // Write sections to memory
             foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
             {
                 // Calculate offsets
                 IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
-                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
+                IntPtr pRawSectionBase = (IntPtr)((UInt64)pModule + ish.PointerToRawData);
 
                 // Write data
                 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
@@ -1110,14 +1081,37 @@ namespace SharpSploit.Execution.DynamicInvoke
             SetModuleSectionPermissions(PEINFO, pImage);
 
             // Free temp HGlobal
-            Marshal.FreeHGlobal(ModlePointer);
+            Marshal.FreeHGlobal(pModule);
 
             // Prepare return object
-            PE.PE_MANUAL_MAP ManMapObject = new PE.PE_MANUAL_MAP();
-            ManMapObject.ModuleBase = pImage;
-            ManMapObject.PEINFO = PEINFO;
+            PE.PE_MANUAL_MAP ManMapObject = new PE.PE_MANUAL_MAP
+            {
+                ModuleBase = pImage,
+                PEINFO = PEINFO
+            };
 
             return ManMapObject;
+        }
+
+        private static bool HasValidSignature(string FilePath)
+        {
+            X509Certificate2 FileCertificate;
+            try
+            {
+                X509Certificate signer = X509Certificate.CreateFromSignedFile(FilePath);
+                FileCertificate = new X509Certificate2(signer);
+            }
+            catch
+            {
+                return false;
+            }
+
+            X509Chain CertificateChain = new X509Chain();
+            CertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
+            CertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;
+            CertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
+
+            return CertificateChain.Build(FileCertificate);
         }
 
         /// <summary>
@@ -1125,38 +1119,18 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="MinSize">Minimum module byte size.</param>
-        /// <returns>String, either a full path for the candidate module or String.Empty</returns>
+        /// <returns>
+        /// String, the full path for the candidate module if one is found, or an empty string if one is not found.
+        /// </returns>
         public static string FindDecoyModule(long MinSize)
         {
-            bool HasValidSignature(string FilePath)
-            {
-                X509Certificate2 FileCertificate;
-                try
-                {
-                    X509Certificate TheSigner = X509Certificate.CreateFromSignedFile(FilePath);
-                    FileCertificate = new X509Certificate2(TheSigner);
-                }
-                catch
-                {
-                    return false;
-                }
-
-                X509Chain CertificateChain = new X509Chain();
-                CertificateChain.ChainPolicy.RevocationFlag = X509RevocationFlag.EntireChain;
-                CertificateChain.ChainPolicy.RevocationMode = X509RevocationMode.Offline;
-                CertificateChain.ChainPolicy.VerificationFlags = X509VerificationFlags.NoFlag;
-
-                return CertificateChain.Build(FileCertificate);
-            }
-
-            string SystemDirectoryPath = Environment.GetEnvironmentVariable("WINDIR") + "\\System32";
+            string SystemDirectoryPath = Environment.GetEnvironmentVariable("WINDIR") + Path.DirectorySeparatorChar + "System32";
             List<string> files = new List<string>(Directory.GetFiles(SystemDirectoryPath, "*.dll"));
             foreach (ProcessModule Module in Process.GetCurrentProcess().Modules)
             {
                 if (files.Any(s => s.Equals(Module.FileName, StringComparison.OrdinalIgnoreCase)))
                 {
                     files.RemoveAt(files.FindIndex(x => x.Equals(Module.FileName, StringComparison.OrdinalIgnoreCase)));
-                    continue;
                 }
             }
 
@@ -1175,84 +1149,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 }
                 candidates.Add(rInt);
             }
-            return String.Empty;
-        }
-
-        /// <summary>
-        /// Manually map module into current process starting at the specified base address.
-        /// </summary>
-        /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-        /// <param name="ModuleByteArray">Full byte array of the module.</param>
-        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>PE_MANUAL_MAP object</returns>
-        public static PE.PE_MANUAL_MAP MapModuleToMemoryAddress(byte[] ModuleByteArray, IntPtr ModuleMemoryBase)
-        {
-            // Verify process & architecture
-            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
-            if (IntPtr.Size == 4 && isWOW64)
-            {
-                throw new InvalidOperationException("Manual mapping in WOW64 is not supported.");
-            }
-
-            // Alloc module into memory for parsing
-            IntPtr ModlePointer = FileToMemoryPointer(ModuleByteArray);
-
-            // Fetch PE meta data
-            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
-
-            // Check module matches the process architecture
-            if ((PEINFO.Is32Bit && IntPtr.Size == 8) || (!PEINFO.Is32Bit && IntPtr.Size == 4))
-            {
-                Marshal.FreeHGlobal(ModlePointer);
-                throw new InvalidOperationException("The module architecture does not match the process architecture.");
-            }
-
-            UInt32 SizeOfHeaders = 0;
-            if (PEINFO.Is32Bit)
-            {
-                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
-            }
-            else
-            {
-                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
-            }
-
-            // Write PE header to memory
-            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), ModuleMemoryBase, ModlePointer, SizeOfHeaders);
-
-            // Write sections to memory
-            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
-            {
-                // Calculate offsets
-                IntPtr pVirtualSectionBase = (IntPtr)((UInt64)ModuleMemoryBase + ish.VirtualAddress);
-                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
-
-                // Write data
-                BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
-                if (BytesWritten != ish.SizeOfRawData)
-                {
-                    throw new InvalidOperationException("Failed to write to memory.");
-                }
-            }
-
-            // Perform relocations
-            RelocateModule(PEINFO, ModuleMemoryBase);
-
-            // Rewrite IAT
-            RewriteModuleIAT(PEINFO, ModuleMemoryBase);
-
-            // Set memory protections
-            SetModuleSectionPermissions(PEINFO, ModuleMemoryBase);
-
-            // Free temp HGlobal
-            Marshal.FreeHGlobal(ModlePointer);
-
-            // Prepare return object
-            PE.PE_MANUAL_MAP ManMapObject = new PE.PE_MANUAL_MAP();
-            ManMapObject.ModuleBase = ModuleMemoryBase;
-            ManMapObject.PEINFO = PEINFO;
-
-            return ManMapObject;
+            return string.Empty;
         }
 
         /// <summary>
@@ -1266,7 +1163,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static PE.PE_MANUAL_MAP OverloadModule(string PayloadPath, string DecoyModulePath = null)
         {
             // Verify process & architecture
-            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
             if (IntPtr.Size == 4 && isWOW64)
             {
                 throw new InvalidOperationException("Module overloading in WOW64 is not supported.");
@@ -1277,50 +1174,9 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 throw new InvalidOperationException("Payload filepath not found.");
             }
-            byte[] PayloadFileBytes = File.ReadAllBytes(PayloadPath);
+            byte[] Payload = File.ReadAllBytes(PayloadPath);
 
-            // Did we get a DecoyModule?
-            if (!String.IsNullOrEmpty(DecoyModulePath))
-            {
-                if (!File.Exists(DecoyModulePath))
-                {
-                    throw new InvalidOperationException("Decoy filepath not found.");
-                }
-                byte[] DecoyFileBytes = File.ReadAllBytes(DecoyModulePath);
-                if (DecoyFileBytes.Length < PayloadFileBytes.Length)
-                {
-                    throw new InvalidOperationException("Decoy module is too small to host the payload.");
-                }
-            } else
-            {
-                DecoyModulePath = FindDecoyModule(PayloadFileBytes.Length);
-                if (String.IsNullOrEmpty(DecoyModulePath))
-                {
-                    throw new InvalidOperationException("Failed to find suitable decoy module.");
-                }
-            }
-
-            // Map decoy from disk
-            Execution.PE.PE_MANUAL_MAP DecoyMetaData = MapModuleFromDisk(DecoyModulePath);
-            IntPtr RegionSize = IntPtr.Zero;
-            if (DecoyMetaData.PEINFO.Is32Bit)
-            {
-                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader32.SizeOfImage);
-            } else
-            {
-                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader64.SizeOfImage);
-            }
-            // Change permissions to RW
-            Native.NtProtectVirtualMemory((IntPtr)(-1), ref DecoyMetaData.ModuleBase, ref RegionSize, Execution.Win32.WinNT.PAGE_READWRITE);
-
-            // Zero out memory
-            Native.RtlZeroMemory(DecoyMetaData.ModuleBase, (int)RegionSize);
-
-            // Overload module in memory
-            PE.PE_MANUAL_MAP OverloadedModuleMetaData = MapModuleToMemoryAddress(PayloadFileBytes, DecoyMetaData.ModuleBase);
-            OverloadedModuleMetaData.DecoyModule = DecoyModulePath;
-
-            return OverloadedModuleMetaData;
+            return OverloadModule(Payload, DecoyModulePath);
         }
 
         /// <summary>
@@ -1328,59 +1184,52 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
         /// </summary>
         /// <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-        /// <param name="PayloadByteArray">Full byte array for the payload module.</param>
-        /// <param name="DecoyModule">Optional, full path the decoy module to overload in memory.</param>
+        /// <param name="Payload">Full byte array for the payload module.</param>
+        /// <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
         /// <returns>PE.PE_MANUAL_MAP</returns>
-        public static PE.PE_MANUAL_MAP OverloadModule(byte[] PayloadFileBytes, string DecoyModulePath = null)
+        public static PE.PE_MANUAL_MAP OverloadModule(byte[] Payload, string DecoyModulePath = null)
         {
             // Verify process & architecture
-            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
             if (IntPtr.Size == 4 && isWOW64)
             {
                 throw new InvalidOperationException("Module overloading in WOW64 is not supported.");
             }
 
             // Did we get a DecoyModule?
-            if (!String.IsNullOrEmpty(DecoyModulePath))
+            if (!string.IsNullOrEmpty(DecoyModulePath))
             {
                 if (!File.Exists(DecoyModulePath))
                 {
                     throw new InvalidOperationException("Decoy filepath not found.");
                 }
                 byte[] DecoyFileBytes = File.ReadAllBytes(DecoyModulePath);
-                if (DecoyFileBytes.Length < PayloadFileBytes.Length)
+                if (DecoyFileBytes.Length < Payload.Length)
                 {
                     throw new InvalidOperationException("Decoy module is too small to host the payload.");
                 }
             }
             else
             {
-                DecoyModulePath = FindDecoyModule(PayloadFileBytes.Length);
-                if (String.IsNullOrEmpty(DecoyModulePath))
+                DecoyModulePath = FindDecoyModule(Payload.Length);
+                if (string.IsNullOrEmpty(DecoyModulePath))
                 {
                     throw new InvalidOperationException("Failed to find suitable decoy module.");
                 }
             }
 
             // Map decoy from disk
-            Execution.PE.PE_MANUAL_MAP DecoyMetaData = MapModuleFromDisk(DecoyModulePath);
-            IntPtr RegionSize = IntPtr.Zero;
-            if (DecoyMetaData.PEINFO.Is32Bit)
-            {
-                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader32.SizeOfImage);
-            }
-            else
-            {
-                RegionSize = (IntPtr)(DecoyMetaData.PEINFO.OptHeader64.SizeOfImage);
-            }
+            Execute.PE.PE_MANUAL_MAP DecoyMetaData = MapModuleFromDisk(DecoyModulePath);
+            IntPtr RegionSize = DecoyMetaData.PEINFO.Is32Bit ? (IntPtr)DecoyMetaData.PEINFO.OptHeader32.SizeOfImage : (IntPtr)DecoyMetaData.PEINFO.OptHeader64.SizeOfImage;
+
             // Change permissions to RW
-            Native.NtProtectVirtualMemory((IntPtr)(-1), ref DecoyMetaData.ModuleBase, ref RegionSize, Execution.Win32.WinNT.PAGE_READWRITE);
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref DecoyMetaData.ModuleBase, ref RegionSize, Execute.Win32.WinNT.PAGE_READWRITE);
 
             // Zero out memory
             Native.RtlZeroMemory(DecoyMetaData.ModuleBase, (int)RegionSize);
 
             // Overload module in memory
-            PE.PE_MANUAL_MAP OverloadedModuleMetaData = MapModuleToMemoryAddress(PayloadFileBytes, DecoyMetaData.ModuleBase);
+            PE.PE_MANUAL_MAP OverloadedModuleMetaData = MapModuleToMemory(Payload, DecoyMetaData.ModuleBase);
             OverloadedModuleMetaData.DecoyModule = DecoyModulePath;
 
             return OverloadedModuleMetaData;
@@ -1392,22 +1241,21 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>Void</returns>
+        /// <returns>void</returns>
         public static void CallMappedPEModule(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
         {
             // Call module by EntryPoint (eg Mimikatz.exe)
             IntPtr hRemoteThread = IntPtr.Zero;
-            IntPtr lpStartAddress = IntPtr.Zero;
-            if (PEINFO.Is32Bit)
-            {
-                lpStartAddress = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint);
-            }
-            else
-            {
-                lpStartAddress = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
-            }
+            IntPtr lpStartAddress = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
+                                                     (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
 
-            Native.NtCreateThreadEx(ref hRemoteThread, Execute.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero, (IntPtr)(-1), lpStartAddress, IntPtr.Zero, false, 0, 0, 0, IntPtr.Zero);
+            Native.NtCreateThreadEx(
+                ref hRemoteThread,
+                Execute.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL,
+                IntPtr.Zero, (IntPtr)(-1),
+                lpStartAddress, IntPtr.Zero,
+                false, 0, 0, 0, IntPtr.Zero
+            );
         }
 
         /// <summary>
@@ -1416,21 +1264,14 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
         /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-        /// <returns>Void</returns>
+        /// <returns>void</returns>
         public static void CallMappedDLLModule(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
         {
-            IntPtr lpEntryPoint = IntPtr.Zero;
-            if (PEINFO.Is32Bit)
-            {
-                lpEntryPoint = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint);
-            }
-            else
-            {
-                lpEntryPoint = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
-            }
+            IntPtr lpEntryPoint = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
+                                                   (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
 
             PE.DllMain fDllMain = (PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(PE.DllMain));
-            Boolean CallRes = fDllMain(ModuleMemoryBase, PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
+            bool CallRes = fDllMain(ModuleMemoryBase, PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
             if (!CallRes)
             {
                 throw new InvalidOperationException("Failed to call DllMain -> DLL_PROCESS_ATTACH");
@@ -1446,26 +1287,10 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
-        /// <returns>Void</returns>
-        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, String ExportName, Type FunctionDelegateType, object[] Parameters)
+        /// <returns>void</returns>
+        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters)
         {
-            // Call module by DllMain -> DLL_PROCESS_ATTACH
-            IntPtr lpEntryPoint = IntPtr.Zero;
-            if (PEINFO.Is32Bit)
-            {
-                lpEntryPoint = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint);
-            }
-            else
-            {
-                lpEntryPoint = (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
-            }
-
-            PE.DllMain fDllMain = (PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(PE.DllMain));
-            Boolean CallRes = fDllMain(ModuleMemoryBase, PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
-            if (!CallRes)
-            {
-                throw new InvalidOperationException("Failed to call DllMain -> DLL_PROCESS_ATTACH");
-            }
+            CallMappedDLLModule(PEINFO, ModuleMemoryBase);
 
             // Get export pointer
             IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);
@@ -1483,54 +1308,49 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static IntPtr GetSyscallStub(string FunctionName)
         {
             // Verify process & architecture
-            Boolean isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
             if (IntPtr.Size == 4 && isWOW64)
             {
                 throw new InvalidOperationException("Generating Syscall stubs is not supported for WOW64.");
             }
 
             // Find the path for ntdll by looking at the currently loaded module
-            String NtdllPath = String.Empty;
+            string NtdllPath = string.Empty;
             ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
             foreach (ProcessModule Mod in ProcModules)
             {
-                if (Mod.FileName.ToLower().EndsWith("ntdll.dll"))
+                if (Mod.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase))
                 {
                     NtdllPath = Mod.FileName;
                 }
             }
 
             // Alloc module into memory for parsing
-            IntPtr ModlePointer = FileToMemoryPointer(NtdllPath);
+            IntPtr pModule = AllocateFileToMemory(NtdllPath);
 
             // Fetch PE meta data
-            PE.PE_META_DATA PEINFO = GetPeMetaData(ModlePointer);
+            PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
 
             // Alloc PE image memory -> RW
             IntPtr BaseAddress = IntPtr.Zero;
-            IntPtr RegionSize = IntPtr.Zero;
-            UInt32 SizeOfHeaders = 0;
-            if (PEINFO.Is32Bit)
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader32.SizeOfHeaders;
-            }
-            else
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
-                SizeOfHeaders = PEINFO.OptHeader64.SizeOfHeaders;
-            }
-            IntPtr pImage = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
+            IntPtr RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+            UInt32 SizeOfHeaders = PEINFO.Is32Bit ? PEINFO.OptHeader32.SizeOfHeaders : PEINFO.OptHeader64.SizeOfHeaders;
+
+            IntPtr pImage = Native.NtAllocateVirtualMemory(
+                (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
+                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
 
             // Write PE header to memory
-            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, ModlePointer, SizeOfHeaders);
+            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, pModule, SizeOfHeaders);
 
             // Write sections to memory
             foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
             {
                 // Calculate offsets
                 IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
-                IntPtr pRawSectionBase = (IntPtr)((UInt64)ModlePointer + ish.PointerToRawData);
+                IntPtr pRawSectionBase = (IntPtr)((UInt64)pModule + ish.PointerToRawData);
 
                 // Write data
                 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
@@ -1550,7 +1370,11 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Alloc memory for call stub
             BaseAddress = IntPtr.Zero;
             RegionSize = (IntPtr)0x50;
-            IntPtr pCallStub = Native.NtAllocateVirtualMemory((IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize, Execution.Win32.Kernel32.MEM_COMMIT | Execution.Win32.Kernel32.MEM_RESERVE, Execution.Win32.WinNT.PAGE_READWRITE);
+            IntPtr pCallStub = Native.NtAllocateVirtualMemory(
+                (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
+                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
 
             // Write call stub
             BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pCallStub, pFunc, 0x50);
@@ -1560,20 +1384,13 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             // Change call stub permissions
-            Native.NtProtectVirtualMemory((IntPtr)(-1), ref pCallStub, ref RegionSize, Execution.Win32.WinNT.PAGE_EXECUTE_READ);
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref pCallStub, ref RegionSize, Execute.Win32.WinNT.PAGE_EXECUTE_READ);
 
             // Free temporary allocations
-            Marshal.FreeHGlobal(ModlePointer);
-            if (PEINFO.Is32Bit)
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader32.SizeOfImage;
-            }
-            else
-            {
-                RegionSize = (IntPtr)PEINFO.OptHeader64.SizeOfImage;
-            }
+            Marshal.FreeHGlobal(pModule);
+            RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
 
-            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, SharpSploit.Execution.Win32.Kernel32.MEM_RELEASE);
+            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, Execute.Win32.Kernel32.MEM_RELEASE);
 
             return pCallStub;
         }

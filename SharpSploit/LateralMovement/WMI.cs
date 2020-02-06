@@ -23,11 +23,9 @@ namespace SharpSploit.LateralMovement
         /// <param name="Command">Command to execute on remote system.</param>
         /// <param name="Username">Username to authenticate as to the remote system.</param>
         /// <param name="Password">Password to authenticate the user.</param>
-        /// <returns>SharpSploitResultList of WmiExecuteResult.</returns>
-        public static SharpSploitResultList<WmiExecuteResult> WMIExecute(string ComputerName, string Command, string Username = "", string Password = "")
+        /// <returns>WmiExecuteResult, null on failure.</returns>
+        public static WmiExecuteResult WMIExecute(string ComputerName, string Command, string Username = "", string Password = "")
         {
-            SharpSploitResultList<WmiExecuteResult> wmiExecuteResult = new SharpSploitResultList<WmiExecuteResult>();
-
             ConnectionOptions options = new ConnectionOptions();
             if ((Username != null && Username != "") && Password != null)
             {
@@ -48,17 +46,17 @@ namespace SharpSploit.LateralMovement
 
                 ManagementBaseObject outParams = wmiProcess.InvokeMethod("Create", inParams, null);
 
-                wmiExecuteResult.Add(new WmiExecuteResult
+                return new WmiExecuteResult
                 {
                     ReturnValue = outParams["returnValue"].ToString(),
                     ProcessID = outParams["processId"].ToString()
-                });
+                };
             }
             catch (Exception e)
             {
                 Console.Error.WriteLine("WMI Exception:" + e.Message);
+                return null;
             }
-            return wmiExecuteResult;
         }
 
         /// <summary>
@@ -69,9 +67,11 @@ namespace SharpSploit.LateralMovement
         /// <param name="Username">Username to authenticate as to the remote system.</param>
         /// <param name="Password">Password to authenticate the user.</param>
         /// <returns>Bool. True if execution succeeds, false otherwise.</returns>
-        public static List<SharpSploitResultList<WmiExecuteResult>> WMIExecute(List<string> ComputerNames, string Command, string Username, string Password)
+        public static SharpSploitResultList<WmiExecuteResult> WMIExecute(List<string> ComputerNames, string Command, string Username, string Password)
         {
-            return ComputerNames.Select(CN => WMIExecute(CN, Command, Username, Password)).ToList();
+            SharpSploitResultList<WmiExecuteResult> results = new SharpSploitResultList<WmiExecuteResult>();
+            results.AddRange(ComputerNames.Select(CN => WMIExecute(CN, Command, Username, Password)));
+            return results;
         }
 
         public sealed class WmiExecuteResult : SharpSploitResult

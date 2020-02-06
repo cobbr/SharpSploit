@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace SharpSploit.Execution.Injection
 {
@@ -30,26 +32,26 @@ namespace SharpSploit.Execution.Injection
         /// Inject and execute a payload in the target process using a specific allocation technique.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The type of payload to execute.</param>
-        /// <param name="alloc">The allocation tpe to use.</param>
-        /// <param name="process">The target process.</param>
-        /// <returns></returns>
-        public bool Inject(PayloadType payload, AllocationTechnique alloc, System.Diagnostics.Process process)
+        /// <param name="Payload">The type of payload to execute.</param>
+        /// <param name="AllocationTechnique">The allocation technique to use.</param>
+        /// <param name="Process">The target process.</param>
+        /// <returns>bool</returns>
+        public bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, Process Process)
         {
-            Type[] funcPrototype = new Type[] { payload.GetType(), alloc.GetType(), process.GetType()};
+            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType(), Process.GetType()};
 
             try
             {
-                //Get delegate to the overload of Inject that supports the type of payload passed in
-                System.Reflection.MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
+                // Get delegate to the overload of Inject that supports the type of payload passed in
+                MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
 
-                //Dynamically invoke the appropriate Allocate overload
-                return (bool)inject.Invoke(this, new object[] { payload, alloc, process });
+                // Dynamically invoke the appropriate Allocate overload
+                return (bool)inject.Invoke(this, new object[] { Payload, AllocationTechnique, Process });
             }
-            //If there is no such method
+            // If there is no such method
             catch (ArgumentNullException)
             {
-                throw new PayloadTypeNotSupported(payload.GetType());
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
         }
 
@@ -57,26 +59,26 @@ namespace SharpSploit.Execution.Injection
         /// Execute a payload in the target process at a specified address.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The type of payload to execute.</param>
-        /// <param name="baseAddr">The base address of the payload.</param>
-        /// <param name="process">The target process.</param>
-        /// <returns></returns>
-        public bool Inject(PayloadType payload, IntPtr baseAddr, System.Diagnostics.Process process)
+        /// <param name="Payload">The type of payload to execute.</param>
+        /// <param name="BaseAddress">The base address of the payload.</param>
+        /// <param name="Process">The target process.</param>
+        /// <returns>bool</returns>
+        public virtual bool Inject(PayloadType Payload, IntPtr BaseAddress, Process Process)
         {
-            Type[] funcPrototype = new Type[] { payload.GetType(), baseAddr.GetType(), process.GetType() };
+            Type[] funcPrototype = new Type[] { Payload.GetType(), BaseAddress.GetType(), Process.GetType() };
 
             try
             {
-                //Get delegate to the overload of Inject that supports the type of payload passed in
-                System.Reflection.MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
+                // Get delegate to the overload of Inject that supports the type of payload passed in
+                MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
 
-                //Dynamically invoke the appropriate Allocate overload
-                return (bool)inject.Invoke(this, new object[] { payload, baseAddr, process });
+                // Dynamically invoke the appropriate Allocate overload
+                return (bool)inject.Invoke(this, new object[] { Payload, BaseAddress, Process });
             }
-            //If there is no such method
+            // If there is no such method
             catch (ArgumentNullException)
             {
-                throw new PayloadTypeNotSupported(payload.GetType());
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
         }
 
@@ -84,25 +86,25 @@ namespace SharpSploit.Execution.Injection
         /// Execute a payload in the current process using a specific allocation technique.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The type of payload to execute.</param>
-        /// <param name="alloc">The allocation technique to use.</param>
+        /// <param name="Payload">The type of payload to execute.</param>
+        /// <param name="AllocationTechnique">The allocation technique to use.</param>
         /// <returns></returns>
-        public bool Inject(PayloadType payload, AllocationTechnique alloc)
+        public virtual bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique)
         {
-            Type[] funcPrototype = new Type[] { payload.GetType(), alloc.GetType()};
+            Type[] funcPrototype = new Type[] { Payload.GetType(), AllocationTechnique.GetType()};
 
             try
             {
-                //Get delegate to the overload of Inject that supports the type of payload passed in
-                System.Reflection.MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
+                // Get delegate to the overload of Inject that supports the type of payload passed in
+                MethodInfo inject = this.GetType().GetMethod("Inject", funcPrototype);
 
-                //Dynamically invoke the appropriate Allocate overload
-                return (bool)inject.Invoke(this, new object[] { payload, alloc });
+                // Dynamically invoke the appropriate Allocate overload
+                return (bool)inject.Invoke(this, new object[] { Payload, AllocationTechnique });
             }
-            //If there is no such method
+            // If there is no such method
             catch (ArgumentNullException)
             {
-                throw new PayloadTypeNotSupported(payload.GetType());
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
         }
     }
@@ -113,19 +115,19 @@ namespace SharpSploit.Execution.Injection
     /// </summary>
     public class RemoteThreadCreate : ExecutionTechnique
     {
-        //Publically accessible options
+        // Publically accessible options
         public bool suspended = false;
         public APIS api = APIS.NtCreateThreadEx;
 
         public enum APIS : int
         {
             NtCreateThreadEx = 0,
-            //NtCreateThread = 1, //Not implemented
+            // NtCreateThread = 1, // Not implemented
             RtlCreateUserThread = 2,
             CreateRemoteThread = 3
         };
 
-        //Handle of the new thread. Only valid after the thread has been created.
+        // Handle of the new thread. Only valid after the thread has been created.
         public IntPtr handle = IntPtr.Zero;
 
         /// <summary>
@@ -134,7 +136,6 @@ namespace SharpSploit.Execution.Injection
         public RemoteThreadCreate()
         {
             DefineSupportedPayloadTypes();
-
         }
 
         /// <summary>
@@ -143,8 +144,6 @@ namespace SharpSploit.Execution.Injection
         public RemoteThreadCreate(bool susp = false, APIS varAPI = APIS.NtCreateThreadEx)
         {
             DefineSupportedPayloadTypes();
-
-            //Set options
             suspended = susp;
             api = varAPI;
         }
@@ -153,11 +152,11 @@ namespace SharpSploit.Execution.Injection
         /// States whether the payload is supported.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">Payload that will be allocated.</param>
+        /// <param name="Payload">Payload that will be allocated.</param>
         /// <returns></returns>
-        public override bool IsSupportedPayloadType(PayloadType payload)
+        public override bool IsSupportedPayloadType(PayloadType Payload)
         {
-            return supportedPayloads.Contains(payload.GetType());
+            return supportedPayloads.Contains(Payload.GetType());
         }
 
         /// <summary>
@@ -167,7 +166,7 @@ namespace SharpSploit.Execution.Injection
         /// <author>The Wover (@TheRealWover)</author>
         internal override void DefineSupportedPayloadTypes()
         {
-            //Defines the set of supported payload types.
+            // Defines the set of supported payload types.
             supportedPayloads = new Type[] {
                 typeof(PICPayload)
             };
@@ -177,83 +176,92 @@ namespace SharpSploit.Execution.Injection
         /// Only ever called if the user passed in a Payload type without an Inject overload.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">Payload type.</param>
-        /// <param name="alloc">Allocation technique.</param>
-        /// <param name="process">The target process.</param>
+        /// <param name="Payload">Payload type.</param>
+        /// <param name="AllocationTechnique">Allocation technique.</param>
+        /// <param name="Process">The target process.</param>
         /// <returns></returns>
-        public bool Inject(PayloadType payload, AllocationTechnique alloc, System.Diagnostics.Process process)
+        public bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, Process Process)
         {
-            throw new PayloadTypeNotSupported(payload.GetType());
+            if (!IsSupportedPayloadType(Payload))
+            {
+                throw new PayloadTypeNotSupported(Payload.GetType());
+            }
+            return Inject(Payload, AllocationTechnique, Process);
         }
 
-        public bool Inject(PICPayload payload, AllocationTechnique allocationTechnique, System.Diagnostics.Process process)
+        public bool Inject(PICPayload Payload, AllocationTechnique AllocationTechnique, Process Process)
         {
-
-            IntPtr baseAddr = allocationTechnique.Allocate(payload, process);
-
-            return Inject(payload, baseAddr, process);
+            IntPtr baseAddr = AllocationTechnique.Allocate(Payload, Process);
+            return Inject(Payload, baseAddr, Process);
         }
-
 
         /// <summary>
         /// Create a thread in the remote process.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The shellcode payload to execute in the target process.</param>
-        /// <param name="baseAddr">The address of the shellcode in the target process.</param>
-        /// <param name="process">The target process to inject into.</param>
+        /// <param name="Payload">The shellcode payload to execute in the target process.</param>
+        /// <param name="BaseAddress">The address of the shellcode in the target process.</param>
+        /// <param name="Process">The target process to inject into.</param>
         /// <returns></returns>
-        public bool Inject(PICPayload payload, IntPtr baseAddr, System.Diagnostics.Process process)
+        public bool Inject(PICPayload Payload, IntPtr BaseAddress, Process Process)
         {
-
             IntPtr threadHandle = new IntPtr();
-
             Native.NTSTATUS result = Native.NTSTATUS.Unsuccessful;
 
-            if (api == RemoteThreadCreate.APIS.NtCreateThreadEx)
-
-                //Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
-                result = DynamicInvoke.Native.NtCreateThreadEx(ref threadHandle, Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL, IntPtr.Zero,
-                    process.Handle, baseAddr, IntPtr.Zero, suspended, 0, 0, 0, IntPtr.Zero);
-
-            else if (api == RemoteThreadCreate.APIS.RtlCreateUserThread)
-
-                //Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
-                result = DynamicInvoke.Native.RtlCreateUserThread(process.Handle, IntPtr.Zero, suspended,IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, baseAddr, IntPtr.Zero, ref threadHandle, IntPtr.Zero);
-
-            else if (api == RemoteThreadCreate.APIS.CreateRemoteThread)
+            if (api == APIS.NtCreateThreadEx)
             {
-                uint flags = 0;
-
-                if (suspended == true)
-                    flags = 0x00000004;
-
+                // Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
+                result = DynamicInvoke.Native.NtCreateThreadEx(
+                    ref threadHandle,
+                    Win32.WinNT.ACCESS_MASK.SPECIFIC_RIGHTS_ALL | Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL,
+                    IntPtr.Zero,
+                    Process.Handle, BaseAddress, IntPtr.Zero,
+                    suspended, 0, 0, 0, IntPtr.Zero
+                );
+            }
+            else if (api == APIS.RtlCreateUserThread)
+            {
+                // Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
+                result = DynamicInvoke.Native.RtlCreateUserThread(
+                    Process.Handle,
+                    IntPtr.Zero,
+                    suspended,
+                    IntPtr.Zero, IntPtr.Zero, IntPtr.Zero,
+                    BaseAddress,
+                    IntPtr.Zero, ref threadHandle, IntPtr.Zero
+                );
+            }
+            else if (api == APIS.CreateRemoteThread)
+            {
+                uint flags = suspended ? (uint)0x00000004 : 0;
                 IntPtr threadid = new IntPtr();
 
-                //Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
-                threadHandle = DynamicInvoke.Win32.CreateRemoteThread(process.Handle, IntPtr.Zero, 0, baseAddr, IntPtr.Zero, flags, ref threadid);
+                // Dynamically invoke NtCreateThreadEx to create a thread at the address specified in the target process.
+                threadHandle = DynamicInvoke.Win32.CreateRemoteThread(
+                    Process.Handle,
+                    IntPtr.Zero,
+                    0,
+                    BaseAddress,
+                    IntPtr.Zero,
+                    flags,
+                    ref threadid
+                );
 
-                if (threadHandle != IntPtr.Zero)
+                if (threadHandle == IntPtr.Zero)
                 {
-                    handle = threadHandle;
-                    return true;
-                }
-                else
                     return false;
-            }
-
-            //If successful, return the handle to the new thread. Otherwise return NULL
-            if (result == Native.NTSTATUS.Unsuccessful)
-                return false;
-
-            else if (result > Native.NTSTATUS.Success)
-            {
+                }
                 handle = threadHandle;
                 return true;
             }
-            else
+
+            // If successful, return the handle to the new thread. Otherwise return NULL
+            if (result == Native.NTSTATUS.Unsuccessful || result <= Native.NTSTATUS.Success)
+            {
                 return false;
-            
+            }
+            handle = threadHandle;
+            return true;            
         }
     }
 }

@@ -12,26 +12,26 @@ namespace SharpSploit.Execution.Injection
         /// Inject a payload into a target process using a specified allocation and execution technique.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload"></param>
-        /// <param name="allocation"></param>
-        /// <param name="execution"></param>
-        /// <param name="process"></param>
+        /// <param name="Payload"></param>
+        /// <param name="AllocationTechnique"></param>
+        /// <param name="ExecutionTechnique"></param>
+        /// <param name="Process"></param>
         /// <returns></returns>
-        public static bool Inject(PayloadType payload, AllocationTechnique allocation, ExecutionTechnique execution, Process process)
+        public static bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, ExecutionTechnique ExecutionTechnique, Process Process)
         {
-            return execution.Inject(payload, allocation, process);
+            return ExecutionTechnique.Inject(Payload, AllocationTechnique, Process);
         }
 
         /// <summary>
         /// Inject a payload into the current process using a specified allocation and execution technique.
         /// </summary>
-        /// <param name="payload"></param>
-        /// <param name="allocation"></param>
-        /// <param name="execution"></param>
+        /// <param name="Payload"></param>
+        /// <param name="AllocationTechnique"></param>
+        /// <param name="ExecutionTechnique"></param>
         /// <returns></returns>
-        public static bool Inject(PayloadType payload, AllocationTechnique allocation, ExecutionTechnique execution)
+        public static bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, ExecutionTechnique ExecutionTechnique)
         {
-            return execution.Inject(payload, allocation);
+            return ExecutionTechnique.Inject(Payload, AllocationTechnique);
         }
     }
 }

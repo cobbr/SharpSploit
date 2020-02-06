@@ -17,7 +17,8 @@ namespace SharpSploit.Execution.DynamicInvoke
         public static Execute.Native.NTSTATUS NtCreateThreadEx(
             ref IntPtr threadHandle,
             Execute.Win32.WinNT.ACCESS_MASK desiredAccess,
-            IntPtr objectAttributes, IntPtr processHandle,
+            IntPtr objectAttributes,
+            IntPtr processHandle,
             IntPtr startAddress,
             IntPtr parameter,
             bool createSuspended,
@@ -486,7 +487,6 @@ namespace SharpSploit.Execution.DynamicInvoke
                 throw new InvalidOperationException("Failed to change memory protection, " + retValue);
             }
 
-
             OldProtect = (UInt32)funcargs[4];
             return OldProtect;
         }
@@ -505,7 +505,6 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 throw new InvalidOperationException("Failed to write memory, " + retValue);
             }
-
 
             BytesWritten = (UInt32)funcargs[4];
             return BytesWritten;
@@ -529,7 +528,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return FunctionAddress;
         }
 
-        public static void RtlGetVersion(ref Execution.Native.OSVERSIONINFOEX VersionInformation)
+        public static void RtlGetVersion(ref Execute.Native.OSVERSIONINFOEX VersionInformation)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -543,10 +542,10 @@ namespace SharpSploit.Execution.DynamicInvoke
                 throw new InvalidOperationException("Failed get procedure address, " + retValue);
             }
 
-            VersionInformation = (Execution.Native.OSVERSIONINFOEX)funcargs[0];
+            VersionInformation = (Execute.Native.OSVERSIONINFOEX)funcargs[0];
         }
 
-        public static UInt32 NtReadVirtualMemory(IntPtr ProcessHandle, IntPtr BaseAddress, IntPtr Buffer, UInt32 NumberOfBytesToRead)
+        public static UInt32 NtReadVirtualMemory(IntPtr ProcessHandle, IntPtr BaseAddress, IntPtr Buffer, ref UInt32 NumberOfBytesToRead)
         {
             // Craft an array for the arguments
             UInt32 NumberOfBytesRead = 0;
@@ -560,7 +559,6 @@ namespace SharpSploit.Execution.DynamicInvoke
             {
                 throw new InvalidOperationException("Failed to read memory, " + retValue);
             }
-
 
             NumberOfBytesRead = (UInt32)funcargs[4];
             return NumberOfBytesRead;

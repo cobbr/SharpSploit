@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace SharpSploit.Execution.Injection
 {
@@ -12,44 +9,33 @@ namespace SharpSploit.Execution.Injection
     /// <author>The Wover (@TheRealWover)</author>
     public abstract class PayloadType
     {
-        //Byte array containing the payload.
-        private byte[] payload;
-        public byte[] Payload
-        {
-            get
-            {
-                return payload;
-            }
-        }
+        public byte[] Payload { get; private set; }
 
-        //Constructor that requires the user to pass in the payload as a byte array.
+        // Constructor that requires the user to pass in the payload as a byte array.
         protected PayloadType(byte[] data)
         {
-            payload = data;
+            Payload = data;
         }
     }
 
     /// <summary>
-    /// Represents payloads that are position-independant-code.
+    /// Represents payloads that are position-independent-code.
     /// </summary>
     /// <author>The Wover (@TheRealWover)</author>
     public class PICPayload : PayloadType
     {
-        //Declares the constructor as equivalent to that of the base class.
-        public PICPayload(byte[] data) : base(data)
-        { }
+        // Declares the constructor as equivalent to that of the base class.
+        public PICPayload(byte[] data) : base(data) { }
     }
 
     /// <summary>
-    /// Exception thrown when a the type of a payload is not supported by a injection variant.
+    /// Exception thrown when the type of a payload is not supported by a injection variant.
     /// </summary>
     /// <author>The Wover (@TheRealWover)</author>
     public class PayloadTypeNotSupported : Exception
     {
-        public PayloadTypeNotSupported()
-        { }
+        public PayloadTypeNotSupported() { }
 
-        public PayloadTypeNotSupported(Type payloadType) : base(String.Format("Unsupported Payload type: {0}", payloadType.Name))
-        { }
+        public PayloadTypeNotSupported(Type payloadType) : base(string.Format("Unsupported Payload type: {0}", payloadType.Name)) { }
     }
 }

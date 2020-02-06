@@ -91,7 +91,7 @@ namespace SharpSploit.Execution
         public const UInt32 DLL_THREAD_ATTACH = 2;
         public const UInt32 DLL_THREAD_DETACH = 3;
 
-        //Primary class for loading PE
+        // Primary class for loading PE
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         public delegate bool DllMain(IntPtr hinstDLL, uint fdwReason, IntPtr lpvReserved);
 

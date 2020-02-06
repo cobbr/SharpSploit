@@ -154,7 +154,7 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `GetAPIHash()` - Gets a HMAC-MD5 hash for unique hash based API lookups.
 * `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
 * `GetNativeExportAddress()` - Given a module base address, resolve the address of a function by calling `LdrGetProcedureAddress`.
-* `FileToMemoryPointer()` - Allocate file to memory, either from disk or from a byte array.
+* `AllocateFileToMemory()` - Allocate file to memory, either from disk or from a byte array.
 * `GetPeMetaData()` - Retrieve PE header information from the module base pointer.
 * `RelocateModule()` - Relocates a module in memory.
 * `GetApiSetMapping()` - Resolve host DLL for API Set DLL (Win10+).
@@ -162,24 +162,39 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `SetModuleSectionPermissions()` - Set correct module section permissions.
 * `MapModuleToMemory()` - Manually map module into current process.
 * `FindDecoyModule()` - Locate a signed module with a minimum size which can be used for overloading.
-* `MapModuleToMemoryAddress()` - Manually map module into current process starting at the specified base address.
 * `OverloadModule()` - Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
 * `CallMappedPEModule()` - Call a manually mapped PE by its EntryPoint.
 * `CallMappedDLLModule()` - Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
 * `CallMappedDLLModuleExport()` - Call a manually mapped DLL by Export.
 * `GetSyscallStub()` - Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
 
-### SharpSploit.Execution.Injection
+## SharpSploit.Execution.Injection
 
-The `SharpSploit.Execution.Injection` contains a library of modular process injection components that can be combined to build custom injectors. An `AllocationTechnique` makes a `PayloadType` available to the target process. An `ExecutionTechnique` executes a `PayloadType` that is present in memory within a target process.
+The `SharpSploit.Execution.Injection` namespace contains classes for modular process injection components that can be combined to build custom injectors. An `AllocationTechnique` makes a `PayloadType` available to the target process. An `ExecutionTechnique` executes a `PayloadType` that is present in memory within a target process.
 
-The `SharpSploit.Execution.DynamicInvoke.AllocationTechnique` class is an abstract parent class providing the requirements for all allocation components.
-The `SharpSploit.Execution.DynamicInvoke.ExecutionTechnique` class is an abstract parent class providing the requirements for all execution components.
-The `SharpSploit.Execution.DynamicInvoke.PayloadType` class is an abstract parent class providing the requirements for all types of payloads. Allocation and Execution components may behave differently for each subclass of `PayloadType`.
-The `SharpSploit.Execution.DynamicInvoke.Injector` class provides static functions for performing injection using a combination of Allocation and Execution components, along with a Payload.
+### SharpSploit.Execution.Injection.AllocationTechnique
 
-* `SectionMapAlloc` - An Allocation component that allocates a payload to a target process using a locally-written, remotely-mapped shared memory section.
-* `RemoteThreadCreate` - An Execution component that executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
+The `SharpSploit.Execution.Injection.AllocationTechnique` class is an abstract parent class providing the requirements for all allocation components.
+
+### SharpSploit.Execution.Injection.SectionMapAlloc
+
+The `SharpSploit.Execution.Injection.SectionMapAlloc` class inherits from `AllocationTechnique` and is an Allocation component that allocates a payload to a target process using a locally-written, remotely-mapped shared memory section.
+
+### SharpSploit.Execution.Injection.ExecutionTechnique
+
+The `SharpSploit.Execution.Injection.ExecutionTechnique` class is an abstract parent class providing the requirements for all execution components.
+
+### SharpSploit.Execution.Injection.RemoteThreadCreate
+
+The `SharpSploit.Execution.Injection.RemoteThreadCreate` class inherits from `ExecutionTechnique` and is an Execution component that executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
+
+### SharpSploit.Execution.Injection.PayloadType
+
+The `SharpSploit.Execution.Injection.PayloadType` class is an abstract parent class providing the requirements for all types of payloads. Allocation and Execution components may behave differently for each subclass of `PayloadType`.
+
+### SharpSploit.Execution.Injection.Injector
+
+The `SharpSploit.Execution.Injection.Injector` class provides static functions for performing injection using a combination of Allocation and Execution components, along with a Payload.
 
 ## SharpSploit.LateralMovement
 

@@ -70,7 +70,7 @@ namespace SharpSploit.Execution.PlatformInvoke
         /// <param name="processHandle"></param>
         /// <param name="startAddress"></param>
         /// <param name="parameter"></param>
-        /// <param name="creationFlags"></param>
+        /// <param name="createSuspended"></param>
         /// <param name="stackZeroBits"></param>
         /// <param name="sizeOfStack"></param>
         /// <param name="maximumStackSize"></param>

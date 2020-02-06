@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SharpSploit.Execution;
 
-namespace SharpSploit.Framework.Tests.Execution
+namespace SharpSploit.Tests.Execution
 {
     [TestClass]
     public class ShellCodeTests
