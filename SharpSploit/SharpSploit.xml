@@ -1165,7 +1165,7 @@
         </member>
         <member name="T:SharpSploit.Execution.DynamicInvoke.Generic">
             <summary>
-            Generic is class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
+            Generic is a class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
             P/Invoke signatures, imports, and IAT entries by loading modules and invoking their functions at runtime.
             </summary>
         </member>
@@ -1197,14 +1197,6 @@
             <author>Ruben Boonen (@FuzzySec)</author>
             <param name="DLLPath">The path to the DLL on disk. Uses the LoadLibrary convention.</param>
             <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module was not loaded successfully.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleFromDisk(System.String)">
-            <summary>
-            Maps a DLL from disk into a Section.
-            </summary>
-            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-            <param name="DLLPath">Full path fo the DLL on disk.</param>
-            <returns>PE.PE_MANUAL_MAP</returns>
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetLibraryAddress(System.String,System.String,System.Boolean)">
             <summary>
@@ -1312,22 +1304,6 @@
             <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
             <returns>IntPtr for the desired function.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.AllocateFileToMemory(System.String)">
-            <summary>
-            Allocate file to memory from disk
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="FilePath">Full path to the file to be alloacted.</param>
-            <returns>IntPtr base address of the allocated file.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.AllocateBytesToMemory(System.Byte[])">
-            <summary>
-            Allocate a byte array to memory
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="FileByteArray">Byte array to be allocated.</param>
-            <returns>IntPtr base address of the allocated file.</returns>
-        </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetPeMetaData(System.IntPtr)">
             <summary>
             Retrieve PE header information from the module base pointer.
@@ -1336,121 +1312,12 @@
             <param name="pModule">Pointer to the module base.</param>
             <returns>PE.PE_META_DATA</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.RelocateModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
-            <summary>
-            Relocates a module in memory.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
-            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-            <returns>void</returns>
-        </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetApiSetMapping">
             <summary>
             Resolve host DLL for API Set DLL.
             </summary>
             <author>Ruben Boonen (@FuzzySec)</author>
             <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.RewriteModuleIAT(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
-            <summary>
-            Rewrite IAT for manually mapped module.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
-            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-            <returns>void</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.SetModuleSectionPermissions(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
-            <summary>
-            Set correct module section permissions.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
-            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
-            <returns>void</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.String)">
-            <summary>
-            Manually map module into current process.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="ModulePath">Full path to the module on disk.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.Byte[])">
-            <summary>
-            Manually map module into current process.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="Module">Full byte array of the module.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.Byte[],System.IntPtr)">
-            <summary>
-            Manually map module into current process starting at the specified base address.
-            </summary>
-            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-            <param name="Module">Full byte array of the module.</param>
-            <param name="pImage">Address in memory to map module to.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.IntPtr)">
-            <summary>
-            Manually map module into current process.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="pModule">Pointer to the module base.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.IntPtr,System.IntPtr)">
-            <summary>
-            Manually map module into current process.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="pModule">Pointer to the module base.</param>
-            <param name="pImage">Pointer to the PEINFO image.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.MapModuleToMemory(System.IntPtr,System.IntPtr,SharpSploit.Execution.PE.PE_META_DATA)">
-            <summary>
-            Manually map module into current process.
-            </summary>
-            <author>Ruben Boonen (@FuzzySec)</author>
-            <param name="pModule">Pointer to the module base.</param>
-            <param name="pImage">Pointer to the PEINFO image.</param>
-            <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
-            <returns>PE_MANUAL_MAP object</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.FindDecoyModule(System.Int64)">
-            <summary>
-            Locate a signed module with a minimum size which can be used for overloading.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="MinSize">Minimum module byte size.</param>
-            <returns>
-            String, the full path for the candidate module if one is found, or an empty string if one is not found.
-            </returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.OverloadModule(System.String,System.String)">
-            <summary>
-            Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that
-            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
-            </summary>
-            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-            <param name="PayloadPath">Full path to the payload module on disk.</param>
-            <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
-            <returns>PE.PE_MANUAL_MAP</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.OverloadModule(System.Byte[],System.String)">
-            <summary>
-            Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
-            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
-            </summary>
-            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
-            <param name="Payload">Full byte array for the payload module.</param>
-            <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
-            <returns>PE.PE_MANUAL_MAP</returns>
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedPEModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
             <summary>
@@ -1802,6 +1669,139 @@
             Exception thrown when the type of a payload is not supported by a injection variant.
             </summary>
             <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleFromDisk(System.String)">
+            <summary>
+            Maps a DLL from disk into a Section using NtCreateSection.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="DLLPath">Full path fo the DLL on disk.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.AllocateFileToMemory(System.String)">
+            <summary>
+            Allocate file to memory from disk
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="FilePath">Full path to the file to be alloacted.</param>
+            <returns>IntPtr base address of the allocated file.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.AllocateBytesToMemory(System.Byte[])">
+            <summary>
+            Allocate a byte array to memory
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="FileByteArray">Byte array to be allocated.</param>
+            <returns>IntPtr base address of the allocated file.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.RelocateModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Relocates a module in memory.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.RewriteModuleIAT(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Rewrite IAT for manually mapped module.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.SetModuleSectionPermissions(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+            <summary>
+            Set correct module section permissions.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+            <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+            <returns>void</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.String)">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="ModulePath">Full path to the module on disk.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.Byte[])">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="Module">Full byte array of the module.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.Byte[],System.IntPtr)">
+            <summary>
+            Manually map module into current process starting at the specified base address.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="Module">Full byte array of the module.</param>
+            <param name="pImage">Address in memory to map module to.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.IntPtr)">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="pModule">Pointer to the module base.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.IntPtr,System.IntPtr)">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="pModule">Pointer to the module base.</param>
+            <param name="pImage">Pointer to the PEINFO image.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.IntPtr,System.IntPtr,SharpSploit.Execution.PE.PE_META_DATA)">
+            <summary>
+            Manually map module into current process.
+            </summary>
+            <author>Ruben Boonen (@FuzzySec)</author>
+            <param name="pModule">Pointer to the module base.</param>
+            <param name="pImage">Pointer to the PEINFO image.</param>
+            <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
+            <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.FindDecoyModule(System.Int64)">
+            <summary>
+            Locate a signed module with a minimum size which can be used for overloading.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="MinSize">Minimum module byte size.</param>
+            <returns>
+            String, the full path for the candidate module if one is found, or an empty string if one is not found.
+            </returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.String,System.String)">
+            <summary>
+            Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that
+            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="PayloadPath">Full path to the payload module on disk.</param>
+            <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.Byte[],System.String)">
+            <summary>
+            Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
+            module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+            </summary>
+            <author>The Wover (@TheRealWover), Ruben Boonen (@FuzzySec)</author>
+            <param name="Payload">Full byte array for the payload module.</param>
+            <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
+            <returns>PE.PE_MANUAL_MAP</returns>
         </member>
         <member name="T:SharpSploit.Execution.Native">
             <summary>
@@ -2228,6 +2228,13 @@
             <remarks>
             Adapted from https://stackoverflow.com/questions/6790499
             </remarks>
+        </member>
+        <member name="M:SharpSploit.Misc.Utilities.FileHasValidSignature(System.String)">
+            <summary>
+            Checks that a file is signed and has a valid signature.
+            </summary>
+            <param name="FilePath">Path of file to check.</param>
+            <returns></returns>
         </member>
         <member name="T:SharpSploit.Persistence.Autorun">
             <summary>
