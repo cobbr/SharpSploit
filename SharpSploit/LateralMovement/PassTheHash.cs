@@ -2551,7 +2551,7 @@ namespace SharpSploit.LateralMovement
                                     {
                                          if (SMB_Close_Service_Handle_Stage == 1)
                                         {
-                                            Console.WriteLine("Service {0} deleted on {1}", SMB_Service, Target);
+                                            if (debug) { output.AppendLine(String.Format("Service {0} deleted on {1}", SMB_Service, Target)); }
                                             Service_Deleted = true;
                                             SMB2_Message_ID += 20;
                                             SMB_Close_Service_Handle_Stage++;
@@ -2678,7 +2678,7 @@ namespace SharpSploit.LateralMovement
                             }
                         }
                     }
-                    if (!Service_Deleted)
+                    if (!Service_Deleted && !AdminCheck)
                     {
                         output.AppendLine("Warning: Service not deleted. Please delete Service \"" + SMB_Service + "\" manually.");
                     }
