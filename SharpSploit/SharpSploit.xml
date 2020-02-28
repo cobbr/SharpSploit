@@ -1605,16 +1605,6 @@
             </summary>
             <author>The Wover (@TheRealWover)</author>
         </member>
-        <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PayloadType,SharpSploit.Execution.Injection.AllocationTechnique,System.Diagnostics.Process)">
-            <summary>
-            Only ever called if the user passed in a Payload type without an Inject overload.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">Payload type.</param>
-            <param name="AllocationTechnique">Allocation technique.</param>
-            <param name="Process">The target process.</param>
-            <returns></returns>
-        </member>
         <member name="M:SharpSploit.Execution.Injection.RemoteThreadCreate.Inject(SharpSploit.Execution.Injection.PICPayload,System.IntPtr,System.Diagnostics.Process)">
             <summary>
             Create a thread in the remote process.
