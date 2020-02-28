@@ -1,15 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 using Execute = SharpSploit.Execution;
 
 namespace SharpSploit.Execution.ManualMap
 {
-    class Map
+    public class Map
     {
 
         /// <summary>

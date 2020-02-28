@@ -9,7 +9,7 @@ using Execute = SharpSploit.Execution;
 
 namespace SharpSploit.Execution.ManualMap
 {
-    class Overload
+    public class Overload
     {
         /// <summary>
         /// Locate a signed module with a minimum size which can be used for overloading.
