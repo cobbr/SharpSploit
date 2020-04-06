@@ -172,23 +172,6 @@ namespace SharpSploit.Execution.Injection
             };
         }
 
-        /// <summary>
-        /// Only ever called if the user passed in a Payload type without an Inject overload.
-        /// </summary>
-        /// <author>The Wover (@TheRealWover)</author>
-        /// <param name="Payload">Payload type.</param>
-        /// <param name="AllocationTechnique">Allocation technique.</param>
-        /// <param name="Process">The target process.</param>
-        /// <returns></returns>
-        public bool Inject(PayloadType Payload, AllocationTechnique AllocationTechnique, Process Process)
-        {
-            if (!IsSupportedPayloadType(Payload))
-            {
-                throw new PayloadTypeNotSupported(Payload.GetType());
-            }
-            return Inject(Payload, AllocationTechnique, Process);
-        }
-
         public bool Inject(PICPayload Payload, AllocationTechnique AllocationTechnique, Process Process)
         {
             IntPtr baseAddr = AllocationTechnique.Allocate(Payload, Process);
