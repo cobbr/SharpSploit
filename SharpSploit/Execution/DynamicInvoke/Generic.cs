@@ -5,11 +5,9 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Runtime.InteropServices;
 
 using Execute = SharpSploit.Execution;

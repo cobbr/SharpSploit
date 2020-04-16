@@ -79,7 +79,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retVal;
         }
 
-        private static class Delegates
+        public static class Delegates
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate IntPtr CreateRemoteThread(IntPtr hProcess,
