@@ -19,10 +19,11 @@ namespace SharpSploit.Persistence
 
     /// <summary>
     /// Class represents a Tuple since tuples do not exist until .NET Framework 4 😡
+    /// https://stackoverflow.com/questions/4312218/error-with-tuple-in-c-sharp-2008
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <typeparam name="U"></typeparam>
-    /// <typeparam name="V"></typeparam>
+    /// <typeparam name="T">Item 1</typeparam>
+    /// <typeparam name="U">Item 2 </typeparam>
+    /// <typeparam name="V">Item 3</typeparam>
     public class MyTuple<T, U, V>
     {
         public T Item1 { get; private set; }
@@ -38,6 +39,10 @@ namespace SharpSploit.Persistence
      
     }
 
+    /// <summary>
+    /// Static class of Tuple 
+    /// https://stackoverflow.com/questions/4312218/error-with-tuple-in-c-sharp-2008
+    /// </summary>
     public static class MyTuple
     {
         public static MyTuple<T, U, V> Create<T, U, V>(T item1, U item2, V item3)
@@ -48,7 +53,7 @@ namespace SharpSploit.Persistence
 
     
     /// <summary>
-    /// ConfigPersist is a class that performs CLR hooking via modifying machine.config . Requires elevation.
+    /// ConfigPersist is a class that performs CLR hooking via modifying machine.config. Requires elevation.
     /// </summary>
     public class ConfigPersist
     {
@@ -317,26 +322,27 @@ namespace SharpSploit.Persistence
         }
 
         /// <summary>
-        /// 
+        /// Generates a keyfile, creates assembly, signs assembly, and modifies machine.config runtime element to perform clr hooking
         /// </summary>
-        /// <param name="payload"></param>
-        /// <param name="dllName"></param>
-        /// <param name="keyfileName"></param>
-        public void InstallConfigPersist(string payload, string dllName="",  string keyfileName="")
+        /// <author>NotoriousRebel</author>
+        /// <returns>A boolean, if true execute was successful false otherwise</returns>
+        /// <param name="payload">C# code that will be executed during runtime of any .net framework app</param>
+        /// <param name="dllName">Optional name for assembly to be installed onto GAC</param>
+        /// <param name="keyfileName">Optional paramater for keyfile name</param>
+        public bool InstallConfigPersist(string payload, string dllName="",  string keyfileName="")
         {
             try
             {
                 if (!IsAdminorSystem())
                 {
                     Console.WriteLine("Must be administrator for technique to work, exiting program!");
-                    return;
+                    return false;
                 }
 
                 Console.WriteLine(Environment.CurrentDirectory);
                 var dirPath = GetPath();
                 Console.WriteLine($"path is: {dirPath}");
                 var keyPath = GenerateKeyFile(keyfileName);
-                //var keyPath = "";
                 Console.WriteLine($"keyPath: {keyPath}");
                 var tuple = CompileDLL(dllName, dirPath, payload, keyPath);
                 string dllPath = tuple.Item1;
@@ -368,12 +374,12 @@ namespace SharpSploit.Persistence
                     Console.WriteLine($" ConfigPath: {configPath}");
                     FixConfig(configPath, asmFullName, context);
                 }
-                //Console.ReadLine();
+                return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"An error has occurred: {e}");
-                Console.ReadLine();
+                return false;
             }
         }
     }

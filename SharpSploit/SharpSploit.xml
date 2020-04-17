@@ -2268,6 +2268,89 @@
             <param name="CLSID">Missing CLSID to abuse.</param>
             <param name="ExecutablePath">Path to the executable payload.</param>
         </member>
+        <member name="T:SharpSploit.Persistence.MyTuple`3">
+            <summary>
+            Class represents a Tuple since tuples do not exist until .NET Framework 4 😡
+            https://stackoverflow.com/questions/4312218/error-with-tuple-in-c-sharp-2008
+            </summary>
+            <typeparam name="T">Item 1</typeparam>
+            <typeparam name="U">Item 2 </typeparam>
+            <typeparam name="V">Item 3</typeparam>
+        </member>
+        <member name="T:SharpSploit.Persistence.MyTuple">
+            <summary>
+            Static class of Tuple 
+            https://stackoverflow.com/questions/4312218/error-with-tuple-in-c-sharp-2008
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Persistence.ConfigPersist">
+            <summary>
+            ConfigPersist is a class that performs CLR hooking via modifying machine.config. Requires elevation.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.IsDirectoryWritable(System.String,System.Boolean)">
+            <summary>
+            Determines if a directory is writable.
+            </summary>
+            <param name="dirPath">Directory path.</param>
+            <param name="throwIfFails">Bool so if fails throw an error.</param>
+            <returns>bool that indicates if directory is writable.</returns>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.GetPath">
+            <summary>
+            Determines where to place compiled assembly and keyfile given list of paths.
+            </summary>
+            <returns>Randomly selected path from path list.</returns>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.InstallAssembly(System.String)">
+            <summary>
+            Loads our strong signed .net assembly into the GAC.
+            </summary>
+            <param name="path">Path to .net assembly.</param>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.GenerateKeyFile(System.String)">
+            <summary>
+            Generates keyfile and places it in location from GetPath()
+            </summary>
+            <param name="fileName"></param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.CompileDLL(System.String,System.String,System.String,System.String)">
+            <summary>
+            Compiles our strong signed assembly based on code in string and places dll in dllPath.
+            </summary>
+            <param name="dllName">Name of dll supplied by user, if one is not given will use randomly generated one</param>
+            <param name="dllPath">Path where assembly will be placed</param>
+            <param name="payload">C# code that will be ran whenver .net framework app is ran</param>
+            <param name="keyPath">Path to keyfile</param>
+            <returns>Tuple containing path, assembly full name, and conext of assembly</returns>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.FixConfig(System.String,System.String,System.String)">
+            <summary>
+            This is where the magic happens
+            This is the core function that modifies the machine config
+            It will modify it so at runtime our strong signed .net assembly will be called.
+            </summary>
+            <param name="configpath">Path to machine.config.</param>
+            <param name="assemblyFullName">Full Name for Assembly.</param>
+            <param name="context"></param>
+        </member>
+        <member name="M:SharpSploit.Persistence.ConfigPersist.InstallConfigPersist(System.String,System.String,System.String)">
+            <summary>
+            Generates a keyfile, creates assembly, signs assembly, and modifies machine.config runtime element to perform clr hooking
+            </summary>
+            <author>NotoriousRebel</author>
+            <returns>A boolean, if true execute was successful false otherwise</returns>
+            <param name="payload">C# code that will be executed during runtime of any .net framework app</param>
+            <param name="dllName">Optional name for assembly to be installed onto GAC</param>
+            <param name="keyfileName">Optional paramater for keyfile name</param>
+        </member>
+        <member name="T:SharpSploit.Persistence.StrongNameUtilities">
+            <summary>
+            Class to generate strong key https://stackoverflow.com/questions/50632961/c-sharp-create-snk-file-programmatically
+            Required to sign our assembly so we can install it onto the Global Assembly Cache to gain full-trust
+            </summary>
+        </member>
         <member name="T:SharpSploit.Persistence.Startup">
             <summary>
             Startup is a class for abusing the Windows Startup folder to establish peristence.
