@@ -339,7 +339,6 @@ namespace SharpSploit.Persistence
                     return false;
                 }
 
-                Console.WriteLine(Environment.CurrentDirectory);
                 var dirPath = GetPath();
                 Console.WriteLine($"path is: {dirPath}");
                 var keyPath = GenerateKeyFile(keyfileName);
