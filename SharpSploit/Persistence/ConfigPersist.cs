@@ -364,7 +364,7 @@ namespace SharpSploit.Persistence
                 var paths = new List<string>()
                 {
                      sysConfigFile,
-                     sysConfigFile.Contains("Framework") ? sysConfigFile.Replace("Framework", "Framework64") : sysConfigFile.Replace("Framework64", "Framework"),
+                     sysConfigFile.Contains("Framework64") ? sysConfigFile.Replace("Framework64", "Framework") : sysConfigFile.Replace("Framework", "Framework64"),
                 };
 
                 // Hours wasted debugging this because it returns 32 bit version of .NET Framework
