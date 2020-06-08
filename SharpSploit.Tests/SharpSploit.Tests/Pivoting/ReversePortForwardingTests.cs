@@ -17,35 +17,36 @@ namespace SharpSploit.Tests.Pivoting
         public const string testWebResponse = "this is a test";
 
         [TestMethod]
-        public void TestAddReversePortForward()
+        public void TestCreateReversePortForward()
         {
-            var httpListener = new Thread(() => CreateHttpListener());
+            Thread httpListener = new Thread(() => CreateHttpListener());
             httpListener.Start();
 
-            ReversePortForwarding.AddReversePortForward("4444", "127.0.0.1", "8080");
+            ReversePortForwarding.CreateReversePortForward(4444, "127.0.0.1", 8080);
 
             string result = string.Empty;
 
-            using (var client = new WebClient())
+            using (WebClient client = new WebClient())
             {
                 try { result = client.DownloadString("http://localhost:4444"); }
                 catch (WebException) { }
             }
 
             Assert.IsTrue(result.Equals(testWebResponse));
+            httpListener.Abort();
         }
 
         [TestMethod]
         public void TestDeleteReversePortForward()
         {
-            var httpListener = new Thread(() => CreateHttpListener());
+            Thread httpListener = new Thread(() => CreateHttpListener());
             httpListener.Start();
 
-            ReversePortForwarding.AddReversePortForward("4444", "127.0.0.1", "8080");
+            ReversePortForwarding.CreateReversePortForward(4444, "127.0.0.1", 8080);
 
             string result = string.Empty;
 
-            using (var client = new WebClient())
+            using (WebClient client = new WebClient())
             {
                 try { result = client.DownloadString("http://localhost:4444"); }
                 catch (WebException) { }
@@ -53,49 +54,50 @@ namespace SharpSploit.Tests.Pivoting
                 Assert.IsTrue(result.Equals(testWebResponse));
                 result = string.Empty;
 
-                ReversePortForwarding.DeleteReversePortForward("4444");
+                ReversePortForwarding.DeleteReversePortForward(4444);
 
                 try { result = client.DownloadString("http://localhost:4444"); }
                 catch (WebException) { }
 
                 Assert.IsFalse(result.Equals(testWebResponse));
             }
+            httpListener.Abort();
         }
 
         [TestMethod]
         public void TestFlushReversePortForward()
         {
-            var list = ReversePortForwarding.ListReversePortForwards();
+            var list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 0);
 
-            ReversePortForwarding.AddReversePortForward("4444", "127.0.0.1", "8080");
-            ReversePortForwarding.AddReversePortForward("4445", "127.0.0.1", "8080");
-            list = ReversePortForwarding.ListReversePortForwards();
+            ReversePortForwarding.CreateReversePortForward(4444, "127.0.0.1", 8080);
+            ReversePortForwarding.CreateReversePortForward(4445, "127.0.0.1", 8080);
+            list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 2);
 
             ReversePortForwarding.FlushReversePortFowards();
-            list = ReversePortForwarding.ListReversePortForwards();
+            list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 0);
         }
 
         [TestMethod]
         public void TestListReversePortForwards()
         {
-            var list = ReversePortForwarding.ListReversePortForwards();
+            var list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 0);
 
-            ReversePortForwarding.AddReversePortForward("4444", "127.0.0.1", "8080");
-            list = ReversePortForwarding.ListReversePortForwards();
+            ReversePortForwarding.CreateReversePortForward(4444, "127.0.0.1", 8080);
+            list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 1);
 
-            ReversePortForwarding.DeleteReversePortForward("4444");
-            list = ReversePortForwarding.ListReversePortForwards();
+            ReversePortForwarding.DeleteReversePortForward(4444);
+            list = ReversePortForwarding.GetReversePortForwards();
             Assert.IsTrue(list.Count == 0);
         }
 
         private static void CreateHttpListener()
         {
-            using (var listener = new HttpListener())
+            using (HttpListener listener = new HttpListener())
             {
                 listener.Prefixes.Add($"http://127.0.0.1:8080/");
 

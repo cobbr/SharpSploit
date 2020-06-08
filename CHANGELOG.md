@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ModuleOverloading functions (credit @b33f)
 - Added Syscall stub function (credit @b33f)
 - Added SharpSploit.Execution.Injection namespace (credit @TheWover)
+- Added SharpSploit.Pivoting namespace, reverse port forwarding (credit @rasta-mouse)
 
 ## [v1.5] - 2019-12-27
 ### Added

@@ -19,14 +19,15 @@ namespace SharpSploit.Pivoting
     {
         public class ReversePortForward
         {
-            public IPAddress[] BindAddresses { get; set; }
+            public IPAddress BindAddress { get; set; }
             public int BindPort { get; set; }
             public IPAddress ForwardAddress { get; set; }
             public int ForwardPort { get; set; }
         }
 
-        static List<ReversePortForward> _reversePortForwards = new List<ReversePortForward>();
-        static List<Dictionary<int, List<Socket>>> _boundSockets = new List<Dictionary<int, List<Socket>>>();
+        private static List<ReversePortForward> _reversePortForwards = new List<ReversePortForward>();
+        private static Dictionary<int, Socket> _boundSockets = new Dictionary<int, Socket>();
+
 
         /// <summary>
         /// Creates a new Reverse Port Forward.
@@ -36,14 +37,8 @@ namespace SharpSploit.Pivoting
         /// <param name="ForwardPort">The port to forward traffic to.</param>
         /// <returns>Bool.</returns>
         /// <author>Daniel Duggan (@_RastaMouse)</author>
-        public static bool AddReversePortForward(string BindPort, string ForwardAddress, string ForwardPort)
+        public static bool CreateReversePortForward(int BindPort, string ForwardAddress, int ForwardPort)
         {
-            // Sort inputs out
-            if (!int.TryParse(BindPort, out int bindPort) || !int.TryParse(ForwardPort, out int forwardPort))
-                return false;
-
-            var bindAddresses = new IPAddress[] { IPAddress.Any };
-
             // If ForwardHost is not a valid IP, try to resolve it as DNS.
             if (!IPAddress.TryParse(ForwardAddress, out IPAddress forwardAddress))
             {
@@ -52,40 +47,52 @@ namespace SharpSploit.Pivoting
                     var ipHostInfo = Dns.GetHostEntry(ForwardAddress);
                     forwardAddress = ipHostInfo.AddressList[0];
                 }
-                catch { return false; }
-            }
-
-            // Check if bindPort is not already bound.
-            foreach (var boundSocket in _boundSockets)
-                if (boundSocket.ContainsKey(bindPort))
-                    return false;
-
-            // Bind the sockets
-            var newBoundSockets = BindSocket(bindAddresses, bindPort);
-            if (newBoundSockets != null && newBoundSockets.Count > 0)
-            {
-                var newReversePortForward = new ReversePortForward
+                catch
                 {
-                    BindAddresses = bindAddresses,
-                    BindPort = bindPort,
-                    ForwardAddress = forwardAddress,
-                    ForwardPort = forwardPort
-                };
-
-                // Add to Lists
-                _reversePortForwards.Add(newReversePortForward);
-                _boundSockets.Add(new Dictionary<int, List<Socket>> { { bindPort, newBoundSockets } });
-
-                // Kick off client sockets in new thread.
-                var clientThread = new Thread(() => CreateClientSocketThread(newBoundSockets, forwardAddress, forwardPort));
-                clientThread.Start();
-
-                return true;
+                    return false;
+                }
             }
-            else
+            return CreateReversePortForward(BindPort, forwardAddress, ForwardPort);
+        }
+
+        /// <summary>
+        /// Creates a new Reverse Port Forward.
+        /// </summary>
+        /// <param name="BindPort">The port to bind on the local system.</param>
+        /// <param name="ForwardAddress">The IP Address or DNS name to forward traffic to.</param>
+        /// <param name="ForwardPort">The port to forward traffic to.</param>
+        /// <returns>Bool.</returns>
+        /// <author>Daniel Duggan (@_RastaMouse)</author>
+        public static bool CreateReversePortForward(int BindPort, IPAddress ForwardAddress, int ForwardPort)
+        {
+            // Check if bindPort is not already bound.
+            if (_boundSockets.ContainsKey(BindPort))
             {
                 return false;
             }
+
+            // Bind the sockets
+            Socket boundSocket = BindSocket(IPAddress.Any, BindPort);
+            if (boundSocket == null)
+            {
+                return false;
+            }
+
+            ReversePortForward newReversePortForward = new ReversePortForward
+            {
+                BindAddress = IPAddress.Any,
+                BindPort = BindPort,
+                ForwardAddress = ForwardAddress,
+                ForwardPort = ForwardPort
+            };
+
+            // Add to Lists
+            _reversePortForwards.Add(newReversePortForward);
+            _boundSockets[BindPort] = boundSocket;
+
+            // Kick off client sockets in new thread.
+            new Thread(() => CreateClientSocketThread(boundSocket, ForwardAddress, ForwardPort)).Start();
+            return true;
         }
 
         /// <summary>
@@ -94,61 +101,48 @@ namespace SharpSploit.Pivoting
         /// <param name="BindPort">The bind port of the Reverse Port Forward.</param>
         /// <returns>Bool.</returns>
         /// <author>Daniel Duggan (@_RastaMouse)</author>
-        public static bool DeleteReversePortForward(string BindPort)
+        public static bool DeleteReversePortForward(int BindPort)
         {
-            var success = false;
-
-            if (!int.TryParse(BindPort, out int bindPort))
+            if (!_boundSockets.TryGetValue(BindPort, out Socket socket))
+            {
                 return false;
-
-            if (_boundSockets.Count == 0)
-                return false;
+            }
 
             try
             {
-                foreach (var boundSocket in _boundSockets)
-                {
-                    if (boundSocket.TryGetValue(bindPort, out List<Socket> sockets))
-                    {
-                        foreach (var socket in sockets)
-                        {
-                            try { socket.Shutdown(SocketShutdown.Both); }
-                            catch (SocketException) { }
-                            socket.Close();
-                        }
+                try { socket.Shutdown(SocketShutdown.Both); }
+                catch (SocketException) { }
+                socket.Close();
 
-                        _boundSockets.Remove(boundSocket);
+                _boundSockets.Remove(BindPort);
 
-                        var reversePortForward = _reversePortForwards.Where(r => r.BindPort.Equals(bindPort)).FirstOrDefault();
-                        _reversePortForwards.Remove(reversePortForward);
+                ReversePortForward reversePortForward = _reversePortForwards.FirstOrDefault(r => r.BindPort.Equals(BindPort));
+                _reversePortForwards.Remove(reversePortForward);
 
-                        success = true;
-                    }
-                }
+                return true;
             }
             catch { }
 
-            return success;
+            return false;
         }
 
         /// <summary>
-        /// Returns a list of active Reverse Port Forwards.
+        /// Gets a list of active Reverse Port Forwards.
         /// </summary>
         /// <returns>A SharpSploitResultList of ReversePortFwdResult</returns>
         /// <author>Daniel Duggan (@_RastaMouse)</author>
-        public static SharpSploitResultList<ReversePortFwdResult> ListReversePortForwards()
+        public static SharpSploitResultList<ReversePortFwdResult> GetReversePortForwards()
         {
-            var reversePortForwards = new SharpSploitResultList<ReversePortFwdResult>();
+            SharpSploitResultList<ReversePortFwdResult> reversePortForwards = new SharpSploitResultList<ReversePortFwdResult>();
 
-            foreach (var rportwd in _reversePortForwards)
+            foreach (ReversePortForward rportfwd in _reversePortForwards)
             {
-                var bindAddresses = string.Join(",", rportwd.BindAddresses.Select(a => a.ToString()).ToArray());
                 reversePortForwards.Add(new ReversePortFwdResult
                 {
-                    BindAddresses = bindAddresses,
-                    BindPort = rportwd.BindPort,
-                    ForwardAddress = rportwd.ForwardAddress.ToString(),
-                    ForwardPort = rportwd.ForwardPort
+                    BindAddresses = rportfwd.BindAddress.ToString(),
+                    BindPort = rportfwd.BindPort,
+                    ForwardAddress = rportfwd.ForwardAddress.ToString(),
+                    ForwardPort = rportfwd.ForwardPort
                 });
             }
             return reversePortForwards;
@@ -160,23 +154,13 @@ namespace SharpSploit.Pivoting
         /// <author>Daniel Duggan (@_RastaMouse)</author>
         public static void FlushReversePortFowards()
         {
-            if (_boundSockets.Count == 0)
-                return;
-
             try
             {
-                foreach (var dict in _boundSockets)
+                foreach (Socket socket in _boundSockets.Values)
                 {
-                    foreach (var list in dict.Values)
-                    {
-                        foreach (var socket in list)
-                        {
-                            try { socket.Shutdown(SocketShutdown.Both); }
-                            catch (SocketException) { }
-                            socket.Close();
-                        }
-
-                    }
+                    try { socket.Shutdown(SocketShutdown.Both); }
+                    catch (SocketException) { }
+                    socket.Close();
                 }
 
                 _boundSockets.Clear();
@@ -185,57 +169,48 @@ namespace SharpSploit.Pivoting
             catch { }
         }
 
-        private static List<Socket> BindSocket(IPAddress[] BindAddreses, int BindPort)
+        private static Socket BindSocket(IPAddress BindAddress, int BindPort)
         {
-            var socketList = new List<Socket>();
-
-            foreach (var bindAddress in BindAddreses)
+            IPEndPoint localEP = new IPEndPoint(BindAddress, BindPort);
+            Socket socket = new Socket(BindAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            try
             {
-                var localEP = new IPEndPoint(bindAddress, BindPort);
-                var socket = new Socket(bindAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-                try
-                {
-                    socket.Bind(localEP);
-                    socket.Listen(10);
-                    socketList.Add(socket);
-                }
-                catch (SocketException) { }
+                socket.Bind(localEP);
+                socket.Listen(10);
             }
-            return socketList;
+            catch (SocketException) { }
+            return socket;
         }
 
-        private static void CreateClientSocketThread(List<Socket> BoundSockets, IPAddress ForwardAddress, int ForwardPort)
+        private static void CreateClientSocketThread(Socket BoundSocket, IPAddress ForwardAddress, int ForwardPort)
         {
-            var remoteEP = new IPEndPoint(ForwardAddress, ForwardPort);
+            IPEndPoint remoteEP = new IPEndPoint(ForwardAddress, ForwardPort);
 
             while (true)
             {
-                var boundBuffer = new byte[1024];
-                var clientBuffer = new byte[1048576];
+                byte[] boundBuffer = new byte[1024];
+                byte[] clientBuffer = new byte[1048576];
 
-                foreach (var boundSocket in BoundSockets)
+                try
                 {
-                    try
-                    {
-                        // Receive data on bound socket
-                        var handler = boundSocket.Accept();
-                        handler.Receive(boundBuffer);
+                    // Receive data on bound socket
+                    Socket handler = BoundSocket.Accept();
+                    handler.Receive(boundBuffer);
 
-                        // Create new client socket
-                        using (var clientSocket = new Socket(ForwardAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
+                    // Create new client socket
+                    using (Socket clientSocket = new Socket(ForwardAddress.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
+                    {
+                        try
                         {
-                            try
-                            {
-                                clientSocket.Connect(remoteEP);
-                                clientSocket.Send(boundBuffer);
-                                clientSocket.Receive(clientBuffer);
-                            }
-                            catch (SocketException) { }
+                            clientSocket.Connect(remoteEP);
+                            clientSocket.Send(boundBuffer);
+                            clientSocket.Receive(clientBuffer);
                         }
-                        handler.Send(clientBuffer);
+                        catch (SocketException) { }
                     }
-                    catch { }
+                    handler.Send(clientBuffer);
                 }
+                catch { }
             }
         }
 
