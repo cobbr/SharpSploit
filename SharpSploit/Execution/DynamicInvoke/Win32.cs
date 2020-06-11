@@ -79,6 +79,57 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retVal;
         }
 
+        /// <summary>
+        /// Uses DynamicInvocation to call the VirtualAllocEx Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
+        /// </summary>
+        /// <returns>Returns the base address of allocated region if successful, otherwise return NULL.</returns>
+        public static IntPtr VirtualAllocEx(
+            IntPtr hProcess,
+            IntPtr lpAddress,
+            uint dwSize,
+            Execute.Win32.Kernel32.AllocationType flAllocationType,
+            Execute.Win32.Kernel32.MemoryProtection flProtect)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, lpAddress, dwSize, flAllocationType, flProtect
+            };
+
+            IntPtr retValue = (IntPtr)Generic.DynamicAPIInvoke(@"kernel32.dll", @"VirtualAllocEx",
+                typeof(Delegates.VirtualAllocEx), ref funcargs);
+
+            return retValue;
+
+        }
+
+        /// <summary>
+        /// Uses DynamicInvocation to call the WriteProcessMemory Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory
+        /// </summary>
+        /// <returns>Returns true if process memory was written successfully, otherwise return false.</returns>
+        public static bool WriteProcessMemory(
+            IntPtr hProcess,
+            IntPtr lpBaseAddress,
+            byte[] lpBuffer,
+            Int32 nSize,
+            out IntPtr lpNumberOfBytesWritten)
+        {
+            // TODO: fix bytesWritten
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, lpBaseAddress, lpBuffer, nSize, IntPtr.Zero
+            };
+
+            bool retValue = (bool)Generic.DynamicAPIInvoke(@"kernel32.dll", @"WriteProcessMemory",
+                typeof(Delegates.WriteProcessMemory), ref funcargs);
+
+            // Update bytes written
+            lpNumberOfBytesWritten = (IntPtr)funcargs[4];
+
+            return retValue;
+        }
+
         public static class Delegates
         {
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -95,6 +146,24 @@ namespace SharpSploit.Execution.DynamicInvoke
                 Execute.Win32.Kernel32.ProcessAccessFlags dwDesiredAccess,
                 bool bInheritHandle,
                 UInt32 dwProcessId
+            );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate IntPtr VirtualAllocEx(
+                IntPtr hProcess,
+                IntPtr lpAddress,
+                uint dwSize,
+                Execute.Win32.Kernel32.AllocationType flAllocationType,
+                Execute.Win32.Kernel32.MemoryProtection flProtect
+            );
+
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate bool WriteProcessMemory(
+                IntPtr hProcess,
+                IntPtr lpBaseAddress,
+                byte[] lpBuffer,
+                Int32 nSize,
+                out IntPtr lpNumberOfBytesWritten
             );
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]

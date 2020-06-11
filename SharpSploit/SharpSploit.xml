@@ -1405,6 +1405,18 @@
             </summary>
             <returns>Returns true if process is WOW64, and false if not (64-bit, or 32-bit on a 32-bit machine).</returns>
         </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Win32.VirtualAllocEx(System.IntPtr,System.IntPtr,System.UInt32,SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection)">
+            <summary>
+            Uses DynamicInvocation to call the VirtualAllocEx Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex
+            </summary>
+            <returns>Returns the base address of allocated region if successful, otherwise return NULL.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Win32.WriteProcessMemory(System.IntPtr,System.IntPtr,System.Byte[],System.Int32,System.IntPtr@)">
+            <summary>
+            Uses DynamicInvocation to call the WriteProcessMemory Win32 API. https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory
+            </summary>
+            <returns>Returns true if process memory was written successfully, otherwise return false.</returns>
+        </member>
         <member name="T:SharpSploit.Execution.Injection.AllocationTechnique">
             <summary>
             Base class for allocation techniques.
@@ -1526,6 +1538,65 @@
             <param name="hProc">Process to which the view has been mapped.</param>
             <param name="baseAddr">Address of the view (relative to the target process)</param>
             <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.VirtualAllocate">
+            <summary>
+            Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor(SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection)">
+            <summary>
+            Constructor allowing options as arguments.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            States whether the payload is supported.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">Payload that will be allocated.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            Update when new types of payloads are added.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
+            <summary>
+            Allocate the payload to the target process. Handles unknown payload types.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">The payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
+            <summary>
+            Allocate the payload in the target process via VirtualAllocEx + WriteProcessMemory
+            </summary>
+            <author>The Wover (@TheRealWover), aus (@aus)</author>
+            <param name="Payload">The PIC payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.AllocationFailed">
+            <summary>
+            Exception thrown when the payload memory fails to allocate
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.MemoryWriteFailed">
+            <summary>
+            Exception thrown when the memory fails to write
+            </summary>
         </member>
         <member name="T:SharpSploit.Execution.Injection.ExecutionTechnique">
             <summary>

