@@ -14,8 +14,7 @@
             Mimikatz is a tool for playing with credentials in Windows, written by Benjamin Delpy (@gentilkiwi). (Found
             at https://github.com/gentilkiwi/mimikatz).
             SharpSploit's PE Loader is adapted from work by Casey Smith (@subtee). (No longer available at original location.)
-            This wrapper class is adapted from Chris Ross (@xorrior)'s implementation. (Found
-            at https://github.com/xorrior/Random-CSharpTools/tree/master/DllLoader/DllLoader)
+            This wrapper class is adapted from Chris Ross (@xorrior)'s implementation, converted by (@TheRealWover) to use the Manual Mapping API.
             </remarks>
         </member>
         <member name="M:SharpSploit.Credentials.Mimikatz.Command(System.String)">
@@ -1319,7 +1318,7 @@
             <author>Ruben Boonen (@FuzzySec)</author>
             <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedPEModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedPEModule(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr)">
             <summary>
             Call a manually mapped PE by its EntryPoint.
             </summary>
@@ -1328,7 +1327,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModule(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr)">
             <summary>
             Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
             </summary>
@@ -1337,7 +1336,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[])">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[])">
             <summary>
             Call a manually mapped DLL by Export.
             </summary>
@@ -1660,6 +1659,16 @@
             </summary>
             <author>The Wover (@TheRealWover)</author>
         </member>
+        <member name="T:SharpSploit.Execution.ManualMap.PE">
+            <summary>
+            Holds data structures for using PEs.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Execution.ManualMap.Map">
+            <summary>
+            Class for manually mapping PEs.
+            </summary>
+        </member>
         <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleFromDisk(System.String)">
             <summary>
             Maps a DLL from disk into a Section using NtCreateSection.
@@ -1684,7 +1693,7 @@
             <param name="FileByteArray">Byte array to be allocated.</param>
             <returns>IntPtr base address of the allocated file.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Map.RelocateModule(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.ManualMap.Map.RelocateModule(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr)">
             <summary>
             Relocates a module in memory.
             </summary>
@@ -1693,7 +1702,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Map.RewriteModuleIAT(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.ManualMap.Map.RewriteModuleIAT(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr)">
             <summary>
             Rewrite IAT for manually mapped module.
             </summary>
@@ -1702,7 +1711,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Map.SetModuleSectionPermissions(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr)">
+        <member name="M:SharpSploit.Execution.ManualMap.Map.SetModuleSectionPermissions(SharpSploit.Execution.ManualMap.PE.PE_META_DATA,System.IntPtr)">
             <summary>
             Set correct module section permissions.
             </summary>
@@ -1753,7 +1762,7 @@
             <param name="pImage">Pointer to the PEINFO image.</param>
             <returns>PE_MANUAL_MAP object</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.IntPtr,System.IntPtr,SharpSploit.Execution.PE.PE_META_DATA)">
+        <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleToMemory(System.IntPtr,System.IntPtr,SharpSploit.Execution.ManualMap.PE.PE_META_DATA)">
             <summary>
             Manually map module into current process.
             </summary>
@@ -1811,44 +1820,6 @@
             NTSTATUS is an undocument enum. https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
             https://www.pinvoke.net/default.aspx/Enums/NtStatus.html
             </summary>
-        </member>
-        <member name="T:SharpSploit.Execution.PE">
-            <summary>
-            PE is a library for loading PEs in memory. It currently only work for the Mimikatz PE, not for arbitrary PEs.
-            </summary>
-            <remarks>
-            PE has been adapted from Casey Smith's (@subtee) PELoader which is no longer available online. However, Chris Ross'
-            (@xorrior) fork is available here: https://github.com/xorrior/Random-CSharpTools/tree/master/DllLoader/DllLoader
-            </remarks>
-        </member>
-        <member name="P:SharpSploit.Execution.PE.OptionalHeader32">
-            Gets the optional header
-        </member>
-        <member name="P:SharpSploit.Execution.PE.OptionalHeader64">
-            Gets the optional header
-        </member>
-        <member name="F:SharpSploit.Execution.PE.dosHeader">
-            The DOS header
-        </member>
-        <member name="M:SharpSploit.Execution.PE.#ctor(System.Byte[])">
-            <summary>
-            PE Constructor
-            </summary>
-            <param name="PEBytes">PE raw bytes.</param>
-        </member>
-        <member name="M:SharpSploit.Execution.PE.Load(System.Byte[])">
-            <summary>
-            Loads a PE with a specified byte array. (Requires Admin) **(*Currently broken. Works for Mimikatz, but not arbitrary PEs*)
-            </summary>
-            <param name="PEBytes"></param>
-            <returns>PE</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.PE.GetFunctionExport(System.String)">
-            <summary>
-            Gets a pointer to an exported function in the PE. Useful to call specific exported functions after loading the PE.
-            </summary>
-            <param name="funcName">Name of the function to get a pointer for.</param>
-            <returns>Pointer to the function.</returns>
         </member>
         <member name="M:SharpSploit.Execution.PlatformInvoke.Native.NtCreateThreadEx(System.IntPtr@,SharpSploit.Execution.Win32.WinNT.ACCESS_MASK,System.IntPtr,System.IntPtr,System.IntPtr,System.IntPtr,System.Boolean,System.Int32,System.Int32,System.Int32,System.IntPtr)">
             <summary>

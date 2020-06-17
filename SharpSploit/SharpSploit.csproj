@@ -12,6 +12,7 @@
     <RepositoryUrl>https://github.com/cobbr/SharpSploit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>SharpSploit C# .NET post-exploitation offensive security</PackageTags>
+    <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|AnyCPU'">
@@ -20,7 +21,19 @@
     <NoWarn>1701;1702;1591</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net40|x64'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>.\SharpSploit.xml</DocumentationFile>
+    <NoWarn>1701;1702;1591</NoWarn>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|AnyCPU'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <DocumentationFile>.\SharpSploit.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net40|x64'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <DocumentationFile>.\SharpSploit.xml</DocumentationFile>

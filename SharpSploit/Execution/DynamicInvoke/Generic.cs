@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
+using SharpSploit.Execution.ManualMap;
 
 using Execute = SharpSploit.Execution;
 
@@ -210,7 +211,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Loop entries
             IntPtr flink = le.Flink;
             IntPtr hModule = IntPtr.Zero;
-            Execute.PE.LDR_DATA_TABLE_ENTRY dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+            PE.LDR_DATA_TABLE_ENTRY dte = (PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(PE.LDR_DATA_TABLE_ENTRY));
             while (dte.InLoadOrderLinks.Flink != le.Blink)
             {
                 // Match module name
@@ -221,7 +222,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             
                 // Move Ptr
                 flink = dte.InLoadOrderLinks.Flink;
-                dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+                dte = (PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(PE.LDR_DATA_TABLE_ENTRY));
             }
 
             return hModule;
