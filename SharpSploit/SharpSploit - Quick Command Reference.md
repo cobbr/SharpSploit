@@ -147,26 +147,34 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `DynamicAPIInvoke()` - Dynamically invokes a specified API call from a DLL on disk.
 * `DynamicFunctionInvoke()` - Dynamically invokes a function at a specified pointer.
 * `LoadModuleFromDisk()` - Resolves `LdrLoadDll` and uses that function to load a DLL from disk.
-* `MapModuleFromDisk()` - Maps a module from disk into a Section using `NtCreateSection`.
 * `GetLibraryAddress()` - Helper function that obtains the pointer to a function using in-memory export parsing.
 * `GetLoadedModuleAddress()` - Gets the base address of a module loaded by the current process.
 * `GetPebLdrModuleEntry()` - Helper for getting the base address of a module loaded by the current process. This base address could be passed to `GetProcAddress`/`GetNativeExportAddress`/`LdrGetProcedureAddress` or it could be used for manual export parsing.
 * `GetAPIHash()` - Gets a HMAC-MD5 hash for unique hash based API lookups.
 * `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
 * `GetNativeExportAddress()` - Given a module base address, resolve the address of a function by calling `LdrGetProcedureAddress`.
-* `AllocateFileToMemory()` - Allocate file to memory, either from disk or from a byte array.
 * `GetPeMetaData()` - Retrieve PE header information from the module base pointer.
-* `RelocateModule()` - Relocates a module in memory.
 * `GetApiSetMapping()` - Resolve host DLL for API Set DLL (Win10+).
-* `RewriteModuleIAT()` - Rewrite IAT for manually mapped module.
-* `SetModuleSectionPermissions()` - Set correct module section permissions.
-* `MapModuleToMemory()` - Manually map module into current process.
-* `FindDecoyModule()` - Locate a signed module with a minimum size which can be used for overloading.
-* `OverloadModule()` - Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
 * `CallMappedPEModule()` - Call a manually mapped PE by its EntryPoint.
 * `CallMappedDLLModule()` - Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
 * `CallMappedDLLModuleExport()` - Call a manually mapped DLL by Export.
 * `GetSyscallStub()` - Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
+
+## SharpSploit.Execution.ManaulMap
+
+The `SharpSploit.Execution.ManualMap.Map` class contains helper functions for manually mapping PE modules.
+
+* `MapModuleFromDisk()` - Maps a module from disk into a Section using `NtCreateSection`.
+* `AllocateFileToMemory()` - Allocate file to memory, either from disk or from a byte array.
+* `RelocateModule()` - Relocates a module in memory.
+* `MapModuleToMemory()` - Manually map module into current process.
+* `SetModuleSectionPermissions()` - Set correct module section permissions.
+* `RewriteModuleIAT()` - Rewrite IAT for manually mapped module.
+
+The `SharpSploit.Execution.ManualMap.Overload` class contains helper functions for Module Overloading.
+
+* `FindDecoyModule()` - Locate a signed module with a minimum size which can be used for overloading.
+* `OverloadModule()` - Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
 
 ## SharpSploit.Execution.Injection
 
