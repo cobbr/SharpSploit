@@ -24,9 +24,16 @@
             <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
             <returns>Mimikatz output.</returns>
         </member>
+        <member name="M:SharpSploit.Credentials.Mimikatz.Coffee">
+            <summary>
+            Loads the Mimikatz PE and executes the Mimikatz command to get some coffee.
+            Equates to `Command("coffee")`.
+            </summary>
+            <returns>Mimikatz output.</returns>
+        </member>
         <member name="M:SharpSploit.Credentials.Mimikatz.LogonPasswords">
             <summary>
-            Loads the Mimikatz PE and executes the Mimikatzcommand to retrieve plaintext
+            Loads the Mimikatz PE and executes the Mimikatz command to retrieve plaintext
             passwords from LSASS. Equates to `Command("privilege::debug sekurlsa::logonPasswords")`. (Requires Admin)
             </summary>
             <returns>Mimikatz output.</returns>

@@ -117,7 +117,17 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE and executes the Mimikatzcommand to retrieve plaintext
+        /// Loads the Mimikatz PE and executes the Mimikatz command to get some coffee.
+        /// Equates to `Command("coffee")`.
+        /// </summary>
+        /// <returns>Mimikatz output.</returns>
+        public static string Coffee()
+        {
+            return Command("coffee");
+        }
+
+        /// <summary>
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve plaintext
         /// passwords from LSASS. Equates to `Command("privilege::debug sekurlsa::logonPasswords")`. (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
