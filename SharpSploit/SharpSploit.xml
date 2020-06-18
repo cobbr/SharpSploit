@@ -16,11 +16,12 @@
             This wrapper class is adapted from Chris Ross (@xorrior)'s implementation, converted by (@TheRealWover) to use the Manual Mapping API.
             </remarks>
         </member>
-        <member name="M:SharpSploit.Credentials.Mimikatz.Command(System.String)">
+        <member name="M:SharpSploit.Credentials.Mimikatz.Command(System.String,System.String)">
             <summary>
             Loads the Mimikatz PE and executes a chosen Mimikatz command.
             </summary>
             <param name="Command">Mimikatz command to be executed.</param>
+            <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
             <returns>Mimikatz output.</returns>
         </member>
         <member name="M:SharpSploit.Credentials.Mimikatz.LogonPasswords">
@@ -1771,17 +1772,18 @@
             <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
             <returns>PE_MANUAL_MAP object</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Overload.FindDecoyModule(System.Int64)">
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.FindDecoyModule(System.Int64,System.Boolean)">
             <summary>
             Locate a signed module with a minimum size which can be used for overloading.
             </summary>
             <author>The Wover (@TheRealWover)</author>
             <param name="MinSize">Minimum module byte size.</param>
+            <param name="LegitSigned">Whether to require that the module be legitimately signed.</param>
             <returns>
             String, the full path for the candidate module if one is found, or an empty string if one is not found.
             </returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.String,System.String)">
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.String,System.String,System.Boolean)">
             <summary>
             Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that
             module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
@@ -1791,7 +1793,7 @@
             <param name="DecoyModulePath">Optional, full path the decoy module to overload in memory.</param>
             <returns>PE.PE_MANUAL_MAP</returns>
         </member>
-        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.Byte[],System.String)">
+        <member name="M:SharpSploit.Execution.ManualMap.Overload.OverloadModule(System.Byte[],System.String,System.Boolean)">
             <summary>
             Load a signed decoy module into memory creating legitimate file-backed memory sections within the process. Afterwards overload that
             module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
