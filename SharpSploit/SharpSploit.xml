@@ -1543,13 +1543,14 @@
             <summary>
             Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
             </summary>
+            <author>aus</author>
         </member>
         <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor">
             <summary>
             Default constructor.
             </summary>
         </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor(SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection)">
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor(SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection,SharpSploit.Execution.Injection.VirtualAllocate.AllocAPIS,SharpSploit.Execution.Injection.VirtualAllocate.WriteAPIS)">
             <summary>
             Constructor allowing options as arguments.
             </summary>

