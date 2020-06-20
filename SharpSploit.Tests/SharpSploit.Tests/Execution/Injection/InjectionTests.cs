@@ -91,14 +91,16 @@ namespace SharpSploit.Tests.Execution.Injection
             VirtualAllocate virtAlloc = new VirtualAllocate
             {
                 allocationType = Win32.Kernel32.AllocationType.Commit | Win32.Kernel32.AllocationType.Reserve,
-                memoryProtection = Win32.Kernel32.MemoryProtection.ExecuteReadWrite
+                memoryProtection = Win32.Kernel32.MemoryProtection.ExecuteReadWrite,
+                writeAPI = VirtualAllocate.WriteAPIS.NtWriteVirtualMemory,
+                allocAPI = VirtualAllocate.AllocAPIS.NtAllocateVirtualMemory
             };
             notepadProcess = Process.Start("notepad.exe");
             // Check the architecture of the process
             payload = Host.IsWow64(notepadProcess) ? new PICPayload(calc32bitShellCode) : new PICPayload(calc64bitShellCode);
-            payloadLocation = secMapAlloc.Allocate(payload, notepadProcess);
+            payloadLocation = virtAlloc.Allocate(payload, notepadProcess);
             // Perform injection using the magic of OOP polymorphism and function overloads!
-            Assert.IsTrue(Injector.Inject(payload, secMapAlloc, injectionTechnique, notepadProcess));
+            Assert.IsTrue(Injector.Inject(payload, virtAlloc, injectionTechnique, notepadProcess));
 
             Thread.Sleep(2000);
             notepadProcess.Kill();
