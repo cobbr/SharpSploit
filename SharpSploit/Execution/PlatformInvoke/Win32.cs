@@ -241,8 +241,7 @@ namespace SharpSploit.Execution.PlatformInvoke
             [DllImport("netapi32.dll")]
             public static extern int NetLocalGroupGetMembers(
                 [MarshalAs(UnmanagedType.LPWStr)] string servername,
-                [
-                    (UnmanagedType.LPWStr)] string localgroupname,
+                [MarshalAs(UnmanagedType.LPWStr)] string localgroupname,
                 int level,
                 out IntPtr bufptr,
                 int prefmaxlen,
