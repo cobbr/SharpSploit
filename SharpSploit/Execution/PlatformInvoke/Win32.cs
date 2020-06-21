@@ -216,6 +216,13 @@ namespace SharpSploit.Execution.PlatformInvoke
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
             public static extern short GetKeyState(int nVirtKey);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            public static extern bool AddClipboardFormatListener(IntPtr hwnd);
+
+            [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern IntPtr SetParent(IntPtr hWndChild, IntPtr hWndNewParent);
         }
 
         public static class Netapi32
@@ -466,7 +473,7 @@ namespace SharpSploit.Execution.PlatformInvoke
             [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             public static extern bool LookupAccountSid(
                 String lpSystemName,
-                //[MarshalAs(UnmanagedType.LPArray)] 
+                //[MarshalAs(UnmanagedType.LPArray)]
                 IntPtr Sid,
                 StringBuilder lpName,
                 ref UInt32 cchName,
