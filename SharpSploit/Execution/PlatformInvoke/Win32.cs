@@ -241,7 +241,8 @@ namespace SharpSploit.Execution.PlatformInvoke
             [DllImport("netapi32.dll")]
             public static extern int NetLocalGroupGetMembers(
                 [MarshalAs(UnmanagedType.LPWStr)] string servername,
-                [MarshalAs(UnmanagedType.LPWStr)] string localgroupname,
+                [
+                    (UnmanagedType.LPWStr)] string localgroupname,
                 int level,
                 out IntPtr bufptr,
                 int prefmaxlen,
@@ -473,7 +474,7 @@ namespace SharpSploit.Execution.PlatformInvoke
             [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             public static extern bool LookupAccountSid(
                 String lpSystemName,
-                //[MarshalAs(UnmanagedType.LPArray)]
+                //[MarshalAs(UnmanagedType.LPArray)] 
                 IntPtr Sid,
                 StringBuilder lpName,
                 ref UInt32 cchName,
