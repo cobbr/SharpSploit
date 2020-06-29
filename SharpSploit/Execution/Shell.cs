@@ -63,8 +63,38 @@ namespace SharpSploit.Execution
                 }
                 ps.AddScript(PowerShellCode);
                 if (OutString) { ps.AddCommand("Out-String"); }
-                var results = ps.Invoke();
-                string output = String.Join(Environment.NewLine, results.Select(R => R.ToString()).ToArray());
+                PSDataCollection<object> results = new PSDataCollection<object>();
+                ps.Streams.Error.DataAdded += (sender, e) =>
+                {
+                    Console.WriteLine("Error");
+                    foreach (ErrorRecord er in ps.Streams.Error.ReadAll())
+                    {
+                        results.Add(er);
+                    }
+                };
+                ps.Streams.Verbose.DataAdded += (sender, e) =>
+                {
+                    foreach (VerboseRecord vr in ps.Streams.Verbose.ReadAll())
+                    {
+                        results.Add(vr);
+                    }
+                };
+                ps.Streams.Debug.DataAdded += (sender, e) =>
+                {
+                    foreach (DebugRecord dr in ps.Streams.Debug.ReadAll())
+                    {
+                        results.Add(dr);
+                    }
+                };
+                ps.Streams.Warning.DataAdded += (sender, e) =>
+                {
+                    foreach (WarningRecord wr in ps.Streams.Warning)
+                    {
+                        results.Add(wr);
+                    }
+                };
+                ps.Invoke(null, results);
+                string output = string.Join(Environment.NewLine, results.Select(R => R.ToString()).ToArray());
                 ps.Commands.Clear();
                 return output;
             }
