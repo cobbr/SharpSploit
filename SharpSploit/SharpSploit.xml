@@ -1763,6 +1763,13 @@
             <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
             <returns>PE_MANUAL_MAP object</returns>
         </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.FreeModule(SharpSploit.Execution.PE.PE_MANUAL_MAP)">
+            <summary>
+            Free a module that was mapped into the current process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="PEMapped">The metadata of the manually mapped module.</param>
+        </member>
         <member name="M:SharpSploit.Execution.ManualMap.Overload.FindDecoyModule(System.Int64)">
             <summary>
             Locate a signed module with a minimum size which can be used for overloading.
