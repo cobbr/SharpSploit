@@ -375,7 +375,15 @@ namespace SharpSploit.LateralMovement
                             }
                             WMI_Random_Port_String = WMI_Random_Port_String.Replace("-00", "").Replace("-", "");
                             char[] Random_Port_Char_Array = WMI_Random_Port_String.ToCharArray();
-                            char[] chars = new char[] { Random_Port_Char_Array[1], Random_Port_Char_Array[3], Random_Port_Char_Array[5], Random_Port_Char_Array[7], Random_Port_Char_Array[9] };
+                            char[] chars;
+                            try
+                            {
+                                chars = new char[] { Random_Port_Char_Array[1], Random_Port_Char_Array[3], Random_Port_Char_Array[5], Random_Port_Char_Array[7], Random_Port_Char_Array[9] };
+                            }
+                            catch
+                            {
+                                chars = new char[] { Random_Port_Char_Array[1], Random_Port_Char_Array[3], Random_Port_Char_Array[5], Random_Port_Char_Array[7] };
+                            }
                             WMI_Random_Port_Int = int.Parse(new string(chars));
                             string Reverse = BitConverter.ToString(WMI_Client_Receive).Replace("-", "");
                             int Reverse_Index = Reverse.IndexOf("4D454F570100000018AD09F36AD8D011A07500C04FB68820");
