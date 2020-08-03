@@ -14,7 +14,7 @@ namespace SharpSploit.Tests.LateralMovement
         [TestMethod]
         public void TestWMIExecute()
         {
-            Assert.IsTrue(WMI.WMIExecute("win16", "powershell.exe", "DEV-COBBR\\TestAdmin", "Password123!"));
+            Assert.IsNotNull(WMI.WMIExecute("win16", "powershell.exe", "DEV-COBBR\\TestAdmin", "Password123!"));
         }
     }
 }

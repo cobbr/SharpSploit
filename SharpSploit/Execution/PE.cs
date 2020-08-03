@@ -22,7 +22,43 @@ namespace SharpSploit.Execution
         [Flags]
         public enum DataSectionFlags : uint
         {
-            Stub = 0x00000000,
+            TYPE_NO_PAD = 0x00000008,
+            CNT_CODE = 0x00000020,
+            CNT_INITIALIZED_DATA = 0x00000040,
+            CNT_UNINITIALIZED_DATA = 0x00000080,
+            LNK_INFO = 0x00000200,
+            LNK_REMOVE = 0x00000800,
+            LNK_COMDAT = 0x00001000,
+            NO_DEFER_SPEC_EXC = 0x00004000,
+            GPREL = 0x00008000,
+            MEM_FARDATA = 0x00008000,
+            MEM_PURGEABLE = 0x00020000,
+            MEM_16BIT = 0x00020000,
+            MEM_LOCKED = 0x00040000,
+            MEM_PRELOAD = 0x00080000,
+            ALIGN_1BYTES = 0x00100000,
+            ALIGN_2BYTES = 0x00200000,
+            ALIGN_4BYTES = 0x00300000,
+            ALIGN_8BYTES = 0x00400000,
+            ALIGN_16BYTES = 0x00500000,
+            ALIGN_32BYTES = 0x00600000,
+            ALIGN_64BYTES = 0x00700000,
+            ALIGN_128BYTES = 0x00800000,
+            ALIGN_256BYTES = 0x00900000,
+            ALIGN_512BYTES = 0x00A00000,
+            ALIGN_1024BYTES = 0x00B00000,
+            ALIGN_2048BYTES = 0x00C00000,
+            ALIGN_4096BYTES = 0x00D00000,
+            ALIGN_8192BYTES = 0x00E00000,
+            ALIGN_MASK = 0x00F00000,
+            LNK_NRELOC_OVFL = 0x01000000,
+            MEM_DISCARDABLE = 0x02000000,
+            MEM_NOT_CACHED = 0x04000000,
+            MEM_NOT_PAGED = 0x08000000,
+            MEM_SHARED = 0x10000000,
+            MEM_EXECUTE = 0x20000000,
+            MEM_READ = 0x40000000,
+            MEM_WRITE = 0x80000000
         }
 
         public bool Is32BitHeader
@@ -48,9 +84,16 @@ namespace SharpSploit.Execution
 
         /// The DOS header
         private IMAGE_DOS_HEADER dosHeader;
-        //Primary class for loading PE
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate bool main(IntPtr arg1, uint arg2, IntPtr lparam);
+
+        // DllMain constants
+        public const UInt32 DLL_PROCESS_DETACH = 0;
+        public const UInt32 DLL_PROCESS_ATTACH = 1;
+        public const UInt32 DLL_THREAD_ATTACH = 2;
+        public const UInt32 DLL_THREAD_DETACH = 3;
+
+        // Primary class for loading PE
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        public delegate bool DllMain(IntPtr hinstDLL, uint fdwReason, IntPtr lpvReserved);
 
         private static IntPtr codebase;
 
@@ -259,7 +302,7 @@ namespace SharpSploit.Execution
             // Transfer Control To OEP
             // Call dllmain
             threadStart = IntPtrAdd(codebase, AddressOfEntryPoint);
-            main dllmain = (main)Marshal.GetDelegateForFunctionPointer(threadStart, typeof(main));
+            DllMain dllmain = (DllMain)Marshal.GetDelegateForFunctionPointer(threadStart, typeof(DllMain));
             dllmain(codebase, 1, IntPtr.Zero);
             // Console.WriteLine("Thread Complete");
             return pe;
@@ -547,6 +590,97 @@ namespace SharpSploit.Execution
         {
             public uint VirtualAdress;
             public uint SizeOfBlock;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PE_META_DATA
+        {
+            public UInt32 Pe;
+            public Boolean Is32Bit;
+            public IMAGE_FILE_HEADER ImageFileHeader;
+            public IMAGE_OPTIONAL_HEADER32 OptHeader32;
+            public IMAGE_OPTIONAL_HEADER64 OptHeader64;
+            public IMAGE_SECTION_HEADER[] Sections;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct PE_MANUAL_MAP
+        {
+            public String DecoyModule;
+            public IntPtr ModuleBase;
+            public PE_META_DATA PEINFO;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct IMAGE_THUNK_DATA32
+        {
+            [FieldOffset(0)]
+            public UInt32 ForwarderString;
+            [FieldOffset(0)]
+            public UInt32 Function;
+            [FieldOffset(0)]
+            public UInt32 Ordinal;
+            [FieldOffset(0)]
+            public UInt32 AddressOfData;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct IMAGE_THUNK_DATA64
+        {
+            [FieldOffset(0)]
+            public UInt64 ForwarderString;
+            [FieldOffset(0)]
+            public UInt64 Function;
+            [FieldOffset(0)]
+            public UInt64 Ordinal;
+            [FieldOffset(0)]
+            public UInt64 AddressOfData;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct ApiSetNamespace
+        {
+            [FieldOffset(0x0C)]
+            public int Count;
+
+            [FieldOffset(0x10)]
+            public int EntryOffset;
+        }
+
+        [StructLayout(LayoutKind.Explicit, Size = 24)]
+        public struct ApiSetNamespaceEntry
+        {
+            [FieldOffset(0x04)]
+            public int NameOffset;
+
+            [FieldOffset(0x08)]
+            public int NameLength;
+
+            [FieldOffset(0x10)]
+            public int ValueOffset;
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct ApiSetValueEntry
+        {
+            [FieldOffset(0x0C)]
+            public int ValueOffset;
+
+            [FieldOffset(0x10)]
+            public int ValueCount;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct LDR_DATA_TABLE_ENTRY
+        {
+            public Native.LIST_ENTRY InLoadOrderLinks;
+            public Native.LIST_ENTRY InMemoryOrderLinks;
+            public Native.LIST_ENTRY InInitializationOrderLinks;
+            public IntPtr DllBase;
+            public IntPtr EntryPoint;
+            public UInt32 SizeOfImage;
+            public Native.UNICODE_STRING FullDllName;
+            public Native.UNICODE_STRING BaseDllName;
         }
     }
 }

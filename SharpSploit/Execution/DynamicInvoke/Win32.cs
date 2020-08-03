@@ -24,7 +24,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns></returns>
         public static IntPtr OpenProcess(Execute.Win32.Kernel32.ProcessAccessFlags dwDesiredAccess, bool bInheritHandle, UInt32 dwProcessId)
         {
-            //Craft an array for the arguments
+            // Craft an array for the arguments
             object[] funcargs =
             {
                 dwDesiredAccess, bInheritHandle, dwProcessId
@@ -32,6 +32,30 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             return (IntPtr)Generic.DynamicAPIInvoke(@"kernel32.dll", @"OpenProcess",
                 typeof(Delegates.OpenProcess), ref funcargs);
+        }
+
+        public static IntPtr CreateRemoteThread(
+            IntPtr hProcess,
+            IntPtr lpThreadAttributes,
+            uint dwStackSize,
+            IntPtr lpStartAddress,
+            IntPtr lpParameter,
+            uint dwCreationFlags,
+            ref IntPtr lpThreadId)
+        {
+            // Craft an array for the arguments
+            object[] funcargs =
+            {
+                hProcess, lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId
+            };
+
+            IntPtr retValue = (IntPtr)Generic.DynamicAPIInvoke(@"kernel32.dll", @"CreateRemoteThread",
+                typeof(Delegates.CreateRemoteThread), ref funcargs);
+
+            // Update the modified variables
+            lpThreadId = (IntPtr)funcargs[6];
+
+            return retValue;
         }
 
         /// <summary>
@@ -55,8 +79,17 @@ namespace SharpSploit.Execution.DynamicInvoke
             return retVal;
         }
 
-        private static class Delegates
+        public static class Delegates
         {
+            [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+            public delegate IntPtr CreateRemoteThread(IntPtr hProcess,
+                IntPtr lpThreadAttributes,
+                uint dwStackSize,
+                IntPtr lpStartAddress,
+                IntPtr lpParameter,
+                uint dwCreationFlags,
+                out IntPtr lpThreadId);
+
             [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
             public delegate IntPtr OpenProcess(
                 Execute.Win32.Kernel32.ProcessAccessFlags dwDesiredAccess,

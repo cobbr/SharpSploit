@@ -40,6 +40,26 @@ namespace SharpSploit.Tests.Execution
         }
 
         [TestMethod]
+        public void TestPowerShellExecuteVerbose()
+        {
+            string output = Shell.PowerShellExecute(@"
+function Test-Verbose {
+    [CmdletBinding()]
+    Param()
+    Write-Verbose ""verbose""
+}
+Test-Verbose -Verbose");
+            Assert.AreEqual("verbose\r\n", output);
+        }
+
+        [TestMethod]
+        public void TestPowerShellExecuteError()
+        {
+            string output = Shell.PowerShellExecute("Write-Error 'error'");
+            Assert.AreEqual("error\r\n", output);
+        }
+
+        [TestMethod]
         public void TestShellCreateProcess()
         {
             string output = Shell.CreateProcess("tasklist /v");

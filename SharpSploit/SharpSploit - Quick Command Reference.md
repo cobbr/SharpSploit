@@ -128,7 +128,7 @@ The `SharpSploit.Execution.PlatformInvoke.Native` class contains a library of Pl
 
 ## SharpSploit.Execution.DynamicInvoke
 
-The `SharpSploit.Execution.DynamicInvoke` namespace contains classes for dynamically invoking unmanaged DLL functions.  Allows the user to call functions in Win32, API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, or many other use cases.
+The `SharpSploit.Execution.DynamicInvoke` namespace contains classes for dynamically invoking unmanaged DLL functions. Allows the user to call functions in Win32, the NT API, or third-party APIs without using P/Invoke. This avoids suspicious imports and can help evade static analysis tools. It also assists in invoking unmanaged code from function pointers, which can be used to invoke shellcode, exported functions from manually mapped DLLs, direct syscall execution, or many other use cases. Helper functions are also included for manually mapping PE modules in a variety of ways, including Module Overloading.
 
 Function prototypes for delegates are much less forgiving than P/Invoke. Data types used as parameters must have exactly the same format in memory as the unmanaged function expects, whereas P/Invoke is forgiving and lets you use data types that are close but not the same. There is no existing library of delegates that is verified to be compatable with the Win32 and NT APIs. As such, the library of delegates in SharpSploit will be updated over time as they are discovered, tested, and used by SharpSploit commands.
 
@@ -146,11 +146,63 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 
 * `DynamicAPIInvoke()` - Dynamically invokes a specified API call from a DLL on disk.
 * `DynamicFunctionInvoke()` - Dynamically invokes a function at a specified pointer.
-* `LoadModuleFromDisk()` - Recolves LdrLoadDll and uses that function to load a DLL from disk.
+* `LoadModuleFromDisk()` - Resolves `LdrLoadDll` and uses that function to load a DLL from disk.
 * `GetLibraryAddress()` - Helper function that obtains the pointer to a function using in-memory export parsing.
 * `GetLoadedModuleAddress()` - Gets the base address of a module loaded by the current process.
+* `GetPebLdrModuleEntry()` - Helper for getting the base address of a module loaded by the current process. This base address could be passed to `GetProcAddress`/`GetNativeExportAddress`/`LdrGetProcedureAddress` or it could be used for manual export parsing.
 * `GetAPIHash()` - Gets a HMAC-MD5 hash for unique hash based API lookups.
 * `GetExportAddress()` - Gets the address of an exported function given the base address of a module.
+* `GetNativeExportAddress()` - Given a module base address, resolve the address of a function by calling `LdrGetProcedureAddress`.
+* `GetPeMetaData()` - Retrieve PE header information from the module base pointer.
+* `GetApiSetMapping()` - Resolve host DLL for API Set DLL (Win10+).
+* `CallMappedPEModule()` - Call a manually mapped PE by its EntryPoint.
+* `CallMappedDLLModule()` - Call a manually mapped DLL by DllMain -> DLL_PROCESS_ATTACH.
+* `CallMappedDLLModuleExport()` - Call a manually mapped DLL by Export.
+* `GetSyscallStub()` - Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
+
+## SharpSploit.Execution.ManaulMap
+
+The `SharpSploit.Execution.ManualMap.Map` class contains helper functions for manually mapping PE modules.
+
+* `MapModuleFromDisk()` - Maps a module from disk into a Section using `NtCreateSection`.
+* `AllocateFileToMemory()` - Allocate file to memory, either from disk or from a byte array.
+* `RelocateModule()` - Relocates a module in memory.
+* `MapModuleToMemory()` - Manually map module into current process.
+* `SetModuleSectionPermissions()` - Set correct module section permissions.
+* `RewriteModuleIAT()` - Rewrite IAT for manually mapped module.
+
+The `SharpSploit.Execution.ManualMap.Overload` class contains helper functions for Module Overloading.
+
+* `FindDecoyModule()` - Locate a signed module with a minimum size which can be used for overloading.
+* `OverloadModule()` - Load a signed decoy module into memory, creating legitimate file-backed memory sections within the process. Afterwards overload that module by manually mapping a payload in it's place causing the payload to execute from what appears to be file-backed memory.
+
+## SharpSploit.Execution.Injection
+
+The `SharpSploit.Execution.Injection` namespace contains classes for modular process injection components that can be combined to build custom injectors. An `AllocationTechnique` makes a `PayloadType` available to the target process. An `ExecutionTechnique` executes a `PayloadType` that is present in memory within a target process.
+
+### SharpSploit.Execution.Injection.AllocationTechnique
+
+The `SharpSploit.Execution.Injection.AllocationTechnique` class is an abstract parent class providing the requirements for all allocation components.
+
+### SharpSploit.Execution.Injection.SectionMapAlloc
+
+The `SharpSploit.Execution.Injection.SectionMapAlloc` class inherits from `AllocationTechnique` and is an Allocation component that allocates a payload to a target process using a locally-written, remotely-mapped shared memory section.
+
+### SharpSploit.Execution.Injection.ExecutionTechnique
+
+The `SharpSploit.Execution.Injection.ExecutionTechnique` class is an abstract parent class providing the requirements for all execution components.
+
+### SharpSploit.Execution.Injection.RemoteThreadCreate
+
+The `SharpSploit.Execution.Injection.RemoteThreadCreate` class inherits from `ExecutionTechnique` and is an Execution component that executes a payload in a remote process by creating a new thread. Allows the user to specify which API call to use for remote thread creation.
+
+### SharpSploit.Execution.Injection.PayloadType
+
+The `SharpSploit.Execution.Injection.PayloadType` class is an abstract parent class providing the requirements for all types of payloads. Allocation and Execution components may behave differently for each subclass of `PayloadType`.
+
+### SharpSploit.Execution.Injection.Injector
+
+The `SharpSploit.Execution.Injection.Injector` class provides static functions for performing injection using a combination of Allocation and Execution components, along with a Payload.
 
 ## SharpSploit.LateralMovement
 
