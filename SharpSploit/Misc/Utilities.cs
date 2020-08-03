@@ -9,6 +9,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 
 namespace SharpSploit.Misc
@@ -118,6 +119,14 @@ namespace SharpSploit.Misc
             byte[] byte_Array = flattenedList.ToArray();
 
             return byte_Array;
+        }
+        public static byte[] SendStream(NetworkStream stream, byte[] BytesToSend)
+        {
+            byte[] BytesReceived = new byte[2048];
+            stream.Write(BytesToSend, 0, BytesToSend.Length);
+            stream.Flush();
+            stream.Read(BytesReceived, 0, BytesReceived.Length);
+            return BytesReceived;
         }
     }
 }
