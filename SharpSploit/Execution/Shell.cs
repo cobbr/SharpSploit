@@ -351,14 +351,20 @@ namespace SharpSploit.Execution
             {
                 foreach (var process in Process.GetProcessesByName(Name))
                 {
+                    int i = 0;
+                    Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
                     foreach (ProcessThread thread in process.Threads)
                     {
                         IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                        Console.WriteLine("Suspending ThreadID:{0}", thread.Id);
                         if (pOpenThread == IntPtr.Zero)
                         {
-                            break;
+                            continue;
                         }
-                        PInvoke.Win32.Kernel32.SuspendThread(pOpenThread);
+                        else
+                        {
+                            PInvoke.Win32.Kernel32.SuspendThread(pOpenThread);
+                        }
                     }
                     return $"Process ID {process.Id} ({Name}) suspended.";
                 }
@@ -374,17 +380,22 @@ namespace SharpSploit.Execution
         public static string ResumeProcess(string Name)
         {
             try
-            {
+            { 
                 foreach (var process in Process.GetProcessesByName(Name))
                 {
+                    Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
                     foreach (ProcessThread thread in process.Threads)
                     {
                         IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                        Console.WriteLine("Resuming ThreadID:{0}", thread.Id);
                         if (pOpenThread == IntPtr.Zero)
                         {
-                            break;
+                            continue;
                         }
-                        PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
+                        else
+                        {
+                            PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
+                        }
                     }
                     return $"Process ID {process.Id} ({Name}) resumed.";
                 }
