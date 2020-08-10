@@ -331,8 +331,7 @@ namespace SharpSploit.Execution
         {
             try
             {
-                var list = Process.GetProcesses().Where(x => x.ProcessName.IndexOf(Name, StringComparison.OrdinalIgnoreCase) >= 0);
-                foreach (var process in list)
+                foreach (var process in Process.GetProcessesByName(Name))
                 {
                     return KillProcessById(process.Id);
                 }
