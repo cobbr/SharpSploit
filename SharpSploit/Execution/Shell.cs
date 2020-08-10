@@ -359,9 +359,8 @@ namespace SharpSploit.Execution
                             break;
                         }
                         PInvoke.Win32.Kernel32.SuspendThread(pOpenThread);
-
-                        return $"Process ID {process.Id} ({Name}) suspended.";
                     }
+                    return $"Process ID {process.Id} ({Name}) suspended.";
                 }
                 return $"Could not find any Process named {Name}";
             }
@@ -386,9 +385,8 @@ namespace SharpSploit.Execution
                             break;
                         }
                         PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
-
-                        return $"Process ID {process.Id} ({Name}) resumed.";
                     }
+                    return $"Process ID {process.Id} ({Name}) resumed.";
                 }
                 return $"Could not find any Process named {Name}";
             }
