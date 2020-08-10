@@ -296,5 +296,49 @@ namespace SharpSploit.Execution
                 }
             }
         }
+
+        /// <summary>
+        /// Kills a specificed process.
+        /// </summary>
+        /// <param name="Pid">The ID of the process to kill.</param>
+        /// <returns>Output indicating the success or failure of killing the specified process.</returns>
+        public static string KillProcessById(int Pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(Pid);
+                string processName = process.ProcessName;
+                process.Kill();
+
+                if (process.HasExited)
+                {
+                    return $"Process ID {Pid} ({processName}) killed.";
+                }
+                else
+                {
+                    return $"Could not kill Process ID {Pid} ({processName})";
+                }
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Kills a specificed process.
+        /// </summary>
+        /// <param name="Name">The name of the process to kill.</param>
+        /// <returns>Output indicating the success or failure of killing the specified process.</returns>
+        public static string KillProcessByName(string Name)
+        {
+            try
+            {
+                var list = Process.GetProcesses().Where(x => x.ProcessName.IndexOf(Name, StringComparison.OrdinalIgnoreCase) >= 0);
+                foreach (var process in list)
+                {
+                    return KillProcessById(process.Id);
+                }
+                return $"Could not find Process named {Name}";
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
     }
 }
