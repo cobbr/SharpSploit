@@ -367,5 +367,32 @@ namespace SharpSploit.Execution
             }
             catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
         }
+        /// <summary>
+        /// Resumes a specificed process.
+        /// </summary>
+        /// <param name="Name">The name of the process to resume.</param>
+        /// <returns>Output indicating the success or failure of resuming the specified process.</returns>
+        public static string ResumeProcess(string Name)
+        {
+            try
+            {
+                foreach (var process in Process.GetProcessesByName(Name))
+                {
+                    foreach (ProcessThread thread in process.Threads)
+                    {
+                        IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                        if (pOpenThread == IntPtr.Zero)
+                        {
+                            break;
+                        }
+                        PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
+
+                        return $"Process ID {process.Id} ({Name}) resumed.";
+                    }
+                }
+                return $"Could not find any Process named {Name}";
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
     }
 }
