@@ -296,5 +296,103 @@ namespace SharpSploit.Execution
                 }
             }
         }
+		
+		        
+        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvoke(string targetProcess)
+        {
+
+            Win32.ProcessThreadsAPI._STARTUPINFOEX StartupInfoEx = new Win32.ProcessThreadsAPI._STARTUPINFOEX();
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
+
+            StartupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfoEx);
+            IntPtr lpValue = IntPtr.Zero;
+            Win32.WinBase._SECURITY_ATTRIBUTES pSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
+            Win32.WinBase._SECURITY_ATTRIBUTES tSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
+            pSec.nLength = (uint)Marshal.SizeOf(pSec);
+            tSec.nLength = (uint)Marshal.SizeOf(tSec);
+
+            StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+            StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
+            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW;
+
+            PInvoke.Win32.Advapi32.CreateProcess(
+                    targetProcess,                             
+                    null,    
+                    ref pSec,                               
+                    ref tSec,                          
+                    false,                      
+                    flags,                     
+                    IntPtr.Zero,
+                    null,                       
+                    ref StartupInfoEx,            
+                    out ProcInfo                
+                    );                       
+
+            return ProcInfo;
+        }
+
+        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvokePPID(string targetProcess, int parentProcessId)
+        {
+
+            const int ProcThreadAttributeParentProcess = 0x00020000;
+
+            Win32.ProcessThreadsAPI._STARTUPINFOEX StartupInfoEx = new Win32.ProcessThreadsAPI._STARTUPINFOEX();
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
+
+            StartupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfoEx);         
+            IntPtr lpValue = IntPtr.Zero;
+
+            try
+            {
+
+                Win32.WinBase._SECURITY_ATTRIBUTES pSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
+                Win32.WinBase._SECURITY_ATTRIBUTES tSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
+                pSec.nLength = (uint)Marshal.SizeOf(pSec);
+                tSec.nLength = (uint)Marshal.SizeOf(tSec);
+
+                StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+                StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
+                Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
+
+                IntPtr lpSize = IntPtr.Zero;
+
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
+                StartupInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(StartupInfoEx.lpAttributeList, 1, 0, ref lpSize);
+
+                IntPtr parentHandle = Process.GetProcessById(parentProcessId).Handle;
+                lpValue = Marshal.AllocHGlobal(IntPtr.Size);
+                Marshal.WriteIntPtr(lpValue, parentHandle);
+
+                PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
+                PInvoke.Win32.Advapi32.CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref StartupInfoEx, out ProcInfo);
+
+                return ProcInfo;
+
+            }
+            finally
+            {
+                PInvoke.Win32.Kernel32.DeleteProcThreadAttributeList(StartupInfoEx.lpAttributeList);
+                Marshal.FreeHGlobal(StartupInfoEx.lpAttributeList);
+                Marshal.FreeHGlobal(lpValue);
+            }
+        }
+
+        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION createProcessAsPInvoke(string path, string domain, string username, string password)
+        {
+            const int LogonWithProfile = 0x00000001;
+
+            Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO();
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
+
+            StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+            StartupInfo.wShowWindow = 0; //SW_HIDE
+            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_SUSPENDED | Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW;
+
+            PInvoke.Win32.Advapi32.CreateProcessWithLogonW(username, domain, password, LogonWithProfile, path, "", flags, IntPtr.Zero, @"C:\Windows\System32", ref StartupInfo, out ProcInfo);
+            return ProcInfo;
+        }
+
+
     }
 }

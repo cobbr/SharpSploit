@@ -177,6 +177,32 @@ namespace SharpSploit.Execution.PlatformInvoke
             public static extern void GetNativeSystemInfo(
                 ref Execute.Win32.Kernel32.SYSTEM_INFO lpSystemInfo
             );
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool InitializeProcThreadAttributeList(
+                IntPtr lpAttributeList,
+                int dwAttributeCount,
+                int dwFlags,
+                ref IntPtr lpSize
+            );
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool UpdateProcThreadAttribute(
+                IntPtr lpAttributeList,
+                uint dwFlags,
+                IntPtr Attribute,
+                IntPtr lpValue,
+                IntPtr cbSize,
+                IntPtr lpPreviousValue,
+                IntPtr lpReturnSize
+            );
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            public static extern bool DeleteProcThreadAttributeList(
+                IntPtr lpAttributeList
+            );
+
+
         }
 
         public static class User32
@@ -368,7 +394,7 @@ namespace SharpSploit.Execution.PlatformInvoke
                 int logonFlags,
                 String applicationName,
                 String commandLine,
-                int creationFlags,
+                Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
                 IntPtr environment,
                 String currentDirectory,
                 ref Execute.Win32.ProcessThreadsAPI._STARTUPINFO startupInfo,
@@ -387,6 +413,22 @@ namespace SharpSploit.Execution.PlatformInvoke
                 ref Execute.Win32.ProcessThreadsAPI._STARTUPINFO lpStartupInfo,
                 out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInfo
             );
+			
+			
+            [DllImport("kernel32.dll")]
+            public static extern bool CreateProcess(
+                string lpApplicationName,
+                string lpCommandLine,
+                ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpProcessAttributes,
+                ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpThreadAttributes,
+                bool bInheritHandles,
+                Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
+                IntPtr lpEnvironment,
+                string lpCurrentDirectory,
+                ref Execute.Win32.ProcessThreadsAPI._STARTUPINFOEX lpStartupInfoEx,
+                out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInformation
+            );
+            
 
             [DllImport("advapi32.dll", SetLastError = true)]
             public static extern Boolean CredEnumerateW(
@@ -531,7 +573,7 @@ namespace SharpSploit.Execution.PlatformInvoke
                 IntPtr lpSecurityDescriptor,
                 IntPtr lpftLastWriteTime
             );
-
+			
             [DllImport("advapi32.dll", SetLastError = true)]
             public static extern Boolean RevertToSelf();
 

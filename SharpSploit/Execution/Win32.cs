@@ -542,7 +542,7 @@ namespace SharpSploit.Execution
             [StructLayout(LayoutKind.Sequential)]
             public struct _SECURITY_ATTRIBUTES
             {
-                UInt32 nLength;
+                public UInt32 nLength;
                 IntPtr lpSecurityDescriptor;
                 Boolean bInheritHandle;
             };
@@ -868,8 +868,8 @@ namespace SharpSploit.Execution
             [StructLayout(LayoutKind.Sequential)]
             public struct _STARTUPINFOEX
             {
-                _STARTUPINFO StartupInfo;
-                // PPROC_THREAD_ATTRIBUTE_LIST lpAttributeList;
+                public _STARTUPINFO StartupInfo;
+                public IntPtr lpAttributeList;
             };
 
             //https://msdn.microsoft.com/en-us/library/windows/desktop/ms684873(v=vs.85).aspx

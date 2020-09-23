@@ -248,11 +248,14 @@ namespace SharpSploit.Credentials
                     continue;
                 }
 
+                Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_DEFAULT_ERROR_MODE;
+
+
                 Win32.ProcessThreadsAPI._STARTUPINFO startupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO();
                 startupInfo.cb = (UInt32)Marshal.SizeOf(typeof(Win32.ProcessThreadsAPI._STARTUPINFO));
                 Win32.ProcessThreadsAPI._PROCESS_INFORMATION processInformation = new Win32.ProcessThreadsAPI._PROCESS_INFORMATION();
                 if (!PInvoke.Win32.Advapi32.CreateProcessWithLogonW(Environment.UserName, Environment.UserDomainName, "password",
-                    0x00000002, Path + Binary, Path + Binary + " " + Arguments, 0x04000000, IntPtr.Zero, Path, ref startupInfo, out processInformation))
+                    0x00000002, Path + Binary, Path + Binary + " " + Arguments, flags, IntPtr.Zero, Path, ref startupInfo, out processInformation))
                 {
                     Console.Error.WriteLine("CreateProcessWithLogonW() Error: " + new Win32Exception(Marshal.GetLastWin32Error()).Message);
                     continue;
