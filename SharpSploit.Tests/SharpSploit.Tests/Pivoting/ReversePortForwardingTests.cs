@@ -12,7 +12,7 @@ using SharpSploit.Pivoting;
 namespace SharpSploit.Tests.Pivoting
 {
     [TestClass]
-    public class RPortFwdTest
+    public class ReversePortForwardingTests
     {
         public const string testWebResponse = "this is a test";
 
