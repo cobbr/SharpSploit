@@ -21,7 +21,8 @@ namespace SharpSploit.Evasion
         /// /// <returns>Bool. True if succeeded, otherwise false.</returns>
         /// <remarks>
         /// Code has been kindly stolen and adapted from Adam Chester (https://blog.xpnsec.com/hiding-your-dotnet-etw/) and Mythic (https://github.com/its-a-feature/Mythic).
-        /// </remarks>
+        /// Authors: Simone Salucci & Daniel López @ NCC Group 
+        ///</remarks>
         public static bool PatchEtw()
         {
             byte[] patch;
