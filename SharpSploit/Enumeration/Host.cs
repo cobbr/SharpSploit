@@ -417,11 +417,8 @@ namespace SharpSploit.Enumeration
             PInvoke.Win32.Kernel32.PssFreeSnapshot(Process.GetCurrentProcess().Handle, snapshotHandle);
             PInvoke.Win32.Kernel32.CloseHandle(vaCloneHandle);
             
-            //Process.GetProcessById(cloneProcessId).Kill();
-
             Marshal.FreeHGlobal(pCallbackInfo);
             GC.KeepAlive(CallbackInfo);
-
         }
 
         /// <summary>
