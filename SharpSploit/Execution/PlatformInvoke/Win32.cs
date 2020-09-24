@@ -182,6 +182,19 @@ namespace SharpSploit.Execution.PlatformInvoke
             public static extern Int32 PssCaptureSnapshot(
                 IntPtr ProcessHandle, Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS CaptureFlags, Int32 ThreadContextFlags, out IntPtr SnapshotHandle
             );
+
+            [DllImport("kernel32")]
+            public static extern Int32 PssFreeSnapshot(
+                IntPtr ProcessHandle, IntPtr SnapshotHandle
+            );
+
+            [DllImport("kernel32")]
+            public static extern Int32 PssQuerySnapshot(
+                IntPtr SnapshotHandle, Execution.Win32.Kernel32.PSS_QUERY_INFORMATION_CLASS InformationClass, out IntPtr Buffer, Int32 BufferLength
+            );
+
+            [DllImport("kernel32")]
+            public static extern Int32 GetProcessId(IntPtr hObject);
         }
 
         public static class User32
