@@ -14,7 +14,6 @@ using System.Runtime.InteropServices;
 using SharpSploit.Generic;
 using SharpSploit.Execution;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
-using Microsoft.PowerShell.Commands;
 
 namespace SharpSploit.Enumeration
 {
