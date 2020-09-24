@@ -296,8 +296,17 @@ namespace SharpSploit.Execution
                 }
             }
         }
-		
-		        
+
+
+        /// <summary>
+        /// Creates a process specified as argument using the Platform Invoke API.
+        /// </summary>
+        /// <author>Simone Salucci (@saim1z) & Daniel López (@attl4s)</author>
+        /// <param name="targetProcess">The target process to execute.</param>
+        /// <returns>PROCESS_INFORMATION structure.</returns>
+        /// <remarks>
+        /// Code has been kindly stolen and adapted from TikiTorch (https://github.com/rasta-mouse/TikiTorch/blob/064c60c5e23188867a0f9c5a0626dd39718750d4/TikiLoader/Generic.cs).
+        /// </remarks>	       
         public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvoke(string targetProcess)
         {
 
@@ -315,7 +324,7 @@ namespace SharpSploit.Execution
             StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
             Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW;
 
-            PInvoke.Win32.Advapi32.CreateProcess(
+            PInvoke.Win32.Kernel32.CreateProcess(
                     targetProcess,                             
                     null,    
                     ref pSec,                               
@@ -331,6 +340,16 @@ namespace SharpSploit.Execution
             return ProcInfo;
         }
 
+        /// <summary>
+        /// Creates a process with the parent process ID specified as argument using the Platform Invoke API.
+        /// </summary>
+        /// <author>Simone Salucci (@saim1z) & Daniel López (@attl4s)</author>
+        /// <param name="targetProcess">The target process to execute.</param>
+        /// <param name="parentProcessId">The parent process ID of the new process executed.</param>
+        /// <returns>PROCESS_INFORMATION structure.</returns>
+        /// <remarks>
+        /// Code has been kindly stolen and adapted from TikiTorch (https://github.com/rasta-mouse/TikiTorch/blob/064c60c5e23188867a0f9c5a0626dd39718750d4/TikiLoader/Generic.cs).
+        /// </remarks>	 
         public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvokePPID(string targetProcess, int parentProcessId)
         {
 
@@ -355,7 +374,6 @@ namespace SharpSploit.Execution
                 Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
 
                 IntPtr lpSize = IntPtr.Zero;
-
                 PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
                 StartupInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
                 PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(StartupInfoEx.lpAttributeList, 1, 0, ref lpSize);
@@ -365,10 +383,9 @@ namespace SharpSploit.Execution
                 Marshal.WriteIntPtr(lpValue, parentHandle);
 
                 PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
-                PInvoke.Win32.Advapi32.CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref StartupInfoEx, out ProcInfo);
+                PInvoke.Win32.Kernel32.CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref StartupInfoEx, out ProcInfo);
 
                 return ProcInfo;
-
             }
             finally
             {
@@ -377,22 +394,6 @@ namespace SharpSploit.Execution
                 Marshal.FreeHGlobal(lpValue);
             }
         }
-
-        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION createProcessAsPInvoke(string path, string domain, string username, string password)
-        {
-            const int LogonWithProfile = 0x00000001;
-
-            Win32.ProcessThreadsAPI._STARTUPINFO StartupInfo = new Win32.ProcessThreadsAPI._STARTUPINFO();
-            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
-
-            StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
-            StartupInfo.wShowWindow = 0; //SW_HIDE
-            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_SUSPENDED | Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW;
-
-            PInvoke.Win32.Advapi32.CreateProcessWithLogonW(username, domain, password, LogonWithProfile, path, "", flags, IntPtr.Zero, @"C:\Windows\System32", ref StartupInfo, out ProcInfo);
-            return ProcInfo;
-        }
-
-
+        
     }
 }

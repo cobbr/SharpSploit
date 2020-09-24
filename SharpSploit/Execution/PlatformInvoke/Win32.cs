@@ -202,6 +202,19 @@ namespace SharpSploit.Execution.PlatformInvoke
                 IntPtr lpAttributeList
             );
 
+            [DllImport("kernel32.dll")]
+            public static extern bool CreateProcess(
+             string lpApplicationName,
+             string lpCommandLine,
+             ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpProcessAttributes,
+             ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpThreadAttributes,
+             bool bInheritHandles,
+             Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
+             IntPtr lpEnvironment,
+             string lpCurrentDirectory,
+             ref Execute.Win32.ProcessThreadsAPI._STARTUPINFOEX lpStartupInfoEx,
+             out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInformation
+            );
 
         }
 
@@ -394,7 +407,7 @@ namespace SharpSploit.Execution.PlatformInvoke
                 int logonFlags,
                 String applicationName,
                 String commandLine,
-                Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
+                int creationFlags,
                 IntPtr environment,
                 String currentDirectory,
                 ref Execute.Win32.ProcessThreadsAPI._STARTUPINFO startupInfo,
@@ -413,23 +426,7 @@ namespace SharpSploit.Execution.PlatformInvoke
                 ref Execute.Win32.ProcessThreadsAPI._STARTUPINFO lpStartupInfo,
                 out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInfo
             );
-			
-			
-            [DllImport("kernel32.dll")]
-            public static extern bool CreateProcess(
-                string lpApplicationName,
-                string lpCommandLine,
-                ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpProcessAttributes,
-                ref Execute.Win32.WinBase._SECURITY_ATTRIBUTES lpThreadAttributes,
-                bool bInheritHandles,
-                Execute.Win32.Advapi32.CREATION_FLAGS dwCreationFlags,
-                IntPtr lpEnvironment,
-                string lpCurrentDirectory,
-                ref Execute.Win32.ProcessThreadsAPI._STARTUPINFOEX lpStartupInfoEx,
-                out Execute.Win32.ProcessThreadsAPI._PROCESS_INFORMATION lpProcessInformation
-            );
-            
-
+	        
             [DllImport("advapi32.dll", SetLastError = true)]
             public static extern Boolean CredEnumerateW(
                 String Filter,
