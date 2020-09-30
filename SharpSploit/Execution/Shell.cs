@@ -321,7 +321,7 @@ namespace SharpSploit.Execution
 
             StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
             StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
-            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
+            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT | Win32.Advapi32.CREATION_FLAGS.CREATE_SUSPENDED;
 
             if (blockDLL)
             {
@@ -375,9 +375,9 @@ namespace SharpSploit.Execution
                 pSec.nLength = (uint)Marshal.SizeOf(pSec);
                 tSec.nLength = (uint)Marshal.SizeOf(tSec);
 
-                StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
-                StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
-                Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
+                //StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+                //StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
+                Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT | Win32.Advapi32.CREATION_FLAGS.CREATE_SUSPENDED;
 
                 IntPtr lpSize = IntPtr.Zero;
                 PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 2, 0, ref lpSize);
@@ -386,7 +386,7 @@ namespace SharpSploit.Execution
 
                 if (blockDLL)
                 {
-                    Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALLOW_STORE));
+                    Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON));
                     PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)Win32.Advapi32.PROCESS_THREAD_ATTRIBUTE.MITIGATION_POLICY, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
                 }
 
