@@ -386,7 +386,7 @@ namespace SharpSploit.Execution
 
                 if (blockDLL)
                 {
-                    Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALLOW_STORE));
+                    Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON));
                     PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)Win32.Advapi32.PROCESS_THREAD_ATTRIBUTE.MITIGATION_POLICY, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
                 }
 
