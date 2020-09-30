@@ -375,8 +375,8 @@ namespace SharpSploit.Execution
                 pSec.nLength = (uint)Marshal.SizeOf(pSec);
                 tSec.nLength = (uint)Marshal.SizeOf(tSec);
 
-                //StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
-                //StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
+                StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
+                StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
                 Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT | Win32.Advapi32.CREATION_FLAGS.CREATE_SUSPENDED;
 
                 IntPtr lpSize = IntPtr.Zero;
