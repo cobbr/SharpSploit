@@ -297,7 +297,6 @@ namespace SharpSploit.Execution
             }
         }
 
-
         /// <summary>
         /// Creates a process specified as argument using the Platform Invoke API.
         /// </summary>
@@ -307,14 +306,14 @@ namespace SharpSploit.Execution
         /// <remarks>
         /// Code has been kindly stolen and adapted from TikiTorch (https://github.com/rasta-mouse/TikiTorch/blob/064c60c5e23188867a0f9c5a0626dd39718750d4/TikiLoader/Generic.cs).
         /// </remarks>	       
-        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvoke(string targetProcess)
+        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvoke(string targetProcess, bool blockDLL)
         {
-
             Win32.ProcessThreadsAPI._STARTUPINFOEX StartupInfoEx = new Win32.ProcessThreadsAPI._STARTUPINFOEX();
-            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo = new Win32.ProcessThreadsAPI._PROCESS_INFORMATION(); 
 
             StartupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfoEx);
-            IntPtr lpValue = IntPtr.Zero;
+            IntPtr lpValue = Marshal.AllocHGlobal(IntPtr.Size);
+
             Win32.WinBase._SECURITY_ATTRIBUTES pSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
             Win32.WinBase._SECURITY_ATTRIBUTES tSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
             pSec.nLength = (uint)Marshal.SizeOf(pSec);
@@ -322,9 +321,19 @@ namespace SharpSploit.Execution
 
             StartupInfoEx.StartupInfo.dwFlags = (uint)Win32.ProcessThreadsAPI.STARTF.STARTF_USESHOWWINDOW;
             StartupInfoEx.StartupInfo.wShowWindow = 0; //SW_HIDE
-            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW;
+            Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
 
-            PInvoke.Win32.Kernel32.CreateProcess(
+            if (blockDLL)
+            {
+                IntPtr lpSize = IntPtr.Zero;
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
+                StartupInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(StartupInfoEx.lpAttributeList, 1, 0, ref lpSize);
+                Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON));
+                PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)Win32.Advapi32.PROCESS_THREAD_ATTRIBUTE.MITIGATION_POLICY, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
+            }
+
+                PInvoke.Win32.Kernel32.CreateProcess(
                     targetProcess,                             
                     null,    
                     ref pSec,                               
@@ -350,20 +359,17 @@ namespace SharpSploit.Execution
         /// <remarks>
         /// Code has been kindly stolen and adapted from TikiTorch (https://github.com/rasta-mouse/TikiTorch/blob/064c60c5e23188867a0f9c5a0626dd39718750d4/TikiLoader/Generic.cs).
         /// </remarks>	 
-        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvokePPID(string targetProcess, int parentProcessId)
+        public static Win32.ProcessThreadsAPI._PROCESS_INFORMATION CreateProcessPInvokePPID(string targetProcess, int parentProcessId, bool blockDLL)
         {
 
-            const int ProcThreadAttributeParentProcess = 0x00020000;
-
             Win32.ProcessThreadsAPI._STARTUPINFOEX StartupInfoEx = new Win32.ProcessThreadsAPI._STARTUPINFOEX();
-            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo;
+            Win32.ProcessThreadsAPI._PROCESS_INFORMATION ProcInfo = new Win32.ProcessThreadsAPI._PROCESS_INFORMATION();
 
             StartupInfoEx.StartupInfo.cb = (uint)Marshal.SizeOf(StartupInfoEx);         
-            IntPtr lpValue = IntPtr.Zero;
+            IntPtr lpValue = Marshal.AllocHGlobal(IntPtr.Size);
 
             try
             {
-
                 Win32.WinBase._SECURITY_ATTRIBUTES pSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
                 Win32.WinBase._SECURITY_ATTRIBUTES tSec = new Win32.WinBase._SECURITY_ATTRIBUTES();
                 pSec.nLength = (uint)Marshal.SizeOf(pSec);
@@ -374,15 +380,21 @@ namespace SharpSploit.Execution
                 Win32.Advapi32.CREATION_FLAGS flags = Win32.Advapi32.CREATION_FLAGS.CREATE_NO_WINDOW | Win32.Advapi32.CREATION_FLAGS.EXTENDED_STARTUPINFO_PRESENT;
 
                 IntPtr lpSize = IntPtr.Zero;
-                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(IntPtr.Zero, 2, 0, ref lpSize);
                 StartupInfoEx.lpAttributeList = Marshal.AllocHGlobal(lpSize);
-                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(StartupInfoEx.lpAttributeList, 1, 0, ref lpSize);
+                PInvoke.Win32.Kernel32.InitializeProcThreadAttributeList(StartupInfoEx.lpAttributeList, 2, 0, ref lpSize);
+
+                if (blockDLL)
+                {
+                    Marshal.WriteIntPtr(lpValue, new IntPtr((long)Win32.Advapi32.BINARY_SIGNATURE_POLICY.BLOCK_NON_MICROSOFT_BINARIES_ALLOW_STORE));
+                    PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)Win32.Advapi32.PROCESS_THREAD_ATTRIBUTE.MITIGATION_POLICY, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
+                }
 
                 IntPtr parentHandle = Process.GetProcessById(parentProcessId).Handle;
                 lpValue = Marshal.AllocHGlobal(IntPtr.Size);
                 Marshal.WriteIntPtr(lpValue, parentHandle);
 
-                PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)ProcThreadAttributeParentProcess, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
+                PInvoke.Win32.Kernel32.UpdateProcThreadAttribute(StartupInfoEx.lpAttributeList, 0, (IntPtr)Win32.Advapi32.PROCESS_THREAD_ATTRIBUTE.PARENT_PROCESS, lpValue, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero);
                 PInvoke.Win32.Kernel32.CreateProcess(targetProcess, null, ref pSec, ref tSec, false, flags, IntPtr.Zero, null, ref StartupInfoEx, out ProcInfo);
 
                 return ProcInfo;
