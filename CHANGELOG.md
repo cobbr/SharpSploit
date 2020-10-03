@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added FreeModule to SharpSploit.Execution.ManualMap.Map (credit @TheWover)
 
+### Fixed
+- Fixed rewriting IAT of modules with no import table
+
 ## [v1.6] - 2020-06-08
 ### Added
 - Added ManualMapping functions (credit @b33f, @TheWover)

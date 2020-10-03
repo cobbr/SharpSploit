@@ -189,10 +189,10 @@ namespace SharpSploit.Execution.ManualMap
         {
             PE.IMAGE_DATA_DIRECTORY idd = PEINFO.Is32Bit ? PEINFO.OptHeader32.ImportTable : PEINFO.OptHeader64.ImportTable;
 
-            //Check if there is no import table
+            // Check if there is no import table
             if (idd.VirtualAddress == 0)
             {
-                //Return so that the rest of the module mapping process may continue.
+                // Return so that the rest of the module mapping process may continue.
                 return;
             }
 
