@@ -1337,7 +1337,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[])">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[],System.Boolean)">
             <summary>
             Call a manually mapped DLL by Export.
             </summary>
@@ -1347,6 +1347,7 @@
             <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
             <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
             <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
             <returns>void</returns>
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetSyscallStub(System.String)">
