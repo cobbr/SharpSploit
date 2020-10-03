@@ -611,7 +611,7 @@ namespace SharpSploit.Execution.DynamicInvoke
         }
 
         /// <summary>
-        /// Call a manually mapped DLL by Export.
+        /// Call a manually mapped DLL by Export. If the module has a default entry point, invoke it.
         /// </summary>
         /// <author>Ruben Boonen (@FuzzySec)</author>
         /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
@@ -622,7 +622,25 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <returns>void</returns>
         public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters)
         {
-            CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            return CallMappedDLLModuleExport(PEINFO, ModuleMemoryBase, ExportName, FunctionDelegateType, Parameters, true);
+        }
+
+        /// <summary>
+        /// Call a manually mapped DLL by Export.
+        /// </summary>
+        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <param name="PEINFO">Module meta data struct (PE.PE_META_DATA).</param>
+        /// <param name="ModuleMemoryBase">Base address of the module in memory.</param>
+        /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
+        /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
+        /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
+        /// <returns>void</returns>
+        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters, bool CallEntry)
+        {
+            //Call entry point if user has specified
+            if (CallEntry == true)
+                CallMappedDLLModule(PEINFO, ModuleMemoryBase);
 
             // Get export pointer
             IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);
