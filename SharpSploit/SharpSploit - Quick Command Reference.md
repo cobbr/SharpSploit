@@ -160,7 +160,7 @@ The `SharpSploit.Execution.DynamicInvoke.Generic` class contains helper function
 * `CallMappedDLLModuleExport()` - Call a manually mapped DLL by Export.
 * `GetSyscallStub()` - Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
 
-## SharpSploit.Execution.ManaulMap
+## SharpSploit.Execution.ManualMap
 
 The `SharpSploit.Execution.ManualMap.Map` class contains helper functions for manually mapping PE modules.
 
@@ -170,6 +170,7 @@ The `SharpSploit.Execution.ManualMap.Map` class contains helper functions for ma
 * `MapModuleToMemory()` - Manually map module into current process.
 * `SetModuleSectionPermissions()` - Set correct module section permissions.
 * `RewriteModuleIAT()` - Rewrite IAT for manually mapped module.
+* `FreeModule()` - Free a manually mapped module
 
 The `SharpSploit.Execution.ManualMap.Overload` class contains helper functions for Module Overloading.
 

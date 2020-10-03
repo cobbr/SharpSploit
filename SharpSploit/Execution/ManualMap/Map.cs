@@ -533,5 +533,30 @@ namespace SharpSploit.Execution.ManualMap
 
             return ManMapObject;
         }
+
+        /// <summary>
+        /// Free a module that was mapped into the current process.
+        /// </summary>
+        /// <author>The Wover (@TheRealWover)</author>
+        /// <param name="PEMapped">The metadata of the manually mapped module.</param>
+        public static void FreeModule(PE.PE_MANUAL_MAP PEMapped)
+        {
+            // Check if PE was mapped via module overloading
+            if (!string.IsNullOrEmpty(PEMapped.DecoyModule))
+            {
+                DynamicInvoke.Native.NtUnmapViewOfSection((IntPtr)(-1), PEMapped.ModuleBase);
+            }
+            // If PE not mapped via module overloading, free the memory.
+            else
+            {
+                PE.PE_META_DATA PEINFO = PEMapped.PEINFO;
+
+                // Get the size of the module in memory
+                IntPtr size = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
+                IntPtr pModule = PEMapped.ModuleBase;
+
+                DynamicInvoke.Native.NtFreeVirtualMemory((IntPtr)(-1), ref pModule, ref size, Execute.Win32.Kernel32.MEM_RELEASE);
+            }
+        }
     }
 }
