@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added FreeModule to SharpSploit.Execution.ManualMap.Map (credit @TheWover)
 - Added option to CallMappedDllModuleExport to not invoke EntryPoint (credit @TheWover)
+- Added SharpSploit.Evasion.ETW class, ETWEventWrite patch (credit @salu90)
 
 ### Fixed
 - Fixed rewriting IAT of modules with no import table (credit @TheWover)
