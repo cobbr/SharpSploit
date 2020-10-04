@@ -76,6 +76,10 @@
 
 * `PatchAmsiScanBuffer()` - Patch the AmsiScanBuffer function in amsi.dll to disable the AMSI for the current process.
 
+### SharpSploit.Evasion.ETW
+
+* `PatchETWEventWrite()` - Patch the ETWEventWrite function in ntdll.dll to disable ETW for the current process.
+
 ## SharpSploit.Execution
 
 ### SharpSploit.Execution.Assembly

@@ -1108,6 +1108,12 @@
             Credit to Adam Chester (@_xpn_).
             </remarks>
         </member>
+        <member name="T:SharpSploit.Evasion.ETW">
+            <summary>
+            ETW is a class for manipulating the Event Tracing for Windows (ETW).
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SharpSploit.Evasion.ETW.PatchETWEventWrite" -->
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
             Assembly is a library for loading .NET assemblies and executing methods contained within them.
