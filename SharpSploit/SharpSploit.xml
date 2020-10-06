@@ -198,6 +198,26 @@
             <param name="Privilege">Privilege to enable.</param>
             <returns>True if enabling Token succeeds, false otherwise.</returns>
         </member>
+        <member name="T:SharpSploit.Enumeration.Clipboard">
+            <summary>
+            Clipboard allows for the monitoring of Clipboard text content.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Clipboard.StartClipboardMonitor(System.Int32)">
+            <summary>
+            Starts a clipboard monitor
+            </summary>
+            <author>Nick Muir (@_shellfarmer)</author>
+            <returns>String containing the captured clipboard contents, along with identification of what window they were copied from.</returns>
+            <param name="Seconds">The amount of time in seconds the clipboard monitor should run for before returning data.</param>
+        </member>
+        <member name="M:SharpSploit.Enumeration.Clipboard.GetActiveWindowTitle">
+            <summary>
+            Gets the active window title of the window keystrokes are being entered in.
+            </summary>
+            <author>Scottie Austin (@checkymander)</author>
+            <returns>Title of the active window.</returns>
+        </member>
         <member name="T:SharpSploit.Enumeration.Domain">
             <summary>
             Domain is a library for domain enumeration that can be used to search for and query for information from

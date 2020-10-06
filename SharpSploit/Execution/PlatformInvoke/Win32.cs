@@ -218,7 +218,6 @@ namespace SharpSploit.Execution.PlatformInvoke
             public static extern short GetKeyState(int nVirtKey);
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool AddClipboardFormatListener(IntPtr hwnd);
 
             [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]

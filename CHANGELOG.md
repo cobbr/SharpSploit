@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Added SharpSploit.Evasion.ETW class, ETWEventWrite patch (credit @salu90)
 - Added SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique (credit @aus)
+- Added SharpSploit.Enumeration.Clipboard clipboard monitor (credit @shellfarmer)
 
 ## [v1.6] - 2020-06-08
 ### Added

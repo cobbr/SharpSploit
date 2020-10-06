@@ -70,6 +70,10 @@
 
 * `StartKeylogger()` - Starts a keylogger that gets keystrokes for a specified amount of time.
 
+### SharpSploit.Enumeration.Clipboard
+
+* `StartClipboardMonitor()` - Starts a clipboard monitor that records clipboard changes for a specified amount of time.
+
 ## SharpSploit.Evastion
 
 ### SharpSploit.Evasion.Amsi
