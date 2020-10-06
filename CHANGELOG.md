@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique (credit @aus)
 - Added SharpSploit.Enumeration.Clipboard clipboard monitor (credit @shellfarmer)
 
+### Fixed
+- Fixed SharpSploit.Enumeration.Keylogger HookProc from being garbage collected, fixed handling virtual packets
+
 ## [v1.6] - 2020-06-08
 ### Added
 - Added ManualMapping functions (credit @b33f, @TheWover)
