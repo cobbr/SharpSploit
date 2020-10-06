@@ -489,6 +489,21 @@ namespace SharpSploit.Execution
                 SERVICE_ERROR_SEVERE = 0x00000002,
                 SERVICE_ERROR_CRITICAL = 0x00000003,
             }
+
+            [Flags]
+            public enum BINARY_SIGNATURE_POLICY : ulong
+            {
+                BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON = 0x100000000000,
+                BLOCK_NON_MICROSOFT_BINARIES_ALLOW_STORE = 0x300000000000
+            }
+
+            [Flags]
+            public enum PROCESS_THREAD_ATTRIBUTE : int
+            {
+                MITIGATION_POLICY = 0x20007,
+                PARENT_PROCESS = 0x00020000
+            }
+
         }
 
         public static class Dbghelp
@@ -542,7 +557,7 @@ namespace SharpSploit.Execution
             [StructLayout(LayoutKind.Sequential)]
             public struct _SECURITY_ATTRIBUTES
             {
-                UInt32 nLength;
+                public UInt32 nLength;
                 IntPtr lpSecurityDescriptor;
                 Boolean bInheritHandle;
             };
@@ -868,8 +883,8 @@ namespace SharpSploit.Execution
             [StructLayout(LayoutKind.Sequential)]
             public struct _STARTUPINFOEX
             {
-                _STARTUPINFO StartupInfo;
-                // PPROC_THREAD_ATTRIBUTE_LIST lpAttributeList;
+                public _STARTUPINFO StartupInfo;
+                public IntPtr lpAttributeList;
             };
 
             //https://msdn.microsoft.com/en-us/library/windows/desktop/ms684873(v=vs.85).aspx
