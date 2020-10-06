@@ -670,7 +670,7 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             IntPtr pImage = Native.NtAllocateVirtualMemory(
                 (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
-                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.Kernel32.AllocationType.Commit | Execute.Win32.Kernel32.AllocationType.Reserve,
                 Execute.Win32.WinNT.PAGE_READWRITE
             );
 
@@ -704,7 +704,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             RegionSize = (IntPtr)0x50;
             IntPtr pCallStub = Native.NtAllocateVirtualMemory(
                 (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
-                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.Kernel32.AllocationType.Commit | Execute.Win32.Kernel32.AllocationType.Reserve,
                 Execute.Win32.WinNT.PAGE_READWRITE
             );
 
@@ -722,7 +722,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             Marshal.FreeHGlobal(pModule);
             RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
 
-            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, Execute.Win32.Kernel32.MEM_RELEASE);
+            Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, Execute.Win32.Kernel32.AllocationType.Reserve);
 
             return pCallStub;
         }

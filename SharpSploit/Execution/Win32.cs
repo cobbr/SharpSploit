@@ -17,19 +17,6 @@ namespace SharpSploit.Execution
     {
         public static class Kernel32
         {
-            public static uint MEM_COMMIT = 0x1000;
-            public static uint MEM_RESERVE = 0x2000;
-            public static uint MEM_RESET = 0x80000;
-            public static uint MEM_RESET_UNDO = 0x1000000;
-            public static uint MEM_LARGE_PAGES = 0x20000000;
-            public static uint MEM_PHYSICAL = 0x400000;
-            public static uint MEM_TOP_DOWN = 0x100000;
-            public static uint MEM_WRITE_WATCH = 0x200000;
-            public static uint MEM_COALESCE_PLACEHOLDERS = 0x1;
-            public static uint MEM_PRESERVE_PLACEHOLDER = 0x2;
-            public static uint MEM_DECOMMIT = 0x4000;
-            public static uint MEM_RELEASE = 0x8000;
-
             [StructLayout(LayoutKind.Sequential)]
             public struct IMAGE_BASE_RELOCATION
             {
@@ -190,6 +177,7 @@ namespace SharpSploit.Execution
                 Physical = 0x400000,
                 TopDown = 0x100000,
                 WriteWatch = 0x200000,
+                ResetUndo = 0x1000000,
                 LargePages = 0x20000000
             }
 

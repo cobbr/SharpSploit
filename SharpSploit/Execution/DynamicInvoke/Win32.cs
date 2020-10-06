@@ -114,7 +114,6 @@ namespace SharpSploit.Execution.DynamicInvoke
             Int32 nSize,
             out IntPtr lpNumberOfBytesWritten)
         {
-            // TODO: fix bytesWritten
             // Craft an array for the arguments
             object[] funcargs =
             {

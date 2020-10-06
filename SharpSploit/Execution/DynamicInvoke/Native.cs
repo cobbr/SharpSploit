@@ -330,7 +330,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return ThreadHandle;
         }
 
-        public static IntPtr NtAllocateVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, IntPtr ZeroBits, ref IntPtr RegionSize, UInt32 AllocationType, UInt32 Protect)
+        public static IntPtr NtAllocateVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, IntPtr ZeroBits, ref IntPtr RegionSize, Execute.Win32.Kernel32.AllocationType AllocationType, UInt32 Protect)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -394,7 +394,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             return BaseAddress;
         }
 
-        public static void NtFreeVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, ref IntPtr RegionSize, UInt32 FreeType)
+        public static void NtFreeVirtualMemory(IntPtr ProcessHandle, ref IntPtr BaseAddress, ref IntPtr RegionSize, Execute.Win32.Kernel32.AllocationType FreeType)
         {
             // Craft an array for the arguments
             object[] funcargs =
@@ -425,7 +425,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Alloc buffer for result struct
             IntPtr pBase = IntPtr.Zero;
             IntPtr RegionSize = (IntPtr)0x500;
-            IntPtr pAlloc = NtAllocateVirtualMemory(hProc, ref pBase, IntPtr.Zero, ref RegionSize, Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE, Execute.Win32.WinNT.PAGE_READWRITE);
+            IntPtr pAlloc = NtAllocateVirtualMemory(hProc, ref pBase, IntPtr.Zero, ref RegionSize, Execute.Win32.Kernel32.AllocationType.Commit | Execute.Win32.Kernel32.AllocationType.Reserve, Execute.Win32.WinNT.PAGE_READWRITE);
 
             // Prepare NtQueryVirtualMemory parameters
             Execute.Native.MEMORYINFOCLASS memoryInfoClass = Execute.Native.MEMORYINFOCLASS.MemorySectionName;
@@ -448,7 +448,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             }
 
             // Free allocation
-            NtFreeVirtualMemory(hProc, ref pAlloc, ref RegionSize, Execute.Win32.Kernel32.MEM_RELEASE);
+            NtFreeVirtualMemory(hProc, ref pAlloc, ref RegionSize, Execute.Win32.Kernel32.AllocationType.Reserve);
             if (retValue == Execute.Native.NTSTATUS.AccessDenied)
             {
                 // STATUS_ACCESS_DENIED
@@ -714,7 +714,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 ref IntPtr BaseAddress,
                 IntPtr ZeroBits,
                 ref IntPtr RegionSize,
-                UInt32 AllocationType,
+                Execute.Win32.Kernel32.AllocationType AllocationType,
                 UInt32 Protect);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
@@ -722,7 +722,7 @@ namespace SharpSploit.Execution.DynamicInvoke
                 IntPtr ProcessHandle,
                 ref IntPtr BaseAddress,
                 ref IntPtr RegionSize,
-                UInt32 FreeType);
+                Execute.Win32.Kernel32.AllocationType FreeType);
 
             [UnmanagedFunctionPointer(CallingConvention.StdCall)]
             public delegate UInt32 NtQueryVirtualMemory(

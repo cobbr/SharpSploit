@@ -1110,7 +1110,7 @@
         </member>
         <member name="T:SharpSploit.Evasion.ETW">
             <summary>
-            ETW is a class for manipulating the Event Tracing for Windows (ETW).
+            ETW is a class for manipulating Event Tracing for Windows (ETW).
             </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "M:SharpSploit.Evasion.ETW.PatchETWEventWrite" -->
@@ -1461,140 +1461,6 @@
             <param name="Process">The target process.</param>
             <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
         </member>
-        <member name="T:SharpSploit.Execution.Injection.SectionMapAlloc">
-            <summary>
-            Allocates a payload to a target process using locally-written, remotely-copied shared memory sections.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.#ctor(System.UInt32,System.UInt32,System.UInt32)">
-            <summary>
-            Constructor allowing options as arguments.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
-            <summary>
-            States whether the payload is supported.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">Payload that will be allocated.</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.DefineSupportedPayloadTypes">
-            <summary>
-            Internal method for setting the supported payload types. Used in constructors.
-            Update when new types of payloads are added.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
-            <summary>
-            Allocate the payload to the target process. Handles unknown payload types.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">The payload to allocate to the target process.</param>
-            <param name="Process">The target process.</param>
-            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
-            <summary>
-            Allocate the payload in the target process.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">The PIC payload to allocate to the target process.</param>
-            <param name="Process">The target process.</param>
-            <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
-            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.CreateSection(System.UInt64,System.UInt32)">
-            <summary>
-            Creates a new Section.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="size">Max size of the Section.</param>
-            <param name="allocationAttributes">Section attributes (eg. Win32.WinNT.SEC_COMMIT).</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.MapSection(System.IntPtr,System.IntPtr,System.UInt32,System.IntPtr,System.UInt64)">
-            <summary>
-            Maps a view of a section to the target process.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="procHandle">Handle the process that the section will be mapped to.</param>
-            <param name="sectionHandle">Handle to the section.</param>
-            <param name="protection">What permissions to use on the view.</param>
-            <param name="addr">Optional parameter to specify the address of where to map the view.</param>
-            <param name="sizeData">Size of the view to map. Must be smaller than the max Section size.</param>
-            <returns>A struct containing address and size of the mapped view.</returns>
-        </member>
-        <member name="T:SharpSploit.Execution.Injection.SectionMapAlloc.SectionDetails">
-            <summary>
-            Holds the data returned from NtMapViewOfSection.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.SectionMapAlloc.UnmapSection(System.IntPtr,System.IntPtr)">
-            <summary>
-            Unmaps a view of a section from a process.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="hProc">Process to which the view has been mapped.</param>
-            <param name="baseAddr">Address of the view (relative to the target process)</param>
-            <returns></returns>
-        </member>
-        <member name="T:SharpSploit.Execution.Injection.VirtualAllocate">
-            <summary>
-            Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
-            </summary>
-            <author>aus</author>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor">
-            <summary>
-            Default constructor.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.#ctor(SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection,SharpSploit.Execution.Injection.VirtualAllocate.AllocAPIS,SharpSploit.Execution.Injection.VirtualAllocate.WriteAPIS)">
-            <summary>
-            Constructor allowing options as arguments.
-            </summary>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
-            <summary>
-            States whether the payload is supported.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">Payload that will be allocated.</param>
-            <returns></returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.DefineSupportedPayloadTypes">
-            <summary>
-            Internal method for setting the supported payload types. Used in constructors.
-            Update when new types of payloads are added.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
-            <summary>
-            Allocate the payload to the target process. Handles unknown payload types.
-            </summary>
-            <author>The Wover (@TheRealWover)</author>
-            <param name="Payload">The payload to allocate to the target process.</param>
-            <param name="Process">The target process.</param>
-            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Injection.VirtualAllocate.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
-            <summary>
-            Allocate the payload in the target process via VirtualAllocEx + WriteProcessMemory
-            </summary>
-            <author>The Wover (@TheRealWover), aus (@aus)</author>
-            <param name="Payload">The PIC payload to allocate to the target process.</param>
-            <param name="Process">The target process.</param>
-            <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
-            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
-        </member>
         <member name="T:SharpSploit.Execution.Injection.AllocationFailed">
             <summary>
             Exception thrown when the payload memory fails to allocate
@@ -1737,6 +1603,140 @@
             Exception thrown when the type of a payload is not supported by a injection variant.
             </summary>
             <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.SectionMapAllocationTechnique">
+            <summary>
+            Allocates a payload to a target process using locally-written, remotely-copied shared memory sections.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.#ctor(System.UInt32,System.UInt32,System.UInt32)">
+            <summary>
+            Constructor allowing options as arguments.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            States whether the payload is supported.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">Payload that will be allocated.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            Update when new types of payloads are added.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
+            <summary>
+            Allocate the payload to the target process. Handles unknown payload types.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">The payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
+            <summary>
+            Allocate the payload in the target process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">The PIC payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.CreateSection(System.UInt64,System.UInt32)">
+            <summary>
+            Creates a new Section.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="size">Max size of the Section.</param>
+            <param name="allocationAttributes">Section attributes (eg. Win32.WinNT.SEC_COMMIT).</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.MapSection(System.IntPtr,System.IntPtr,System.UInt32,System.IntPtr,System.UInt64)">
+            <summary>
+            Maps a view of a section to the target process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="procHandle">Handle the process that the section will be mapped to.</param>
+            <param name="sectionHandle">Handle to the section.</param>
+            <param name="protection">What permissions to use on the view.</param>
+            <param name="addr">Optional parameter to specify the address of where to map the view.</param>
+            <param name="sizeData">Size of the view to map. Must be smaller than the max Section size.</param>
+            <returns>A struct containing address and size of the mapped view.</returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.SectionDetails">
+            <summary>
+            Holds the data returned from NtMapViewOfSection.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.SectionMapAllocationTechnique.UnmapSection(System.IntPtr,System.IntPtr)">
+            <summary>
+            Unmaps a view of a section from a process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="hProc">Process to which the view has been mapped.</param>
+            <param name="baseAddr">Address of the view (relative to the target process)</param>
+            <returns></returns>
+        </member>
+        <member name="T:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique">
+            <summary>
+            Allocates a payload to a target process using VirtualAllocateEx and WriteProcessMemory
+            </summary>
+            <author>aus</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.#ctor">
+            <summary>
+            Default constructor.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.#ctor(SharpSploit.Execution.Win32.Kernel32.AllocationType,SharpSploit.Execution.Win32.Kernel32.MemoryProtection,SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.AllocationAPI,SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.WriteAPI)">
+            <summary>
+            Constructor allowing options as arguments.
+            </summary>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.IsSupportedPayloadType(SharpSploit.Execution.Injection.PayloadType)">
+            <summary>
+            States whether the payload is supported.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">Payload that will be allocated.</param>
+            <returns></returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.DefineSupportedPayloadTypes">
+            <summary>
+            Internal method for setting the supported payload types. Used in constructors.
+            Update when new types of payloads are added.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.Allocate(SharpSploit.Execution.Injection.PayloadType,System.Diagnostics.Process)">
+            <summary>
+            Allocate the payload to the target process. Handles unknown payload types.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="Payload">The payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique.Allocate(SharpSploit.Execution.Injection.PICPayload,System.Diagnostics.Process,System.IntPtr)">
+            <summary>
+            Allocate the payload in the target process via VirtualAllocEx + WriteProcessMemory
+            </summary>
+            <author>The Wover (@TheRealWover), aus (@aus)</author>
+            <param name="Payload">The PIC payload to allocate to the target process.</param>
+            <param name="Process">The target process.</param>
+            <param name="PreferredAddress">The preferred address at which to allocate the payload in the target process.</param>
+            <returns>Base address of allocated memory within the target process's virtual memory space.</returns>
         </member>
         <member name="M:SharpSploit.Execution.ManualMap.Map.MapModuleFromDisk(System.String)">
             <summary>

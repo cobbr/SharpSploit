@@ -127,7 +127,7 @@ namespace SharpSploit.Execution.PlatformInvoke
             public static extern IntPtr VirtualAlloc(
                 IntPtr lpStartAddr,
                 uint size,
-                uint flAllocationType,
+                Execute.Win32.Kernel32.AllocationType flAllocationType,
                 uint flProtect
             );
 

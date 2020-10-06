@@ -143,20 +143,20 @@ namespace SharpSploit.Execution
             if (pe.Is32BitHeader)
             {
                 // Console.WriteLine("Preferred Load Address = {0}", pe.OptionalHeader32.ImageBase.ToString("X4"));
-                codebase = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtr.Zero, pe.OptionalHeader32.SizeOfImage, Win32.Kernel32.MEM_COMMIT, Win32.WinNT.PAGE_EXECUTE_READWRITE);
+                codebase = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtr.Zero, pe.OptionalHeader32.SizeOfImage, Win32.Kernel32.AllocationType.Commit, Win32.WinNT.PAGE_EXECUTE_READWRITE);
                 // Console.WriteLine("Allocated Space For {0} at {1}", pe.OptionalHeader32.SizeOfImage.ToString("X4"), codebase.ToString("X4"));
             }
             else
             {
                 // Console.WriteLine("Preferred Load Address = {0}", pe.OptionalHeader64.ImageBase.ToString("X4"));
-                codebase = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtr.Zero, pe.OptionalHeader64.SizeOfImage, Win32.Kernel32.MEM_COMMIT, Win32.WinNT.PAGE_EXECUTE_READWRITE);
+                codebase = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtr.Zero, pe.OptionalHeader64.SizeOfImage, Win32.Kernel32.AllocationType.Commit, Win32.WinNT.PAGE_EXECUTE_READWRITE);
                 // Console.WriteLine("Allocated Space For {0} at {1}", pe.OptionalHeader64.SizeOfImage.ToString("X4"), codebase.ToString("X4"));
             }
 
             // Copy Sections
             for (int i = 0; i < pe.FileHeader.NumberOfSections; i++)
             {
-                IntPtr y = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtrAdd(codebase, (int)pe.ImageSectionHeaders[i].VirtualAddress), pe.ImageSectionHeaders[i].SizeOfRawData, Win32.Kernel32.MEM_COMMIT, Win32.WinNT.PAGE_EXECUTE_READWRITE);
+                IntPtr y = PInvoke.Win32.Kernel32.VirtualAlloc(IntPtrAdd(codebase, (int)pe.ImageSectionHeaders[i].VirtualAddress), pe.ImageSectionHeaders[i].SizeOfRawData, Win32.Kernel32.AllocationType.Commit, Win32.WinNT.PAGE_EXECUTE_READWRITE);
                 Marshal.Copy(pe.PEBytes, (int)pe.ImageSectionHeaders[i].PointerToRawData, y, (int)pe.ImageSectionHeaders[i].SizeOfRawData);
                 // Console.WriteLine("Section {0}, Copied To {1}", new string(pe.ImageSectionHeaders[i].Name), y.ToString("X4"));
             }

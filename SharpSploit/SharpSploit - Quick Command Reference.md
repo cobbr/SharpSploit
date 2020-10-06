@@ -188,9 +188,13 @@ The `SharpSploit.Execution.Injection` namespace contains classes for modular pro
 
 The `SharpSploit.Execution.Injection.AllocationTechnique` class is an abstract parent class providing the requirements for all allocation components.
 
-### SharpSploit.Execution.Injection.SectionMapAlloc
+### SharpSploit.Execution.Injection.SectionMapAllocationTechnique
 
-The `SharpSploit.Execution.Injection.SectionMapAlloc` class inherits from `AllocationTechnique` and is an Allocation component that allocates a payload to a target process using a locally-written, remotely-mapped shared memory section.
+The `SharpSploit.Execution.Injection.SectionMapAllocationTechnique` class inherits from `AllocationTechnique` and is an Allocation component that allocates a payload to a target process using a locally-written, remotely-mapped shared memory section.
+
+### SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique
+
+The `SharpSploit.Execution.Injection.VirtualAllocAllocationTechnique` class inherits from `AllocationTechnique` and is an Allocation component that allocates a payload to a target process using the VirtualAlloc and WriteProcessMemory APIs.
 
 ### SharpSploit.Execution.Injection.ExecutionTechnique
 

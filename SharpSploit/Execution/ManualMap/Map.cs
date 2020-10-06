@@ -457,7 +457,7 @@ namespace SharpSploit.Execution.ManualMap
             IntPtr RegionSize = PEINFO.Is32Bit ? (IntPtr)PEINFO.OptHeader32.SizeOfImage : (IntPtr)PEINFO.OptHeader64.SizeOfImage;
             IntPtr pImage = DynamicInvoke.Native.NtAllocateVirtualMemory(
                 (IntPtr)(-1), ref BaseAddress, IntPtr.Zero, ref RegionSize,
-                Execute.Win32.Kernel32.MEM_COMMIT | Execute.Win32.Kernel32.MEM_RESERVE,
+                Execute.Win32.Kernel32.AllocationType.Commit | Execute.Win32.Kernel32.AllocationType.Reserve,
                 Execute.Win32.WinNT.PAGE_READWRITE
             );
             return MapModuleToMemory(pModule, pImage, PEINFO);
