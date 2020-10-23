@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+### Added
+- Added FreeModule to SharpSploit.Execution.ManualMap.Map (credit @TheWover)
+- Added option to CallMappedDllModuleExport to not invoke EntryPoint (credit @TheWover)
+- Added SharpSploit.Evasion.ETW class, ETWEventWrite patch (credit @salu90)
+
+### Fixed
+- Fixed rewriting IAT of modules with no import table (credit @TheWover)
+
 ## [v1.6] - 2020-06-08
 ### Added
 - Added ManualMapping functions (credit @b33f, @TheWover)

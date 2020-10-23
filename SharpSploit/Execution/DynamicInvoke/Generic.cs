@@ -619,10 +619,15 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
         /// <returns>void</returns>
-        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters)
+        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
         {
-            CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            // Call entry point if user has specified
+            if (CallEntry)
+            {
+                CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            }
 
             // Get export pointer
             IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);

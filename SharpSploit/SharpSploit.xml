@@ -1108,6 +1108,12 @@
             Credit to Adam Chester (@_xpn_).
             </remarks>
         </member>
+        <member name="T:SharpSploit.Evasion.ETW">
+            <summary>
+            ETW is a class for manipulating the Event Tracing for Windows (ETW).
+            </summary>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:SharpSploit.Evasion.ETW.PatchETWEventWrite" -->
         <member name="T:SharpSploit.Execution.Assembly">
             <summary>
             Assembly is a library for loading .NET assemblies and executing methods contained within them.
@@ -1337,7 +1343,7 @@
             <param name="ModuleMemoryBase">Base address of the module in memory.</param>
             <returns>void</returns>
         </member>
-        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[])">
+        <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(SharpSploit.Execution.PE.PE_META_DATA,System.IntPtr,System.String,System.Type,System.Object[],System.Boolean)">
             <summary>
             Call a manually mapped DLL by Export.
             </summary>
@@ -1347,6 +1353,7 @@
             <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
             <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
             <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+            <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
             <returns>void</returns>
         </member>
         <member name="M:SharpSploit.Execution.DynamicInvoke.Generic.GetSyscallStub(System.String)">
@@ -1762,6 +1769,13 @@
             <param name="pImage">Pointer to the PEINFO image.</param>
             <param name="PEINFO">PE_META_DATA of the module being mapped.</param>
             <returns>PE_MANUAL_MAP object</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.ManualMap.Map.FreeModule(SharpSploit.Execution.PE.PE_MANUAL_MAP)">
+            <summary>
+            Free a module that was mapped into the current process.
+            </summary>
+            <author>The Wover (@TheRealWover)</author>
+            <param name="PEMapped">The metadata of the manually mapped module.</param>
         </member>
         <member name="M:SharpSploit.Execution.ManualMap.Overload.FindDecoyModule(System.Int64)">
             <summary>
