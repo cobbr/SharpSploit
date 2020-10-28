@@ -239,7 +239,7 @@ namespace SharpSploit.Execution.Injection
             }
 
             // If successful, return the handle to the new thread. Otherwise return NULL
-            if (result == Native.NTSTATUS.Unsuccessful || result <= Native.NTSTATUS.Success)
+            if (result != Native.NTSTATUS.Success)
             {
                 return false;
             }
