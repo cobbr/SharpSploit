@@ -645,6 +645,12 @@
             </summary>
             <param name="DirectoryName">Relative or absolute path to new working directory.</param>
         </member>
+        <member name="M:SharpSploit.Enumeration.Host.GetDriveInformation">
+            <summary>
+            Gets information about current drives.
+            </summary>
+            <returns>List of DriveInfoResult.</returns>
+        </member>
         <member name="T:SharpSploit.Enumeration.Host.ProcessResult">
             <summary>
             ProcessResult represents a running process, used with the GetProcessList() function.
@@ -653,6 +659,11 @@
         <member name="T:SharpSploit.Enumeration.Host.FileSystemEntryResult">
             <summary>
             FileSystemEntryResult represents a file on disk, used with the GetDirectoryListing() function.
+            </summary>
+        </member>
+        <member name="T:SharpSploit.Enumeration.Host.DriveInfoResult">
+            <summary>
+            DriveInfoResult represents information about a drive.
             </summary>
         </member>
         <member name="T:SharpSploit.Enumeration.Network">

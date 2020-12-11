@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 
 using SharpSploit.Generic;
+using SharpSploit.Misc;
 
 namespace SharpSploit.Enumeration
 {
@@ -179,6 +180,37 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
+        /// Gets information about current drives.
+        /// </summary>
+        /// <returns>List of DriveInfoResult.</returns>
+        public static SharpSploitResultList<DriveInfoResult> GetDriveInformation()
+        {
+            SharpSploitResultList<DriveInfoResult> results = new SharpSploitResultList<DriveInfoResult>();
+            DriveInfo[] drives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo drive in drives)
+            {
+                DriveInfoResult info = new DriveInfoResult
+                {
+                    Name = drive.Name,
+                    Type = drive.DriveType
+                };
+
+                if (drive.IsReady)
+                {
+                    info.Label = drive.VolumeLabel;
+                    info.Format = drive.DriveFormat;
+                    info.Capacity = Utilities.ConvertFileLength(drive.TotalSize);
+                    info.FreeSpace = Utilities.ConvertFileLength(drive.AvailableFreeSpace);
+                }
+
+                results.Add(info);
+            }
+
+            return results;
+        }
+
+        /// <summary>
         /// ProcessResult represents a running process, used with the GetProcessList() function.
         /// </summary>
         public sealed class ProcessResult : SharpSploitResult
@@ -243,6 +275,35 @@ namespace SharpSploit.Enumeration
             public FileSystemEntryResult(string Name = "")
             {
                 this.Name = Name;
+            }
+        }
+
+        /// <summary>
+        /// DriveInfoResult represents information about a drive.
+        /// </summary>
+        public sealed class DriveInfoResult : SharpSploitResult
+        {
+            public string Name { get; set; } = "";
+            public DriveType Type { get; set; } = DriveType.Unknown;
+            public string Label { get; set; } = "";
+            public string Format { get; set; } = "";
+            public string Capacity { get; set; } = "";
+            public string FreeSpace { get; set; } = "";
+
+            protected internal override IList<SharpSploitResultProperty> ResultProperties
+            {
+                get
+                {
+                    return new List<SharpSploitResultProperty>
+                    {
+                        new SharpSploitResultProperty { Name = "Name", Value = Name },
+                        new SharpSploitResultProperty { Name = "Type", Value = Type },
+                        new SharpSploitResultProperty { Name = "Label", Value = Label },
+                        new SharpSploitResultProperty { Name = "Format", Value = Format },
+                        new SharpSploitResultProperty { Name = "Capacity", Value = Capacity },
+                        new SharpSploitResultProperty { Name = "FreeSpace", Value = FreeSpace }
+                    };
+                }
             }
         }
     }
