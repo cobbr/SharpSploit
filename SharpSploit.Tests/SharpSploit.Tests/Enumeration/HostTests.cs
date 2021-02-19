@@ -100,5 +100,18 @@ namespace SharpSploit.Tests.Enumeration
             SharpSploitResultList<Host.FileSystemEntryResult> results2 = Host.GetDirectoryListing();
             Assert.AreNotEqual(results1, results2);
         }
+
+        [TestMethod]
+        public void TestGetDrives()
+        {
+            SharpSploitResultList<Host.DriveInfoResult> results = Host.GetDrives();
+            Assert.IsNotNull(results);
+            Assert.IsTrue(results.Count > 0);
+            foreach (Host.DriveInfoResult result in results)
+            {
+                Assert.IsNotNull(result);
+                Assert.AreNotEqual(result.Name, "");
+            }
+        }
     }
 }

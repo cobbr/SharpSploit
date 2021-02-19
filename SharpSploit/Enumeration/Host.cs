@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Security.AccessControl;
 using System.Runtime.InteropServices;
 
+using SharpSploit.Misc;
 using SharpSploit.Generic;
 using SharpSploit.Execution;
 using PInvoke = SharpSploit.Execution.PlatformInvoke;
@@ -387,6 +388,34 @@ namespace SharpSploit.Enumeration
         }
 
         /// <summary>
+        /// Gets information about current drives.
+        /// </summary>
+        /// <returns>SharpSploitResultList of DriveInfoResults</returns>
+        public static SharpSploitResultList<DriveInfoResult> GetDrives()
+        {
+            SharpSploitResultList<DriveInfoResult> results = new SharpSploitResultList<DriveInfoResult>();
+            DriveInfo[] drives = DriveInfo.GetDrives();
+
+            foreach (DriveInfo drive in drives)
+            {
+                DriveInfoResult info = new DriveInfoResult
+                {
+                    Name = drive.Name,
+                    Type = drive.DriveType
+                };
+                if (drive.IsReady)
+                {
+                    info.Label = drive.VolumeLabel;
+                    info.Format = drive.DriveFormat;
+                    info.Capacity = Utilities.ConvertFileLengthForDisplay(drive.TotalSize);
+                    info.FreeSpace = Utilities.ConvertFileLengthForDisplay(drive.AvailableFreeSpace);
+                }
+                results.Add(info);
+            }
+            return results;
+        }
+
+        /// <summary>
         /// ProcessResult represents a running process, used with the GetProcessList() function.
         /// </summary>
         public sealed class ProcessResult : SharpSploitResult
@@ -483,6 +512,35 @@ namespace SharpSploit.Enumeration
                         new SharpSploitResultProperty { Name = "IsInherited", Value = this.IsInherited },
                         new SharpSploitResultProperty { Name = "InheritanceFlags", Value = this.InheritanceFlags },
                         new SharpSploitResultProperty { Name = "PropagationFlags", Value = this.PropagationFlags }
+                    };
+                }
+            }
+        }
+
+        /// <summary>
+        /// DriveInfoResult represents information about a drive.
+        /// </summary>
+        public sealed class DriveInfoResult : SharpSploitResult
+        {
+            public string Name { get; set; } = "";
+            public DriveType Type { get; set; } = DriveType.Unknown;
+            public string Label { get; set; } = "";
+            public string Format { get; set; } = "";
+            public string Capacity { get; set; } = "";
+            public string FreeSpace { get; set; } = "";
+
+            protected internal override IList<SharpSploitResultProperty> ResultProperties
+            {
+                get
+                {
+                    return new List<SharpSploitResultProperty>
+                    {
+                        new SharpSploitResultProperty { Name = "Name", Value = Name },
+                        new SharpSploitResultProperty { Name = "Type", Value = Type },
+                        new SharpSploitResultProperty { Name = "Label", Value = Label },
+                        new SharpSploitResultProperty { Name = "Format", Value = Format },
+                        new SharpSploitResultProperty { Name = "Capacity", Value = Capacity },
+                        new SharpSploitResultProperty { Name = "FreeSpace", Value = FreeSpace }
                     };
                 }
             }
