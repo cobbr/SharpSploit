@@ -113,5 +113,26 @@ namespace SharpSploit.Tests.Enumeration
                 Assert.AreNotEqual(result.Name, "");
             }
         }
+
+        [TestMethod]
+        public void TestCreateProcessSnapshotDump()
+        {
+            Process[] currentProcesses = Process.GetProcessesByName("Calculator");
+            Assert.AreEqual(0, currentProcesses.Length);
+
+            string output = SharpSploit.Execution.Shell.ShellExecute("calc.exe");
+            Assert.AreNotEqual(null, output);
+            Assert.AreEqual("", output);
+            System.Threading.Thread.Sleep(1000);
+
+            Process[] afterProcesses = Process.GetProcessesByName("Calculator");
+            Assert.AreEqual(1, afterProcesses.Length);
+
+            Assert.IsTrue(Host.CreateProcessSnapshotDump(afterProcesses[0].Id, @"C:\Users\Public", "dump"));
+
+            Assert.IsTrue(File.Exists(@"C:\Users\Public\dump"));
+            File.Delete(@"C:\Users\Public\dump");
+            Assert.IsFalse(File.Exists(@"C:\Users\Public\dump"));
+        }
     }
 }

