@@ -296,5 +296,170 @@ namespace SharpSploit.Execution
                 }
             }
         }
+
+        /// <summary>
+        /// Kills a specificed process.
+        /// </summary>
+        /// <param name="Pid">The ID of the process to kill.</param>
+        /// <returns>Output indicating the success or failure of killing the specified process.</returns>
+        public static string KillProcessById(int Pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(Pid);
+                string processName = process.ProcessName;
+                process.Kill();
+
+                if (process.HasExited)
+                {
+                    return $"Process ID {Pid} ({processName}) killed.";
+                }
+                else
+                {
+                    return $"Could not kill Process ID {Pid} ({processName})";
+                }
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Kills a specificed process.
+        /// </summary>
+        /// <param name="Name">The name of the process to kill.</param>
+        /// <returns>Output indicating the success or failure of killing the specified process.</returns>
+        public static string KillProcessByName(string Name)
+        {
+            try
+            {
+                foreach (var process in Process.GetProcessesByName(Name))
+                {
+                    return KillProcessById(process.Id);
+                }
+                return $"Could not find Process named {Name}";
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Suspends a process specificed by Id.
+        /// </summary>
+        /// <param name="Pid">The ID of the process to suspend.</param>
+        /// <returns>Output indicating the success or failure of suspending the specified process.</returns>
+        public static string SuspendProcessById(int Pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(Pid);
+                //Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
+                foreach (ProcessThread thread in process.Threads)
+                {
+                    IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                    //Console.WriteLine("Suspending ThreadID:{0}", thread.Id);
+                    if (pOpenThread == IntPtr.Zero)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        PInvoke.Win32.Kernel32.SuspendThread(pOpenThread);
+                    }
+                }
+                return $"Process ID {process.Id} ({process.ProcessName}) suspended.";
+            }
+            catch (Exception e) { return "Could not find Process with that Id" + e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Suspends a process specified by Name.
+        /// </summary>
+        /// <param name="Name">The name of the process to suspend.</param>
+        /// <returns>Output indicating the success or failure of suspending the specified process.</returns>
+        public static string SuspendProcessByName(string Name)
+        {
+            try
+            {
+                foreach (var process in Process.GetProcessesByName(Name))
+                {
+                    //Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
+                    foreach (ProcessThread thread in process.Threads)
+                    {
+                        IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                        //Console.WriteLine("Suspending ThreadID:{0}", thread.Id);
+                        if (pOpenThread == IntPtr.Zero)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            PInvoke.Win32.Kernel32.SuspendThread(pOpenThread);
+                        }
+                    }
+                    return $"Process ID {process.Id} ({Name}) suspended.";
+                }
+                return $"Could not find any Process named {Name}";
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Resumes a process specified by Name.
+        /// </summary>
+        /// <param name="Name">The name of the process to resume.</param>
+        /// <returns>Output indicating the success or failure of resuming the specified process.</returns>
+        public static string ResumeProcessByName(string Name)
+        {
+            try
+            {
+                foreach (var process in Process.GetProcessesByName(Name))
+                {
+                    //Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
+                    foreach (ProcessThread thread in process.Threads)
+                    {
+                        IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                        //Console.WriteLine("Resuming ThreadID:{0}", thread.Id);
+                        if (pOpenThread == IntPtr.Zero)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
+                        }
+                    }
+                    return $"Process ID {process.Id} ({Name}) resumed.";
+                }
+                return $"Could not find any Process named {Name}";
+            }
+            catch (Exception e) { return e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
+
+        /// <summary>
+        /// Resumes a process specified by Id.
+        /// </summary>
+        /// <param name="Pid">The Id of the process to resume.</param>
+        /// <returns>Output indicating the success or failure of resuming the specified process.</returns>
+        public static string ResumeProcessById(int Pid)
+        {
+            try
+            {
+                var process = Process.GetProcessById(Pid);
+                //Console.WriteLine("ThreadTotal:{0}", process.Threads.Count);
+                foreach (ProcessThread thread in process.Threads)
+                {
+                    IntPtr pOpenThread = PInvoke.Win32.Kernel32.OpenThread((uint)Win32.Kernel32.ThreadAccess.SuspendResume, false, (uint)thread.Id);
+                    //Console.WriteLine("Resuming ThreadID:{0}", thread.Id);
+                    if (pOpenThread == IntPtr.Zero)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        PInvoke.Win32.Kernel32.ResumeThread(pOpenThread);
+                    }
+                }
+                return $"Process ID {Pid} ({process.ProcessName}) resumed.";
+            }
+            catch (Exception e) { return "Could not find any Process with that Id" + e.GetType().FullName + ": " + e.Message + Environment.NewLine + e.StackTrace; }
+        }
     }
 }

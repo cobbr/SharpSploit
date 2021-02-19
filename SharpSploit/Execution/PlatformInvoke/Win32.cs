@@ -79,6 +79,22 @@ namespace SharpSploit.Execution.PlatformInvoke
             );
 
             [DllImport("kernel32.dll")]
+            public static extern uint SuspendThread(
+                IntPtr hThread
+            );
+
+            [DllImport("kernel32.dll")]
+            public static extern int ResumeThread(
+                IntPtr hThread
+            );
+
+            [DllImport("kernel32.dll")]
+            static extern bool TerminateThread(
+                IntPtr hThread,
+                uint dwExitCode
+            );
+
+            [DllImport("kernel32.dll")]
             public static extern Boolean ReadProcessMemory(
                 IntPtr hProcess,
                 UInt32 lpBaseAddress,
