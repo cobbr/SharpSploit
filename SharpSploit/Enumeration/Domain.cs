@@ -414,6 +414,12 @@ namespace SharpSploit.Enumeration
 
                 this.DirectorySearcher.Filter = "(&(samAccountType=805306369)" + Filter + ")";
 
+                if (Properties != null)
+                {
+                    this.DirectorySearcher.PropertiesToLoad.Clear();
+                    this.DirectorySearcher.PropertiesToLoad.AddRange(Properties.ToArray());
+                }
+
                 List<SearchResult> results = new List<SearchResult>();
                 try
                 {
