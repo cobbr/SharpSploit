@@ -2079,47 +2079,47 @@
             <param name="hToken">A handle to the impersonated token.</param>
             <returns>Output of the created process.</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.KillProcessById(System.Int32)">
+        <member name="M:SharpSploit.Execution.Shell.KillProcess(System.Int32)">
             <summary>
-            Kills a specificed process.
+            Kills a specified process.
             </summary>
-            <param name="Pid">The ID of the process to kill.</param>
-            <returns>Output indicating the success or failure of killing the specified process.</returns>
+            <param name="Pid">The PID of the process to kill.</param>
+            <returns>bool</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.KillProcessByName(System.String)">
+        <member name="M:SharpSploit.Execution.Shell.KillProcess(System.String)">
             <summary>
-            Kills a specificed process.
+            Kills all processes with a given name.
             </summary>
-            <param name="Name">The name of the process to kill.</param>
-            <returns>Output indicating the success or failure of killing the specified process.</returns>
+            <param name="Name">The name of the process(es) to kill.</param>
+            <returns>bool</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.SuspendProcessById(System.Int32)">
+        <member name="M:SharpSploit.Execution.Shell.SuspendProcess(System.Int32)">
             <summary>
             Suspends a process specificed by Id.
             </summary>
             <param name="Pid">The ID of the process to suspend.</param>
-            <returns>Output indicating the success or failure of suspending the specified process.</returns>
+            <returns>bool</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.SuspendProcessByName(System.String)">
+        <member name="M:SharpSploit.Execution.Shell.SuspendProcess(System.String)">
             <summary>
-            Suspends a specificed process.
+            Suspends all processes with a given Name.
             </summary>
-            <param name="Name">The name of the process to suspend.</param>
-            <returns>Output indicating the success or failure of suspending the specified process.</returns>
+            <param name="Name">The name of the process(es) to suspend.</param>
+            <returns>bool</returns>
         </member>
-        <member name="M:SharpSploit.Execution.Shell.ResumeProcessByName(System.String)">
+        <member name="M:SharpSploit.Execution.Shell.ResumeProcess(System.Int32)">
             <summary>
-            Resumes a specificed process.
-            </summary>
-            <param name="Name">The name of the process to resume.</param>
-            <returns>Output indicating the success or failure of resuming the specified process.</returns>
-        </member>
-        <member name="M:SharpSploit.Execution.Shell.ResumeProcessById(System.Int32)">
-            <summary>
-            Resumes a sprocess.
+            Resumes a process specified by Id.
             </summary>
             <param name="Pid">The Id of the process to resume.</param>
-            <returns>Output indicating the success or failure of resuming the specified process.</returns>
+            <returns>bool</returns>
+        </member>
+        <member name="M:SharpSploit.Execution.Shell.ResumeProcess(System.String)">
+            <summary>
+            Resumes all processes with a given Name.
+            </summary>
+            <param name="Name">The name of the process(es) to resume.</param>
+            <returns>bool</returns>
         </member>
         <member name="T:SharpSploit.Execution.ShellCode">
             <summary>

@@ -79,7 +79,7 @@ namespace SharpSploit.Execution.PlatformInvoke
             );
 
             [DllImport("kernel32.dll")]
-            public static extern uint SuspendThread(
+            public static extern int SuspendThread(
                 IntPtr hThread
             );
 

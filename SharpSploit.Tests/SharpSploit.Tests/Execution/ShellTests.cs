@@ -121,5 +121,30 @@ Test-Verbose -Verbose");
             Assert.AreNotEqual(null, output);
             Assert.AreEqual("", output);
         }
+
+        [TestMethod]
+        public void TestShellExecuteSuspendResumeKill()
+        {
+            Process[] currentProcesses = Process.GetProcessesByName("Calculator");
+            Assert.AreEqual(0, currentProcesses.Length);
+
+            string output = Shell.ShellExecute("calc.exe");
+            Assert.AreNotEqual(null, output);
+            Assert.AreEqual("", output);
+            System.Threading.Thread.Sleep(1000);
+
+            Process[] afterProcesses = Process.GetProcessesByName("Calculator");
+            Assert.AreEqual(1, afterProcesses.Length);
+
+            Assert.IsTrue(Shell.SuspendProcess(afterProcesses[0].Id));
+            System.Threading.Thread.Sleep(1000);
+            Assert.IsTrue(Shell.ResumeProcess(afterProcesses[0].Id));
+            System.Threading.Thread.Sleep(1000);
+            Assert.IsTrue(Shell.KillProcess(afterProcesses[0].Id));
+            System.Threading.Thread.Sleep(1000);
+
+            Process[] endProcesses = Process.GetProcessesByName("Calculator");
+            Assert.AreEqual(0, endProcesses.Length);
+        }
     }
 }
