@@ -66,6 +66,7 @@
     <Compile Include="Evasion\AmsiTests.cs" />
     <Compile Include="Evasion\ETWTests.cs" />
     <Compile Include="Execution\Injection\InjectionTests.cs" />
+    <Compile Include="Execution\ManualMap\MapTests.cs" />
     <Compile Include="Execution\ShellCodeTests.cs" />
     <Compile Include="Execution\ShellTests.cs" />
     <Compile Include="LateralMovement\DCOMTests.cs" />

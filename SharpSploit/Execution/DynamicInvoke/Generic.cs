@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Runtime.InteropServices;
+using SharpSploit.Execution.ManualMap;
 
 using Execute = SharpSploit.Execution;
 
@@ -210,7 +211,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             // Loop entries
             IntPtr flink = le.Flink;
             IntPtr hModule = IntPtr.Zero;
-            Execute.PE.LDR_DATA_TABLE_ENTRY dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+            PE.LDR_DATA_TABLE_ENTRY dte = (PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(PE.LDR_DATA_TABLE_ENTRY));
             while (dte.InLoadOrderLinks.Flink != le.Blink)
             {
                 // Match module name
@@ -221,7 +222,7 @@ namespace SharpSploit.Execution.DynamicInvoke
             
                 // Move Ptr
                 flink = dte.InLoadOrderLinks.Flink;
-                dte = (Execute.PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(Execute.PE.LDR_DATA_TABLE_ENTRY));
+                dte = (PE.LDR_DATA_TABLE_ENTRY)Marshal.PtrToStructure(flink, typeof(PE.LDR_DATA_TABLE_ENTRY));
             }
 
             return hModule;
@@ -619,10 +620,15 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <param name="ExportName">The name of the export to search for (e.g. "NtAlertResumeThread").</param>
         /// <param name="FunctionDelegateType">Prototype for the function, represented as a Delegate object.</param>
         /// <param name="Parameters">Arbitrary set of parameters to pass to the function. Can be modified if function uses call by reference.</param>
+        /// <param name="CallEntry">Specify whether to invoke the module's entry point.</param>
         /// <returns>void</returns>
-        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters)
+        public static object CallMappedDLLModuleExport(PE.PE_META_DATA PEINFO, IntPtr ModuleMemoryBase, string ExportName, Type FunctionDelegateType, object[] Parameters, bool CallEntry = true)
         {
-            CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            // Call entry point if user has specified
+            if (CallEntry)
+            {
+                CallMappedDLLModule(PEINFO, ModuleMemoryBase);
+            }
 
             // Get export pointer
             IntPtr pFunc = GetExportAddress(ModuleMemoryBase, ExportName);
