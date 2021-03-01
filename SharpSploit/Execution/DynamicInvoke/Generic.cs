@@ -640,28 +640,19 @@ namespace SharpSploit.Execution.DynamicInvoke
         /// <summary>
         /// Read ntdll from disk, find/copy the appropriate syscall stub and free ntdll.
         /// </summary>
-        /// <author>Ruben Boonen (@FuzzySec)</author>
+        /// <author>Ruben Boonen (@FuzzySec) and Paul Laîné (@am0nsec)</author>
         /// <param name="FunctionName">The name of the function to search for (e.g. "NtAlertResumeThread").</param>
         /// <returns>IntPtr, Syscall stub</returns>
-        public static IntPtr GetSyscallStub(string FunctionName)
-        {
-            // Verify process & architecture
-            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
-            if (IntPtr.Size == 4 && isWOW64)
-            {
-                throw new InvalidOperationException("Generating Syscall stubs is not supported for WOW64.");
-            }
+        public static IntPtr GetSyscallStub(string FunctionName) {
 
             // Find the path for ntdll by looking at the currently loaded module
-            string NtdllPath = string.Empty;
-            ProcessModuleCollection ProcModules = Process.GetCurrentProcess().Modules;
-            foreach (ProcessModule Mod in ProcModules)
-            {
-                if (Mod.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase))
-                {
-                    NtdllPath = Mod.FileName;
+            ProcessModule NativeModule = null;
+            foreach (ProcessModule _ in Process.GetCurrentProcess().Modules) {
+                if (_.FileName.EndsWith("ntdll.dll", StringComparison.OrdinalIgnoreCase)) {
+                    NativeModule = _;
                 }
             }
+            string NtdllPath = NativeModule.FileName;
 
             // Alloc module into memory for parsing
             IntPtr pModule = Execute.ManualMap.Map.AllocateFileToMemory(NtdllPath);
@@ -684,24 +675,21 @@ namespace SharpSploit.Execution.DynamicInvoke
             UInt32 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pImage, pModule, SizeOfHeaders);
 
             // Write sections to memory
-            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections)
-            {
+            foreach (PE.IMAGE_SECTION_HEADER ish in PEINFO.Sections) {
                 // Calculate offsets
                 IntPtr pVirtualSectionBase = (IntPtr)((UInt64)pImage + ish.VirtualAddress);
                 IntPtr pRawSectionBase = (IntPtr)((UInt64)pModule + ish.PointerToRawData);
 
                 // Write data
                 BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pVirtualSectionBase, pRawSectionBase, ish.SizeOfRawData);
-                if (BytesWritten != ish.SizeOfRawData)
-                {
+                if (BytesWritten != ish.SizeOfRawData) {
                     throw new InvalidOperationException("Failed to write to memory.");
                 }
             }
 
             // Get Ptr to function
             IntPtr pFunc = GetExportAddress(pImage, FunctionName);
-            if (pFunc == IntPtr.Zero)
-            {
+            if (pFunc == IntPtr.Zero) {
                 throw new InvalidOperationException("Failed to resolve ntdll export.");
             }
 
@@ -716,9 +704,31 @@ namespace SharpSploit.Execution.DynamicInvoke
 
             // Write call stub
             BytesWritten = Native.NtWriteVirtualMemory((IntPtr)(-1), pCallStub, pFunc, 0x50);
-            if (BytesWritten != 0x50)
-            {
+            if (BytesWritten != 0x50) {
                 throw new InvalidOperationException("Failed to write to memory.");
+            }
+
+            // Verify process & architecture
+            bool isWOW64 = Native.NtQueryInformationProcessWow64Information((IntPtr)(-1));
+
+            // Create custom WOW64 stub
+            if (IntPtr.Size == 4 && isWOW64) {
+                IntPtr pNativeWow64Transition = GetExportAddress(NativeModule.BaseAddress, "Wow64Transition");
+                byte bRetValue = Marshal.ReadByte(pCallStub, 13);
+
+                // CALL DWORD PTR ntdll!Wow64SystemServiceCall
+                Marshal.WriteByte(pCallStub, 5, 0xff);
+                Marshal.WriteByte(pCallStub, 6, 0x15);
+                Marshal.WriteInt32(pCallStub, 7, pNativeWow64Transition.ToInt32());
+
+                // RET <val>
+                Marshal.WriteByte(pCallStub, 11, 0xc2);
+                Marshal.WriteByte(pCallStub, 12, bRetValue);
+                Marshal.WriteByte(pCallStub, 13, 0x00);
+
+                // NOP for alignment
+                Marshal.WriteByte(pCallStub, 14, 0x90);
+                Marshal.WriteByte(pCallStub, 15, 0x90);
             }
 
             // Change call stub permissions
