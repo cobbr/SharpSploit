@@ -27,6 +27,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\powerkatz_x64.dll.comp" />
+    <None Remove="Resources\powerkatz_x86.dll.comp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.ServiceProcess" />
@@ -69,8 +74,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\powerkatz_x64.dll.comp" />
     <EmbeddedResource Include="Resources\powerkatz_x86.dll" />
     <EmbeddedResource Include="Resources\powerkatz_x64.dll" />
+    <EmbeddedResource Include="Resources\powerkatz_x86.dll.comp" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
