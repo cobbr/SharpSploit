@@ -57,51 +57,38 @@ namespace SharpSploit.Misc
 
         public static byte[] ReadFully(this Stream input)
         {
-            byte[] buffer = new byte[16 * 1024];
             using (MemoryStream ms = new MemoryStream())
             {
-                int read;
-                while((read = input.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
+                input.CopyTo(ms);
                 return ms.ToArray();
             }
         }
 
-        public static byte[] Compress(byte[] Bytes)
+        public static byte[] Compress(byte[] plain)
         {
-            byte[] compressedBytes;
-            using (MemoryStream memoryStream = new MemoryStream())
+            using (MemoryStream outputStream = new MemoryStream())
             {
-                using (DeflateStream deflateStream = new DeflateStream(memoryStream, CompressionMode.Compress))
+                // Wrap byte[] with MemoryStream for default-optimized chunk based reading in the Stream.CopyTo
+                using (MemoryStream inputStream = new MemoryStream(plain))
+                using (DeflateStream deflateStream = new DeflateStream(outputStream, CompressionMode.Compress))
                 {
-                    deflateStream.Write(Bytes, 0, Bytes.Length);
-                }
-                compressedBytes = memoryStream.ToArray();
+                    inputStream.CopyTo(deflateStream);         
+                }    
+                return outputStream.ToArray();
             }
-            return compressedBytes;
         }
 
         public static byte[] Decompress(byte[] compressed)
         {
-            using (MemoryStream inputStream = new MemoryStream(compressed.Length))
+            using (MemoryStream outputStream = new MemoryStream())
             {
-                inputStream.Write(compressed, 0, compressed.Length);
-                inputStream.Seek(0, SeekOrigin.Begin);
-                using (MemoryStream outputStream = new MemoryStream())
-                {
-                    using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
-                    {
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = deflateStream.Read(buffer, 0, buffer.Length)) != 0)
-                        {
-                            outputStream.Write(buffer, 0, bytesRead);
-                        }
-                    }
-                    return outputStream.ToArray();
+                // Wrap byte[] with MemoryStream for default-optimized chunk based reading in the Stream.CopyTo
+                using (MemoryStream inputStream = new MemoryStream(compressed))
+                using (DeflateStream deflateStream = new DeflateStream(inputStream, CompressionMode.Decompress))
+                {                
+                    deflateStream.CopyTo(outputStream);
                 }
+                return outputStream.ToArray();
             }
         }
 
